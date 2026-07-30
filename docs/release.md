@@ -11,6 +11,8 @@ This document covers GitHub, Vercel (backoffice only), and EAS (mobile).
 | Mobile (Expo / RN) | `apps/mobile` | **EAS → App Store / Play** (never Vercel) |
 | Backend | `supabase/` | Supabase project (migrations + Edge Functions) |
 
+Do **not** deploy `apps/web` to Vercel — the backoffice app is `apps/backoffice`. Treat `apps/web` as unused/legacy if present.
+
 ---
 
 ## 1. GitHub (local → remote)
