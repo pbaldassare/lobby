@@ -51,6 +51,7 @@ Do **not** commit `.env`, service role keys, or store credentials.
 8. Enable **Preview Deployments** for pull requests (default on Vercel).
 
 `apps/backoffice/vercel.json` already sets install/build for the monorepo layout.  
+`apps/backoffice/next.config.ts` sets `outputFileTracingRoot` to the monorepo root so `@lobby/shared` traces correctly on Vercel.  
 Confirm Root Directory in the dashboard still points at `apps/backoffice`.
 
 ### Environment variables (Vercel → Project → Settings → Environment Variables)
