@@ -84,3 +84,6 @@ Desktop.ini
 *.local
 .temp/
 .tmp/
+supabase/.tmp*
+supabase/.branches
+supabase/.temp
