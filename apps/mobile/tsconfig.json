@@ -3,16 +3,11 @@
   "compilerOptions": {
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true,
     "paths": {
       "@/*": ["./*"],
       "@lobby/shared": ["../../packages/shared/src/index.ts"],
-      "@lobby/shared/tokens": ["../../packages/shared/src/tokens/index.ts"],
-      "@lobby/shared/ui": ["../../packages/shared/src/ui/index.ts"],
-      "@lobby/shared/types": ["../../packages/shared/src/types/index.ts"],
-      "@lobby/shared/supabase": ["../../packages/shared/src/supabase/index.ts"]
+      "@lobby/shared/*": ["../../packages/shared/src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["node_modules", "scripts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }

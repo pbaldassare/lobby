@@ -1,0 +1,16 @@
+---
+description: Stack Lobby — monorepo Expo, Next.js, Supabase
+alwaysApply: true
+---
+
+# Lobby — stack
+
+- **Mobile**: Expo + React Native + TypeScript (expo-router, EAS). Deploy store via EAS — **mai** su Vercel.
+- **Web (back-office)**: Next.js + TypeScript, deploy su Vercel.
+- **Backend UNICO**: Supabase (Postgres, Auth, Realtime, Storage, Edge Functions).
+- **Monorepo** npm workspaces; codice condiviso in `packages/shared`.
+
+## Cosa NON è vero
+
+- L'app React Native NON si deploya su Vercel. Va agli store via EAS.
+- Il codice uscito da Stitch è un punto di partenza: va rifinito, non copiato alla cieca.

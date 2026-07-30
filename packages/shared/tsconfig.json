@@ -4,16 +4,7 @@
     "composite": true,
     "rootDir": "./src",
     "outDir": "./dist",
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "lib": ["ES2022"],
-    "types": ["react"]
+    "noEmit": true
   },
-  "include": [
-    "src/index.ts",
-    "src/tokens/**/*",
-    "src/types/**/*",
-    "src/supabase/**/*"
-  ],
-  "exclude": ["src/ui/**/*"]
+  "include": ["src/**/*"]
 }

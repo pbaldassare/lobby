@@ -1,0 +1,17 @@
+---
+description: Regole d'oro del prodotto Lobby — privacy, sigillo, visibility
+alwaysApply: true
+---
+
+# Lobby — prodotto
+
+Lobby è il layer di networking per venue premium (club, lounge, hotel, coworking).
+Quando sei fisicamente in un venue, puoi apparire e vedere chi vale la pena incontrare.
+
+## Regole d'oro (non violarle mai)
+
+- **PRIVACY È IL PRODOTTO**: invisibile di default; visibile SOLO nella stanza in cui sei; la visibilità si spegne quando esci. Connessione SOLO per consenso reciproco.
+- Il **sigillo** di membership lo rilascia il **VENUE**, non l'utente.
+- **Selective invisibility**: l'utente può nascondersi da persone/aziende specifiche.
+
+Prima di qualsiasi feature su presence, discovery, match o connessioni: verifica che rispetti queste regole.

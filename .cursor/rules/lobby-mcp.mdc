@@ -1,0 +1,10 @@
+---
+description: Uso MCP nel progetto Lobby — Stitch, Supabase, Vercel
+alwaysApply: true
+---
+
+# Lobby — uso MCP
+
+- **Stitch**: PRIMA `extract design context` (design.md/token), POI genera, per coerenza visiva. Le grafiche/template le fornisce l'utente: usale come fonte, non inventare un nuovo stile.
+- **Supabase**: usa il progetto che fornisce l'utente. Ogni modifica allo schema = migration in `/supabase/migrations`.
+- **Vercel**: solo per il deploy del back-office web (non per l'app mobile).

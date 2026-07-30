@@ -1,0 +1,12 @@
+---
+description: Convenzioni codice Lobby — TS strict, ESLint, commit
+alwaysApply: true
+---
+
+# Lobby — convenzioni
+
+- TypeScript **strict**, niente `any`.
+- Nomi di codice/DB in **inglese**; commenti in italiano ok.
+- ESLint + Prettier.
+- Commit in stile conventional: `feat:`, `fix:`, `chore:`.
+- Schema Supabase: ogni modifica = migration versionata in `/supabase/migrations`. Mai modifiche a mano non tracciate.

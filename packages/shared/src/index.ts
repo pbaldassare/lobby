@@ -1,7 +1,4 @@
-/**
- * Entry point for @lobby/shared.
- * UI RN vive su `@lobby/shared/ui` così web/back-office può importare tokens senza peer RN.
- */
+/** Entry point for @lobby/shared — domain modules land here later. */
 export * from './types';
 export * from './tokens';
 export * from './supabase';

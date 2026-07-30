@@ -1,0 +1,16 @@
+---
+description: Sicurezza tassativa Lobby — RLS, service_role, segreti
+alwaysApply: true
+---
+
+# Lobby — sicurezza
+
+- **RLS attiva su OGNI tabella.** Nessuna tabella senza policy.
+- La **service_role key NON tocca mai il client** (né bundle mobile né codice web pubblico): vive solo server-side (Next.js server actions/route handlers) o nelle Edge Functions.
+- Segreti solo via dashboard (Supabase/Vercel/EAS). Mai committati. `.env` in `.gitignore`.
+- Operazioni privilegiate (rilascio sigillo, calcolo match, moderazione) = **solo server-side**.
+
+## Ruoli
+
+- App mobile = utente normale + RLS.
+- Back-office = ruoli admin/staff + operazioni server-side.
