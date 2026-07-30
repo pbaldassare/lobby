@@ -1,31 +1,41 @@
 # Lobby
 
-Networking layer for premium venues. Monorepo scaffold (no domain logic yet).
+Networking layer for premium venues (club, lounge, hotel, coworking).  
+When you are physically in a venue, you can appear and see who is worth meeting.
 
-## Structure
+## Stack
 
 | Package | Path | Deploy |
 | --- | --- | --- |
-| Mobile (Expo + RN) | `apps/mobile` | EAS → stores (**not** Vercel) |
+| Mobile (Expo + RN) | `apps/mobile` | EAS → App Store / Play (**not** Vercel) |
 | Backoffice (Next.js) | `apps/backoffice` | Vercel |
 | Shared | `packages/shared` | consumed by apps |
 | Backend | `supabase/` | Supabase |
 
-## Setup
+Monorepo: npm workspaces (`apps/*`, `packages/*`). Node `>=20`.
+
+## Privacy (product rules)
+
+- Invisible by default; visible only in the room you are in; visibility ends when you leave.
+- Connections require mutual consent.
+- Membership “seal” is issued by the **venue**, not the user.
+- Selective invisibility: hide from specific people/companies.
+
+## Local setup
 
 ```bash
 npm install
-cp apps/mobile/.env.example apps/mobile/.env
 cp apps/backoffice/.env.example apps/backoffice/.env.local
-# Fill anon / service_role keys from Supabase dashboard — never commit secrets
+cp apps/mobile/.env.example apps/mobile/.env
+# Fill values from Supabase dashboard — never commit real secrets
 ```
 
-## Scripts
+## Release & deploy
 
-```bash
-npm run mobile       # Expo dev server
-npm run backoffice   # Next.js on :3000
-npm run typecheck
-```
+See **[docs/release.md](docs/release.md)** for GitHub remote/push, Vercel (backoffice), and EAS (mobile) steps.
 
-See `PROJECT.md` for product rules and stack constraints.
+## Security
+
+- RLS on every table.
+- `SUPABASE_SERVICE_ROLE_KEY` is server-only (never `NEXT_PUBLIC_` / `EXPO_PUBLIC_`).
+- Secrets via Supabase / Vercel / EAS dashboards only.

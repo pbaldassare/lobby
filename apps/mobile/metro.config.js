@@ -7,12 +7,14 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(projectRoot);
 
-// Monorepo: watch workspace packages and resolve deps from root + app node_modules
 config.watchFolders = [workspaceRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 config.resolver.disableHierarchicalLookup = true;
+config.resolver.extraNodeModules = {
+  '@lobby/shared': path.resolve(workspaceRoot, 'packages/shared'),
+};
 
 module.exports = config;

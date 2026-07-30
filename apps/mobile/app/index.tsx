@@ -1,30 +1,33 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { colors } from '@lobby/shared/tokens';
+import { Redirect } from 'expo-router';
+import React from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-/** Minimal scaffold screen — domain UI comes later. */
-export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Lobby</Text>
-      <Text style={styles.subtitle}>Mobile scaffold is ready.</Text>
-    </View>
-  );
+import { useAuth } from '@/providers/AuthProvider';
+
+export default function Index(): React.JSX.Element {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={styles.boot}>
+        <ActivityIndicator color={colors.gold.base} />
+      </View>
+    );
+  }
+
+  if (user) {
+    return <Redirect href="/(app)/(tabs)/discover" />;
+  }
+
+  return <Redirect href="/(auth)/welcome" />;
 }
 
 const styles = StyleSheet.create({
-  container: {
+  boot: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#ffffff',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#555555',
+    backgroundColor: colors.bg.base,
   },
 });

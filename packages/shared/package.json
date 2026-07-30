@@ -17,6 +17,10 @@
       "types": "./src/tokens/index.ts",
       "default": "./src/tokens/index.ts"
     },
+    "./ui": {
+      "types": "./src/ui/index.ts",
+      "default": "./src/ui/index.ts"
+    },
     "./supabase": {
       "types": "./src/supabase/index.ts",
       "default": "./src/supabase/index.ts"
@@ -25,7 +29,21 @@
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.52.0"
+  },
+  "peerDependencies": {
+    "expo-linear-gradient": "*",
+    "react": "*",
+    "react-native": "*"
+  },
+  "peerDependenciesMeta": {
+    "expo-linear-gradient": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@types/react": "^19.0.0",
     "typescript": "^5.8.3"
   }
 }
