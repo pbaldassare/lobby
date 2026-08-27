@@ -1,5 +1,4 @@
 const fs = require("fs");
-const path = require("path");
 const candidates = [
   String.raw`C:\Users\Utente\.cursor\projects\c-Users-Utente-Desktop-Projects-lobby\agent-transcripts\bd2019d0-52f6-40f2-aadd-1644c32dbb9a\bd2019d0-52f6-40f2-aadd-1644c32dbb9a.jsonl`,
   String.raw`C:\Users\Utente\.cursor\projects\c-Users-Utente-Desktop-Projects-lobby\agent-transcripts\0eb4a343-b45a-4604-a6c0-2ef01c3e9d4a\subagents\bd2019d0-52f6-40f2-aadd-1644c32dbb9a.jsonl`,

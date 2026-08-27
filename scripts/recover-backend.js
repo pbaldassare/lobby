@@ -8,7 +8,7 @@ let writeCount = 0;
 const written = [];
 for (const line of lines) {
   let obj;
-  try { obj = JSON.parse(line); } catch (e) { continue; }
+  try { obj = JSON.parse(line); } catch { continue; }
   const content = obj?.message?.content;
   if (!Array.isArray(content)) continue;
   for (const part of content) {
