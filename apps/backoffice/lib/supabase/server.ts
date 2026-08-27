@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { LOBBY_DB_SCHEMA } from '@lobby/shared/supabase';
 import { cookies } from 'next/headers';
 import { getPublicAnonKey, getPublicSupabaseUrl } from '@/lib/env';
 
@@ -8,6 +9,7 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
 export async function createClient() {
   const cookieStore = await cookies();
   return createServerClient(getPublicSupabaseUrl(), getPublicAnonKey(), {
+    db: { schema: LOBBY_DB_SCHEMA },
     cookies: {
       getAll() {
         return cookieStore.getAll();

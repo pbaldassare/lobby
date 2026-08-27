@@ -3,9 +3,20 @@
  * App-specific SecureStore / cookie adapters are passed in by each app.
  */
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import {
+  createClient,
+  type SupabaseClient as SupabaseJsClient,
+} from '@supabase/supabase-js';
 
-export const LOBBY_SUPABASE_URL = 'https://kxgaqnksylntokyrpaxp.supabase.co';
+/** Schema Postgres dedicato a Lobby sul progetto Supabase condiviso. */
+export const LOBBY_DB_SCHEMA = 'lobby';
+
+/**
+ * Client Supabase tipizzato sullo schema `lobby`, non su `public`:
+ * il progetto ospita anche Mediplan (`public`) e Rank AI (`rankai`).
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SupabaseClient = SupabaseJsClient<any, any, typeof LOBBY_DB_SCHEMA>;
 
 /** Edge Function names used by mobile + backoffice. */
 export const EDGE_FUNCTIONS = {
@@ -60,6 +71,7 @@ export function createLobbySupabaseClient(
   }
 
   return createClient(url, anonKey, {
+    db: { schema: LOBBY_DB_SCHEMA },
     auth: {
       storage: authStorage,
       autoRefreshToken: true,
@@ -68,5 +80,3 @@ export function createLobbySupabaseClient(
     },
   });
 }
-
-export type { SupabaseClient };

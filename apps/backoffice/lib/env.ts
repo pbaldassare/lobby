@@ -8,9 +8,9 @@ function required(name: string, value: string | undefined): string {
 }
 
 export function getPublicSupabaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_SUPABASE_URL ??
-    'https://kxgaqnksylntokyrpaxp.supabase.co'
+  return required(
+    'NEXT_PUBLIC_SUPABASE_URL',
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
   );
 }
 

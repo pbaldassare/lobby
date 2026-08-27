@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { LOBBY_DB_SCHEMA } from '@lobby/shared/supabase';
 import { getPublicSupabaseUrl, getServiceRoleKey } from '@/lib/env';
 
 /**
@@ -7,6 +8,7 @@ import { getPublicSupabaseUrl, getServiceRoleKey } from '@/lib/env';
  */
 export function createAdminClient() {
   return createClient(getPublicSupabaseUrl(), getServiceRoleKey(), {
+    db: { schema: LOBBY_DB_SCHEMA },
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
