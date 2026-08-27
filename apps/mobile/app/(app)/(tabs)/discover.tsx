@@ -1,15 +1,13 @@
+import { makeStyles } from '@lobby/shared/theme';
 import type { RoomPerson } from '@lobby/shared/types';
-import { colors, space, typography } from '@lobby/shared/tokens';
-import { Button } from '@lobby/shared/ui';
-import React, { useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ListEmpty, ScreenHeader, Text } from '@lobby/shared/ui';
+import React, { useCallback, useMemo, useState } from 'react';
+import { FlatList, Pressable, View } from 'react-native';
 
-import { LobbyAiCard } from '@/components/LobbyAiCard';
 import { PersonRow } from '@/components/PersonRow';
+import { PresenceBar } from '@/components/PresenceBar';
 import { ProfileSheet } from '@/components/ProfileSheet';
 import { Screen } from '@/components/Screen';
-import { VisibilityToggle } from '@/components/VisibilityToggle';
-import { useMatches } from '@/hooks/useMatches';
 import { useRoomPeople } from '@/hooks/useRoomPeople';
 import { DEMO_ROOM_ID } from '@/lib/demo';
 import { useAuth } from '@/providers/AuthProvider';
@@ -19,72 +17,54 @@ export default function DiscoverScreen(): React.JSX.Element {
   const { profile } = useAuth();
   const { room, isVisible, enterRoom, leaveRoom, setVisible, presence } = usePresence();
   const { people, loading } = useRoomPeople();
-  const { matches } = useMatches();
   const [selected, setSelected] = useState<RoomPerson | null>(null);
 
-  const roomMatches = useMemo(
-    () => matches.filter((m) => !room?.id || m.room_id === room.id || m.room_id == null),
-    [matches, room?.id],
+  const roomName = room?.name ?? 'questa stanza';
+  const firstName = profile?.display_name?.split(' ')[0];
+
+  /** Il match migliore in cima: sostituisce la card "Lobby AI", che ripeteva
+   *  la prima riga della lista con una grafica diversa. */
+  const ranked = useMemo(
+    () =>
+      [...people].sort(
+        (a, b) => Number(b.match?.score ?? 0) - Number(a.match?.score ?? 0),
+      ),
+    [people],
   );
 
+  const renderItem = useCallback(
+    ({ item }: { item: RoomPerson }) => (
+      <PersonRow person={item} onPress={() => setSelected(item)} />
+    ),
+    [],
+  );
+
+  const keyExtractor = useCallback((item: RoomPerson) => item.profile.id, []);
+
   return (
-    <Screen>
-      <View style={styles.header}>
-        <Text style={styles.kicker}>{room?.name ?? 'No room'}</Text>
-        <Text style={styles.title}>The room</Text>
-        <Text style={styles.sub}>
-          Hi {profile?.display_name?.split(' ')[0] ?? 'there'} — invisible by default. Opt in to
-          appear only here.
-        </Text>
-      </View>
-
-      {!presence ? (
-        <Button label="Enter demo room" onPress={() => void enterRoom(DEMO_ROOM_ID)} />
-      ) : (
-        <>
-          <VisibilityToggle isVisible={isVisible} onChange={(v) => void setVisible(v)} />
-          <Button label="Leave room" variant="ghost" onPress={() => void leaveRoom()} />
-        </>
-      )}
-
-      <LobbyAiCard
-        topMatches={isVisible ? roomMatches : []}
-        onOpen={(m) => {
-          const person = people.find((p) => p.profile.id === m.other.id);
-          setSelected(
-            person ?? {
-              profile: m.other,
-              presence: {
-                id: 'tmp',
-                profile_id: m.other.id,
-                room_id: room?.id ?? DEMO_ROOM_ID,
-                is_visible: true,
-                visible_until: null,
-                last_heartbeat: new Date().toISOString(),
-                entered_at: new Date().toISOString(),
-              },
-              match: { id: m.id, score: m.score, reasons: m.reasons },
-            },
-          );
-        }}
+    <Screen scroll={false}>
+      <FlatList
+        data={isVisible ? ranked : []}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.list}
+        ListHeaderComponent={
+          <Header
+            firstName={firstName}
+            roomName={roomName}
+            inRoom={Boolean(presence)}
+            isVisible={isVisible}
+            count={ranked.length}
+            onEnter={() => void enterRoom(DEMO_ROOM_ID)}
+            onLeave={() => void leaveRoom()}
+            onChangeVisibility={(v) => void setVisible(v)}
+          />
+        }
+        ListEmptyComponent={
+          <Body inRoom={Boolean(presence)} isVisible={isVisible} loading={loading} />
+        }
       />
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>In the room</Text>
-        {!isVisible ? (
-          <Text style={styles.hint}>
-            Turn visibility on to see who opted in. Selective blocks still apply.
-          </Text>
-        ) : loading ? (
-          <Text style={styles.hint}>Loading…</Text>
-        ) : people.length === 0 ? (
-          <Text style={styles.hint}>No one else is visible right now.</Text>
-        ) : (
-          people.map((p) => (
-            <PersonRow key={p.profile.id} person={p} onPress={() => setSelected(p)} />
-          ))
-        )}
-      </View>
 
       <ProfileSheet
         person={selected}
@@ -95,12 +75,108 @@ export default function DiscoverScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: space.sm, marginTop: space.md },
-  kicker: { ...typography.kicker, color: colors.gold.base },
-  title: { ...typography.displayLg, color: colors.ink.primary },
-  sub: { ...typography.sm, color: colors.ink.muted },
-  section: { gap: space.md },
-  sectionTitle: { ...typography.displaySm, color: colors.ink.primary },
-  hint: { ...typography.sm, color: colors.ink.muted2 },
-});
+function Header({
+  firstName,
+  roomName,
+  inRoom,
+  isVisible,
+  count,
+  onEnter,
+  onLeave,
+  onChangeVisibility,
+}: {
+  firstName?: string;
+  roomName: string;
+  inRoom: boolean;
+  isVisible: boolean;
+  count: number;
+  onEnter: () => void;
+  onLeave: () => void;
+  onChangeVisibility: (visible: boolean) => void;
+}): React.JSX.Element {
+  const styles = useStyles();
+
+  return (
+    <View style={styles.header}>
+      <ScreenHeader
+        kicker={inRoom ? roomName : undefined}
+        title={isVisible && count > 0 ? 'Chi c’è ora' : 'La stanza'}
+        subtitle={
+          inRoom
+            ? undefined
+            : `Ciao ${firstName ?? ''}${firstName ? ' — ' : ''}sei invisibile finché non entri in una stanza.`
+        }
+      />
+
+      {inRoom ? (
+        <PresenceBar
+          isVisible={isVisible}
+          roomName={roomName}
+          onChange={onChangeVisibility}
+          onLeave={onLeave}
+        />
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={onEnter}
+          style={({ pressed }) => [styles.demo, pressed && styles.pressed]}
+        >
+          <Text variant="tiny" tone="tertiary">
+            Entra nella stanza dimostrativa
+          </Text>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+function Body({
+  inRoom,
+  isVisible,
+  loading,
+}: {
+  inRoom: boolean;
+  isVisible: boolean;
+  loading: boolean;
+}): React.JSX.Element {
+  if (!inRoom) {
+    return (
+      <ListEmpty
+        icon="card"
+        title="Scansiona il QR del locale"
+        body="Le stanze si aprono da dentro il venue. Nessuno ti vede finché non lo decidi tu."
+      />
+    );
+  }
+
+  if (!isVisible) {
+    return (
+      <ListEmpty
+        icon="room"
+        title="Sei qui, ma nessuno ti vede"
+        body="Attiva la visibilità per apparire in questa stanza e vedere chi c'è. I blocchi selettivi restano validi."
+      />
+    );
+  }
+
+  if (loading) {
+    return <ListEmpty loading title="Sto guardando chi c'è" />;
+  }
+
+  return (
+    <ListEmpty
+      icon="room"
+      title="Per ora sei sola persona visibile"
+      body="Chi entra e sceglie di apparire comparirà qui."
+    />
+  );
+}
+
+const useStyles = makeStyles(() => ({
+  header: { gap: 14, paddingBottom: 4 },
+  demo: { alignSelf: 'flex-start', paddingVertical: 6 },
+  pressed: { opacity: 0.6 },
+}));
+
+const styles = { list: { paddingBottom: 24 } } as const;

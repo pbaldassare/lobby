@@ -21,3 +21,13 @@ export type { BottomSheetProps } from './BottomSheet';
 
 export { MatchScore } from './MatchScore';
 export type { MatchScoreProps } from './MatchScore';
+
+export { Text } from './Text';
+export type { TextVariant, TextTone } from './Text';
+
+export { Icon } from './Icon';
+export type { IconName } from './Icon';
+
+export { ScreenHeader } from './ScreenHeader';
+
+export { ListEmpty } from './ListEmpty';

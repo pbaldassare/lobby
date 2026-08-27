@@ -9,6 +9,7 @@
       "@lobby/shared": ["../../packages/shared/src/index.ts"],
       "@lobby/shared/tokens": ["../../packages/shared/src/tokens/index.ts"],
       "@lobby/shared/ui": ["../../packages/shared/src/ui/index.ts"],
+      "@lobby/shared/theme": ["../../packages/shared/src/theme/index.tsx"],
       "@lobby/shared/types": ["../../packages/shared/src/types/index.ts"],
       "@lobby/shared/supabase": ["../../packages/shared/src/supabase/index.ts"]
     }

@@ -1,4 +1,4 @@
-import { colors, space } from '@lobby/shared/tokens';
+import { useTheme } from '@lobby/shared/theme';
 import React from 'react';
 import {
   ScrollView,
@@ -9,6 +9,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+/**
+ * Contenitore di schermata: fondo, safe area, scroll opzionale.
+ *
+ * `scroll={false}` serve alle schermate che gestiscono lo scorrimento da sé —
+ * una `FlatList` non può stare dentro uno `ScrollView`.
+ */
 export function Screen({
   children,
   scroll = true,
@@ -19,17 +25,19 @@ export function Screen({
   style?: StyleProp<ViewStyle>;
 }): React.JSX.Element {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
+
   const pad = {
-    paddingTop: insets.top + space.md,
-    paddingLeft: Math.max(insets.left, space.screenX),
-    paddingRight: Math.max(insets.right, space.screenX),
-    paddingBottom: insets.bottom + space.md,
+    paddingTop: insets.top + 12,
+    paddingLeft: Math.max(insets.left, 18),
+    paddingRight: Math.max(insets.right, 18),
+    paddingBottom: insets.bottom + 12,
   };
 
   const body = <View style={[styles.inner, style]}>{children}</View>;
 
   return (
-    <View style={[styles.safe, pad]}>
+    <View style={[styles.safe, { backgroundColor: theme.color.bg.canvas }, pad]}>
       {scroll ? (
         <ScrollView
           contentContainerStyle={styles.scroll}
@@ -46,7 +54,7 @@ export function Screen({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg.base },
-  scroll: { flexGrow: 1, paddingBottom: space['3xl'] },
-  inner: { flex: 1, gap: space.xl },
+  safe: { flex: 1 },
+  scroll: { flexGrow: 1, paddingBottom: 24 },
+  inner: { flex: 1, gap: 16 },
 });

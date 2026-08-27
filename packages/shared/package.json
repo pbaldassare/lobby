@@ -24,6 +24,10 @@
     "./supabase": {
       "types": "./src/supabase/index.ts",
       "default": "./src/supabase/index.ts"
+    },
+    "./theme": {
+      "types": "./src/theme/index.tsx",
+      "default": "./src/theme/index.tsx"
     }
   },
   "scripts": {
@@ -35,7 +39,8 @@
   "peerDependencies": {
     "expo-linear-gradient": "*",
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-svg": "*"
   },
   "peerDependenciesMeta": {
     "expo-linear-gradient": {
