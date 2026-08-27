@@ -1,17 +1,19 @@
-import { colors, space, typography } from '@lobby/shared/tokens';
-import { Button } from '@lobby/shared/ui';
+import { makeStyles, useTheme } from '@lobby/shared/theme';
+import { Button, Text } from '@lobby/shared/ui';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
 import { usePresence } from '@/providers/PresenceProvider';
 
 /**
  * Deep link: lobby://join?venue=…&room=…
- * Enters room invisible by default.
+ * Si entra invisibili: la visibilità è una scelta successiva.
  */
 export default function JoinScreen(): React.JSX.Element {
+  const styles = useStyles();
+  const theme = useTheme();
   const { enterRoom } = usePresence();
   const params = useLocalSearchParams<{ venue?: string; room?: string }>();
   const roomId = typeof params.room === 'string' ? params.room : '';
@@ -39,11 +41,13 @@ export default function JoinScreen(): React.JSX.Element {
   if (!roomId) {
     return (
       <Screen>
-        <Text style={styles.title}>Join room</Text>
-        <Text style={styles.body}>
-          Missing room in the link. Scan a venue poster QR instead.
-        </Text>
-        <Button label="Scan QR" onPress={() => router.replace('/(app)/scan')} />
+        <View style={styles.center}>
+          <Text variant="titleLg">Stanza non trovata</Text>
+          <Text variant="body" tone="secondary">
+            Il link non contiene una stanza. Scansiona il QR del locale.
+          </Text>
+          <Button label="Scansiona il QR" onPress={() => router.replace('/(app)/scan')} />
+        </View>
       </Screen>
     );
   }
@@ -51,14 +55,14 @@ export default function JoinScreen(): React.JSX.Element {
   return (
     <Screen>
       <View style={styles.center}>
-        {joining && !error ? <ActivityIndicator color={colors.gold.base} /> : null}
-        <Text style={styles.title}>Entering room</Text>
-        <Text style={styles.body}>
-          {error ?? 'Joining invisibly. Opt in to visibility once inside.'}
+        {joining && !error ? <ActivityIndicator color={theme.color.accent.default} /> : null}
+        <Text variant="titleLg">{error ? 'Non ci siamo' : 'Sto entrando'}</Text>
+        <Text variant="body" tone="secondary">
+          {error ?? 'Entri invisibile. La visibilità la attivi tu, una volta dentro.'}
         </Text>
         {error ? (
           <Button
-            label="Open discover"
+            label="Vai alla stanza"
             onPress={() => router.replace('/(app)/(tabs)/discover')}
           />
         ) : null}
@@ -67,8 +71,6 @@ export default function JoinScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  center: { gap: space.lg, paddingVertical: space['3xl'] },
-  title: { ...typography.displayMd, color: colors.ink.primary },
-  body: { ...typography.body, color: colors.ink.muted },
-});
+const useStyles = makeStyles(() => ({
+  center: { gap: 14, paddingVertical: 32 },
+}));

@@ -31,3 +31,9 @@ export type { IconName } from './Icon';
 export { ScreenHeader } from './ScreenHeader';
 
 export { ListEmpty } from './ListEmpty';
+
+export { Segmented } from './Segmented';
+export type { SegmentedOption } from './Segmented';
+
+export { Field } from './Field';
+export type { FieldProps } from './Field';

@@ -1,24 +1,24 @@
-import { colors, space, typography } from '@lobby/shared/tokens';
-import { Card, VerifiedBadge } from '@lobby/shared/ui';
+import { makeStyles } from '@lobby/shared/theme';
+import { Card, ListEmpty, ScreenHeader, Text, VerifiedBadge } from '@lobby/shared/ui';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
 import { useMemberAccess, useMemberships } from '@/hooks/useMemberships';
 
 export default function MemberAccessScreen(): React.JSX.Element {
+  const styles = useStyles();
   const { memberships } = useMemberships();
   const { access, loading } = useMemberAccess();
   const sealed = memberships.find((m) => m.verified_status === 'verified' && m.seal_issued_at);
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <Text style={styles.title}>Member access</Text>
-        <Text style={styles.sub}>
-          Reserved perks tied to your venue membership — issued by the club, not self-asserted.
-        </Text>
-      </View>
+      <ScreenHeader
+        title="Accessi riservati"
+        subtitle="Legati alla tua membership. Li concede il locale, non te li assegni tu."
+      />
+
       {sealed?.venue ? (
         <VerifiedBadge
           venueName={sealed.venue.name}
@@ -27,30 +27,39 @@ export default function MemberAccessScreen(): React.JSX.Element {
           since={sealed.since}
         />
       ) : (
-        <Text style={styles.hint}>No verified membership with a seal yet.</Text>
+        <ListEmpty
+          icon="card"
+          title="Nessun sigillo ancora"
+          body="Gli accessi riservati compaiono quando un venue conferma la tua membership."
+        />
       )}
-      {loading ? <Text style={styles.hint}>Loading…</Text> : null}
-      {access.length === 0 && !loading ? (
-        <Text style={styles.hint}>No reserved accesses on file.</Text>
+
+      {loading ? <ListEmpty loading title="Carico gli accessi" /> : null}
+
+      {!loading && sealed && access.length === 0 ? (
+        <ListEmpty icon="card" title="Nessun accesso registrato" />
       ) : null}
+
       {access.map((a) => (
-        <Card key={a.id} variant="ice">
-          <Text style={styles.label}>{a.access_key}</Text>
-          <Text style={styles.item}>{a.label}</Text>
-          <Text style={styles.hint}>
-            {a.expires_at ? `Expires ${new Date(a.expires_at).toLocaleDateString()}` : 'No expiry'}
+        <Card key={a.id} variant="ice" style={styles.card}>
+          <Text variant="kicker" tone="accent">
+            {a.access_key}
           </Text>
+          <Text variant="bodyStrong">{a.label}</Text>
+          <View style={styles.expiry}>
+            <Text variant="tiny" tone="tertiary">
+              {a.expires_at
+                ? `Scade il ${new Date(a.expires_at).toLocaleDateString('it-IT')}`
+                : 'Senza scadenza'}
+            </Text>
+          </View>
         </Card>
       ))}
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: space.sm, marginTop: space.md },
-  title: { ...typography.displayLg, color: colors.ink.primary },
-  sub: { ...typography.sm, color: colors.ink.muted },
-  hint: { ...typography.sm, color: colors.ink.muted2 },
-  label: { ...typography.kicker, color: colors.gold.base },
-  item: { ...typography.bodyStrong, color: colors.ink.primary, marginTop: space.xs },
-});
+const useStyles = makeStyles(() => ({
+  card: { gap: 4 },
+  expiry: { marginTop: 2 },
+}));

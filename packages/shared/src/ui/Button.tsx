@@ -2,17 +2,14 @@ import React from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  StyleSheet,
-  Text,
   View,
   type PressableProps,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { colors } from '../tokens/colors';
-import { radius } from '../tokens/radius';
-import { space } from '../tokens/spacing';
-import { typography } from '../tokens/typography';
+
+import { makeStyles, useTheme } from '../theme';
+import { Text } from './Text';
 
 export type ButtonVariant = 'gold' | 'ghost';
 
@@ -24,9 +21,11 @@ export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
 };
 
 /**
- * CTA primario gold e ghost bordato (mockup `.btn.gold` / `.btn.ghost`).
- * Il gold usa il mid-tone CTA; in Expo puoi avvolgere con `expo-linear-gradient`
- * (`#F4D58D → #D2A856`) se vuoi il gradiente pixel-perfect.
+ * Azione primaria (`gold`, cioè in tinta accento) e secondaria (`ghost`).
+ *
+ * Il nome della variante è rimasto quello storico per non toccare una
+ * quarantina di punti d'uso, ma il colore ora arriva dal ruolo `accent`:
+ * in tema chiaro non è oro.
  */
 export function Button({
   label,
@@ -36,17 +35,19 @@ export function Button({
   style,
   ...rest
 }: ButtonProps): React.JSX.Element {
+  const styles = useStyles();
+  const theme = useTheme();
   const isDisabled = Boolean(disabled || loading);
-  const isGold = variant === 'gold';
-  const labelColor = isGold ? colors.gold.onGold : colors.ink.primary;
+  const isAccent = variant === 'gold';
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,
-        isGold ? styles.gold : styles.ghost,
+        isAccent ? styles.accent : styles.ghost,
         pressed && !isDisabled && styles.pressed,
         isDisabled && styles.disabled,
         style,
@@ -55,51 +56,34 @@ export function Button({
     >
       <View style={styles.inner}>
         {loading ? (
-          <ActivityIndicator color={labelColor} />
+          <ActivityIndicator
+            color={isAccent ? theme.color.accent.on : theme.color.text.primary}
+          />
         ) : (
-          <Text style={[styles.label, { color: labelColor }]}>{label}</Text>
+          <Text variant="bodyStrong" tone={isAccent ? 'onAccent' : 'primary'}>
+            {label}
+          </Text>
         )}
       </View>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    width: '100%',
-    borderRadius: radius.btn,
-    overflow: 'hidden',
-  },
-  gold: {
-    backgroundColor: colors.gold.mid,
-    shadowColor: colors.gold.base,
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
-  },
-  ghost: {
-    backgroundColor: colors.surface.panel,
-    borderWidth: 1,
-    borderColor: colors.border.strong,
-  },
+const useStyles = makeStyles((t) => ({
+  base: { width: '100%', borderRadius: t.radius.md, overflow: 'hidden', borderWidth: 1 },
+  accent: { backgroundColor: t.color.accent.default, borderColor: t.color.accent.default },
+  ghost: { backgroundColor: t.color.bg.raised, borderColor: t.color.border.strong },
   inner: {
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: space.sm + 1,
-    paddingVertical: space.lg,
-    paddingHorizontal: space.xl,
+    gap: 8,
+    paddingVertical: 13,
+    paddingHorizontal: 16,
     minHeight: 48,
   },
-  label: {
-    ...typography.button,
-  },
-  pressed: {
-    transform: [{ scale: 0.97 }],
-    opacity: 0.92,
-  },
-  disabled: {
-    opacity: 0.45,
-  },
-});
+  /** Solo opacità: uno `scale` sposta i limiti del layout e fa vibrare
+   *  ciò che sta intorno. */
+  pressed: { opacity: 0.82 },
+  disabled: { opacity: 0.45 },
+}));

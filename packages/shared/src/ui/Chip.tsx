@@ -1,17 +1,8 @@
 import React from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type StyleProp,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native';
-import { colors } from '../tokens/colors';
-import { radius } from '../tokens/radius';
-import { space } from '../tokens/spacing';
-import { typography } from '../tokens/typography';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+
+import { makeStyles } from '../theme';
+import { Text, type TextTone } from './Text';
 
 export type ChipVariant = 'default' | 'on' | 'match';
 
@@ -23,8 +14,14 @@ export type ChipProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+const TONE: Record<ChipVariant, TextTone> = {
+  default: 'secondary',
+  on: 'accent',
+  match: 'signal',
+};
+
 /**
- * Chip filtro / tag. `on` = gold attivo; `match` = green (looking-for / match tag).
+ * Tag o filtro. `on` = selezionato (accento); `match` = semantico (cosa cerca).
  */
 export function Chip({
   label,
@@ -33,76 +30,43 @@ export function Chip({
   onPress,
   style,
 }: ChipProps): React.JSX.Element {
+  const styles = useStyles();
   const resolved: ChipVariant =
     selected === true ? 'on' : selected === false ? 'default' : variant;
 
   const content = (
-    <Text style={[styles.label, labelStyle(resolved)]}>{label}</Text>
+    <Text variant="tiny" tone={TONE[resolved]}>
+      {label}
+    </Text>
   );
 
   if (onPress) {
     return (
       <Pressable
         accessibilityRole="button"
+        accessibilityState={{ selected: resolved === 'on' }}
         onPress={onPress}
-        style={({ pressed }) => [
-          styles.base,
-          chipSurface(resolved),
-          pressed && styles.pressed,
-          style,
-        ]}
+        hitSlop={6}
+        style={({ pressed }) => [styles.base, styles[resolved], pressed && styles.pressed, style]}
       >
         {content}
       </Pressable>
     );
   }
 
-  return <View style={[styles.base, chipSurface(resolved), style]}>{content}</View>;
+  return <View style={[styles.base, styles[resolved], style]}>{content}</View>;
 }
 
-function chipSurface(variant: ChipVariant): ViewStyle {
-  switch (variant) {
-    case 'on':
-      return {
-        backgroundColor: colors.fill.goldSoft,
-        borderColor: colors.border.goldStrong,
-      };
-    case 'match':
-      return {
-        backgroundColor: colors.fill.greenSoft,
-        borderColor: colors.border.green,
-      };
-    default:
-      return {
-        backgroundColor: colors.surface.panelHover,
-        borderColor: colors.border.subtle,
-      };
-  }
-}
-
-function labelStyle(variant: ChipVariant): TextStyle {
-  switch (variant) {
-    case 'on':
-      return { color: colors.gold.base, fontWeight: '600' };
-    case 'match':
-      return { color: colors.green.base, fontWeight: '600' };
-    default:
-      return { color: colors.ink.muted };
-  }
-}
-
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   base: {
-    borderRadius: radius.full,
+    borderRadius: t.radius.pill,
     borderWidth: 1,
-    paddingVertical: space.xs + 2,
-    paddingHorizontal: space.md - 1,
+    paddingVertical: 3,
+    paddingHorizontal: 9,
     alignSelf: 'flex-start',
   },
-  label: {
-    ...typography.chip,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-});
+  pressed: { opacity: 0.72 },
+  default: { backgroundColor: t.color.bg.raised, borderColor: t.color.border.subtle },
+  on: { backgroundColor: t.color.accent.subtleBg, borderColor: t.color.accent.subtleBorder },
+  match: { backgroundColor: t.color.signal.subtleBg, borderColor: t.color.signal.border },
+}));

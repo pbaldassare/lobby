@@ -1,8 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { colors } from '../tokens/colors';
-import { radius } from '../tokens/radius';
-import { space } from '../tokens/spacing';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+
+import { makeStyles } from '../theme';
 
 export type CardVariant = 'glass' | 'solid' | 'ice' | 'biz' | 'project' | 'projectCool';
 
@@ -15,8 +14,12 @@ export type CardProps = {
 };
 
 /**
- * Superficie card / glass del mockup.
- * Preferisci questa per contenitori di interazione (lista persone, pitch, …).
+ * Superficie sollevata.
+ *
+ * I nomi delle varianti sono quelli storici — cambiarli avrebbe toccato una
+ * dozzina di schermate senza guadagno — ma i valori arrivano dai ruoli.
+ * `projectCool` non è mai stata istanziata e ora coincide con `project`:
+ * si toglie quando si ripuliscono i punti d'uso.
  */
 export function Card({
   children,
@@ -25,7 +28,8 @@ export function Card({
   onPress,
   style,
 }: CardProps): React.JSX.Element {
-  const surface = [styles.base, variantStyles[variant], padded && styles.padded, style];
+  const styles = useStyles();
+  const surface = [styles.base, styles[variant], padded && styles.padded, style];
 
   if (onPress) {
     return (
@@ -42,55 +46,43 @@ export function Card({
   return <View style={surface}>{children}</View>;
 }
 
-/** Alias esplicito per il trattamento glass del mockup */
 export function Glass(props: Omit<CardProps, 'variant'>): React.JSX.Element {
   return <Card {...props} variant="glass" />;
 }
 
-const styles = StyleSheet.create({
-  base: {
-    borderWidth: 1,
-    borderRadius: radius.glass,
-    overflow: 'hidden',
-  },
-  padded: {
-    padding: space.lg + 1,
-  },
-  pressed: {
-    transform: [{ scale: 0.98 }],
-    opacity: 0.96,
-  },
-});
+const useStyles = makeStyles((t) => ({
+  base: { borderWidth: 1, borderRadius: t.radius.lg, overflow: 'hidden' },
+  padded: { padding: 15 },
+  pressed: { opacity: 0.82 },
 
-const variantStyles = StyleSheet.create({
   glass: {
-    backgroundColor: colors.surface.panel,
-    borderColor: colors.border.subtle,
-    borderRadius: radius.glass,
+    backgroundColor: t.color.bg.raised,
+    borderColor: t.color.border.subtle,
+    borderRadius: t.radius.lg,
   },
   solid: {
-    backgroundColor: colors.bg.panelSolid,
-    borderColor: colors.border.subtle,
-    borderRadius: radius.card,
+    backgroundColor: t.color.bg.raised,
+    borderColor: t.color.border.subtle,
+    borderRadius: t.radius.md,
   },
   ice: {
-    backgroundColor: colors.fill.goldIce,
-    borderColor: colors.border.goldSoft,
-    borderRadius: radius.ice,
+    backgroundColor: t.color.accent.subtleBg,
+    borderColor: t.color.accent.subtleBorder,
+    borderRadius: t.radius.md,
   },
   biz: {
-    backgroundColor: colors.bg.panelMid,
-    borderColor: colors.border.strong,
-    borderRadius: radius.bizcard,
+    backgroundColor: t.color.bg.raised,
+    borderColor: t.color.border.strong,
+    borderRadius: t.radius.lg,
   },
   project: {
-    backgroundColor: colors.bg.panelSolid,
-    borderColor: colors.border.goldMid,
-    borderRadius: radius.card,
+    backgroundColor: t.color.bg.raised,
+    borderColor: t.color.accent.subtleBorder,
+    borderRadius: t.radius.md,
   },
   projectCool: {
-    backgroundColor: colors.bg.elevated,
-    borderColor: colors.accent.coolBorder,
-    borderRadius: radius.card,
+    backgroundColor: t.color.bg.raised,
+    borderColor: t.color.accent.subtleBorder,
+    borderRadius: t.radius.md,
   },
-});
+}));

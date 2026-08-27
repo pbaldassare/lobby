@@ -5,7 +5,14 @@ import { makeStyles, useTheme } from '../theme';
 import type { ThemeType } from '../tokens/contract';
 
 export type TextVariant = keyof ThemeType;
-export type TextTone = 'primary' | 'secondary' | 'tertiary' | 'accent' | 'signal' | 'onAccent';
+export type TextTone =
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'accent'
+  | 'signal'
+  | 'onAccent'
+  | 'danger';
 
 /**
  * Testo tematizzato.
@@ -38,4 +45,5 @@ const useStyles = makeStyles((t) => ({
   accent: { color: t.color.accent.default },
   signal: { color: t.color.signal.default },
   onAccent: { color: t.color.text.onAccent },
+  danger: { color: t.color.status.danger },
 }));

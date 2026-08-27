@@ -1,33 +1,28 @@
-import { colors } from '@lobby/shared/tokens';
+import { useTheme } from '@lobby/shared/theme';
 import { Redirect } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { useAuth } from '@/providers/AuthProvider';
 
 export default function Index(): React.JSX.Element {
   const { user, loading } = useAuth();
+  const theme = useTheme();
 
   if (loading) {
     return (
-      <View style={styles.boot}>
-        <ActivityIndicator color={colors.gold.base} />
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: theme.color.bg.canvas,
+        }}
+      >
+        <ActivityIndicator color={theme.color.accent.default} />
       </View>
     );
   }
 
-  if (user) {
-    return <Redirect href="/(app)/(tabs)/discover" />;
-  }
-
-  return <Redirect href="/(auth)/welcome" />;
+  return <Redirect href={user ? '/(app)/(tabs)/discover' : '/(auth)/welcome'} />;
 }
-
-const styles = StyleSheet.create({
-  boot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.bg.base,
-  },
-});

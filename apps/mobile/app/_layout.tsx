@@ -95,11 +95,9 @@ export default function RootLayout(): React.JSX.Element | null {
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaProvider>
-        {/* Bloccato su scuro finché anche le altre schermate non passano al
-            tema: seguire il sistema adesso darebbe fondo chiaro e contenuto
-            scuro su tutto ciò che non è ancora migrato. Si toglie `scheme`
-            quando l'ultima schermata è a posto. */}
-        <ThemeProvider scheme="dark">
+        {/* Senza `scheme` segue il sistema. Ora si può: tutte le schermate
+            e tutti i primitivi leggono i ruoli del tema. */}
+        <ThemeProvider>
           <AuthProvider>
             <PresenceProvider>
               <PushBootstrap />

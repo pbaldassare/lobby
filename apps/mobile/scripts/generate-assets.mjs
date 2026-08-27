@@ -49,12 +49,20 @@ function png(w, h, r, g, b) {
 }
 
 fs.mkdirSync(outDir, { recursive: true });
-const dark = png(1024, 1024, 7, 8, 9);
-const gold = png(1024, 1024, 231, 198, 132);
+
+// Tinte della direzione editoriale. Restano scritte qui perché questo script
+// gira fuori dal bundle e non può importare i token TypeScript: se cambia la
+// direzione visiva, vanno aggiornate a mano insieme ad `app.json`.
+// canvas #0E0D0C, accent #C9A227
+const CANVAS = [14, 13, 12];
+const ACCENT = [201, 162, 39];
+
+const dark = png(1024, 1024, ...CANVAS);
+const gold = png(1024, 1024, ...ACCENT);
 fs.writeFileSync(path.join(outDir, 'icon.png'), dark);
 fs.writeFileSync(path.join(outDir, 'splash-icon.png'), gold);
 fs.writeFileSync(path.join(outDir, 'android-icon-foreground.png'), gold);
 fs.writeFileSync(path.join(outDir, 'android-icon-background.png'), dark);
 fs.writeFileSync(path.join(outDir, 'android-icon-monochrome.png'), gold);
-fs.writeFileSync(path.join(outDir, 'favicon.png'), png(48, 48, 231, 198, 132));
+fs.writeFileSync(path.join(outDir, 'favicon.png'), png(48, 48, ...ACCENT));
 console.log('Wrote placeholder assets to', outDir);

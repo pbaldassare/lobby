@@ -1,31 +1,36 @@
-import { colors, typography } from '@lobby/shared/tokens';
-import { Button } from '@lobby/shared/ui';
+import { makeStyles } from '@lobby/shared/theme';
+import { Button, Text } from '@lobby/shared/ui';
 import { Link, Stack } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 
 export default function NotFoundScreen(): React.JSX.Element {
+  const styles = useStyles();
+
   return (
     <>
-      <Stack.Screen options={{ title: 'Not found' }} />
+      <Stack.Screen options={{ title: 'Pagina non trovata' }} />
       <View style={styles.container}>
-        <Text style={styles.title}>Screen not found</Text>
+        <Text variant="titleLg">Qui non c'è niente</Text>
+        <Text variant="body" tone="secondary" style={styles.body}>
+          Il link che hai seguito non porta a nessuna schermata.
+        </Text>
         <Link href="/" asChild>
-          <Button label="Go home" />
+          <Button label="Torna all'inizio" />
         </Link>
       </View>
     </>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   container: {
     flex: 1,
-    backgroundColor: colors.bg.base,
+    backgroundColor: t.color.bg.canvas,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    gap: 16,
+    gap: 12,
   },
-  title: { ...typography.displayMd, color: colors.ink.primary },
-});
+  body: { textAlign: 'center' },
+}));

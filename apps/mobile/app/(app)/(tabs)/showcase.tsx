@@ -1,33 +1,48 @@
-import { colors, space, typography } from '@lobby/shared/tokens';
-import { Card } from '@lobby/shared/ui';
+import { makeStyles } from '@lobby/shared/theme';
+import { Card, ListEmpty, ScreenHeader, Text } from '@lobby/shared/ui';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
 import { useProjects } from '@/hooks/useProjects';
 
-/** Selected projects — NOT a social feed. */
+/** Progetti scelti a mano — non è un feed. */
 export default function ShowcaseScreen(): React.JSX.Element {
+  const styles = useStyles();
   const { projects, loading } = useProjects();
+
   return (
     <Screen>
-      <View style={styles.header}>
-        <Text style={styles.title}>Showcase</Text>
-        <Text style={styles.sub}>
-          Hand-picked projects you choose to surface — not an algorithmic feed.
-        </Text>
-      </View>
-      {loading ? <Text style={styles.hint}>Loading…</Text> : null}
-      {projects.length === 0 && !loading ? (
-        <Text style={styles.hint}>No projects on your card yet.</Text>
+      <ScreenHeader
+        title="Progetti"
+        subtitle="Quello che scegli di mostrare. Nessun algoritmo decide per te."
+      />
+
+      {loading ? <ListEmpty loading title="Carico i progetti" /> : null}
+
+      {!loading && projects.length === 0 ? (
+        <ListEmpty
+          icon="showcase"
+          title="Nessun progetto sulla tua card"
+          body="Aggiungine uno per far capire su cosa stai lavorando."
+        />
       ) : null}
+
       {projects.map((p) => (
         <Card key={p.id} variant="project" style={styles.card}>
-          <Text style={styles.kicker}>Project</Text>
-          <Text style={styles.name}>{p.title}</Text>
-          <Text style={styles.pitch}>{p.public_pitch}</Text>
+          <Text variant="kicker" tone="accent">
+            Progetto
+          </Text>
+          <Text variant="titleSm">{p.title}</Text>
+          <Text variant="body" tone="secondary">
+            {p.public_pitch}
+          </Text>
           {p.deck_requestable ? (
-            <Text style={styles.deck}>Private deck on request · after mutual connection</Text>
+            <View style={styles.deck}>
+              <Text variant="tiny" tone="tertiary">
+                Deck privato su richiesta · dopo connessione reciproca
+              </Text>
+            </View>
           ) : null}
         </Card>
       ))}
@@ -35,14 +50,7 @@ export default function ShowcaseScreen(): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: space.sm, marginTop: space.md },
-  title: { ...typography.displayLg, color: colors.ink.primary },
-  sub: { ...typography.sm, color: colors.ink.muted },
-  hint: { ...typography.sm, color: colors.ink.muted2 },
-  card: { gap: space.sm },
-  kicker: { ...typography.kicker, color: colors.gold.base },
-  name: { ...typography.projectName, color: colors.ink.primary },
-  pitch: { ...typography.body, color: colors.ink.muted },
-  deck: { ...typography.tiny, color: colors.ink.muted2, marginTop: space.xs },
-});
+const useStyles = makeStyles(() => ({
+  card: { gap: 6 },
+  deck: { marginTop: 4 },
+}));

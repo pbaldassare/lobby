@@ -54,6 +54,14 @@ export type ThemeColors = {
     subtle: string;
     strong: string;
   };
+  /** Esiti, non decorazione. Prima non esistevano: `'#E88'` era scritto a mano
+   *  in due schermate e il backoffice aveva tre rossi/ambra tutti suoi. */
+  status: {
+    danger: string;
+    dangerSubtleBg: string;
+    warning: string;
+    positive: string;
+  };
 };
 
 export type ThemeRadius = {

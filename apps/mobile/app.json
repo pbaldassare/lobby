@@ -6,25 +6,30 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "lobby",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lobby.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Scan a Lobby QR code to open a member card or enter a room.",
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
       "package": "com.lobby.app",
       "adaptiveIcon": {
-        "backgroundColor": "#070809",
+        "backgroundColor": "#0E0D0C",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "permissions": ["CAMERA", "POST_NOTIFICATIONS"]
+      "permissions": [
+        "CAMERA",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -43,7 +48,7 @@
       [
         "expo-notifications",
         {
-          "color": "#E7C684"
+          "color": "#C9A227"
         }
       ],
       [
@@ -51,7 +56,10 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#070809"
+          "backgroundColor": "#FAF7F2",
+          "dark": {
+            "backgroundColor": "#0E0D0C"
+          }
         }
       ]
     ],

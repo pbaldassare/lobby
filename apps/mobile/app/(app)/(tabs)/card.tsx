@@ -1,43 +1,58 @@
-import { colors, space, typography } from '@lobby/shared/tokens';
-import { Avatar, Button, Card, Chip, VerifiedBadge } from '@lobby/shared/ui';
+import { makeStyles, useTheme } from '@lobby/shared/theme';
+import { Avatar, Button, Card, Chip, Icon, ScreenHeader, Text, VerifiedBadge } from '@lobby/shared/ui';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import React from 'react';
+import { Pressable, View } from 'react-native';
 
-import { QrCard } from '@/components/QrCard';
 import { Screen } from '@/components/Screen';
 import { useMemberships } from '@/hooks/useMemberships';
 import { initialsFromProfile } from '@/lib/format';
 import { useAuth } from '@/providers/AuthProvider';
 
+/**
+ * La propria card.
+ *
+ * Prima questa schermata teneva insieme identità, QR, tre blocchi in lettura,
+ * un form di modifica che compariva inline, e in fondo accessi, scansione e
+ * uscita. Cose diverse con tempi diversi, in un unico scorrimento.
+ *
+ * Ora resta l'identità. Il QR è un gesto a sé — dentro il locale passi il
+ * telefono a qualcuno, non gli fai scorrere il tuo profilo — e modifica e
+ * impostazioni hanno una loro rotta.
+ */
 export default function YourCardScreen(): React.JSX.Element {
-  const { profile, updateProfile, signOut, isDemo } = useAuth();
+  const styles = useStyles();
+  const { profile } = useAuth();
   const { memberships } = useMemberships();
   const sealed = memberships.find((m) => m.verified_status === 'verified' && m.seal_issued_at);
-  const [editing, setEditing] = useState(false);
-  const [spotlight, setSpotlight] = useState(profile?.spotlight ?? '');
-  const [offer, setOffer] = useState((profile?.offer ?? []).join(', '));
-  const [seek, setSeek] = useState((profile?.seek ?? []).join(', '));
-  const [status, setStatus] = useState<string | null>(null);
-  const qrValue = `lobby://member/${profile?.id ?? 'unknown'}`;
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <Text style={styles.title}>Your card</Text>
-        <Text style={styles.sub}>
-          Identity + venue seal. Seal is issued by the venue — never self-claimed.
-        </Text>
-      </View>
+      <ScreenHeader
+        title="La tua card"
+        subtitle="Identità e sigillo del venue. Il sigillo lo rilascia il locale: non te lo puoi dare da solo."
+      />
+
       <Card variant="biz" style={styles.biz}>
         <View style={styles.identity}>
-          <Avatar initials={initialsFromProfile(profile)} uri={profile?.avatar_url} size={64} />
+          <Avatar initials={initialsFromProfile(profile)} uri={profile?.avatar_url} size={60} />
           <View style={styles.identityText}>
-            <Text style={styles.name}>{profile?.display_name ?? 'Member'}</Text>
-            {profile?.headline ? <Text style={styles.headline}>{profile.headline}</Text> : null}
-            {profile?.company ? <Text style={styles.company}>{profile.company}</Text> : null}
+            <Text variant="titleSm" numberOfLines={1}>
+              {profile?.display_name ?? 'Membro'}
+            </Text>
+            {profile?.headline ? (
+              <Text variant="small" tone="secondary" numberOfLines={2}>
+                {profile.headline}
+              </Text>
+            ) : null}
+            {profile?.company ? (
+              <Text variant="tiny" tone="accent" numberOfLines={1}>
+                {profile.company}
+              </Text>
+            ) : null}
           </View>
         </View>
+
         {sealed?.venue ? (
           <VerifiedBadge
             venueName={sealed.venue.name}
@@ -46,126 +61,104 @@ export default function YourCardScreen(): React.JSX.Element {
             since={sealed.since}
           />
         ) : (
-          <Text style={styles.noSeal}>
-            No seal yet. Ask venue staff — members cannot issue their own.
+          <Text variant="small" tone="tertiary">
+            Nessun sigillo. Chiedilo allo staff del venue: i soci non possono emetterlo da sé.
           </Text>
         )}
-        <QrCard value={qrValue} />
-        <Text style={styles.qrHint}>Scan to open this card · {isDemo ? 'demo' : 'live'}</Text>
       </Card>
 
-      {!editing ? (
-        <>
-          <View style={styles.block}>
-            <Text style={styles.label}>Spotlight</Text>
-            <Text style={styles.body}>{profile?.spotlight || '—'}</Text>
-          </View>
-          <View style={styles.block}>
-            <Text style={styles.label}>Offer</Text>
-            <View style={styles.chips}>
-              {(profile?.offer ?? []).map((t) => (
-                <Chip key={t} label={t} />
-              ))}
-            </View>
-          </View>
-          <View style={styles.block}>
-            <Text style={styles.label}>Seek</Text>
-            <View style={styles.chips}>
-              {(profile?.seek ?? []).map((t) => (
-                <Chip key={t} label={t} variant="match" />
-              ))}
-            </View>
-          </View>
-          <Button label="Edit profile" onPress={() => setEditing(true)} />
-        </>
-      ) : (
-        <Card style={styles.edit}>
-          <Text style={styles.label}>Spotlight</Text>
-          <TextInput
-            style={styles.input}
-            value={spotlight}
-            onChangeText={setSpotlight}
-            placeholderTextColor={colors.ink.muted2}
-            placeholder="What you're building now"
-            multiline
-          />
-          <Text style={styles.label}>Offer (comma-separated)</Text>
-          <TextInput
-            style={styles.input}
-            value={offer}
-            onChangeText={setOffer}
-            placeholderTextColor={colors.ink.muted2}
-          />
-          <Text style={styles.label}>Seek (comma-separated)</Text>
-          <TextInput
-            style={styles.input}
-            value={seek}
-            onChangeText={setSeek}
-            placeholderTextColor={colors.ink.muted2}
-          />
-          <Button
-            label="Save"
-            onPress={() => {
-              void updateProfile({
-                spotlight: spotlight.trim() || null,
-                offer: offer
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-                seek: seek
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-              }).then(({ error }) => {
-                setStatus(error ?? 'Saved');
-                if (!error) setEditing(false);
-              });
-            }}
-          />
-          <Button label="Cancel" variant="ghost" onPress={() => setEditing(false)} />
-        </Card>
-      )}
+      <Button label="Mostra il QR" onPress={() => router.push('/(app)/qr')} />
 
-      <Button label="Member access" variant="ghost" onPress={() => router.push('/(app)/member-access')} />
-      <Button label="Scan QR" variant="ghost" onPress={() => router.push('/(app)/scan')} />
-      <Button
-        label="Sign out"
-        variant="ghost"
-        onPress={() => {
-          void signOut();
-          router.replace('/(auth)/welcome');
-        }}
-      />
-      {status ? <Text style={styles.status}>{status}</Text> : null}
+      <Block label="In evidenza">
+        <Text variant="body">{profile?.spotlight || '—'}</Text>
+      </Block>
+
+      <Block label="Offro">
+        {(profile?.offer ?? []).length === 0 ? (
+          <Text variant="body" tone="tertiary">
+            —
+          </Text>
+        ) : (
+          <View style={styles.chips}>
+            {(profile?.offer ?? []).map((t) => (
+              <Chip key={t} label={t} />
+            ))}
+          </View>
+        )}
+      </Block>
+
+      <Block label="Cerco">
+        {(profile?.seek ?? []).length === 0 ? (
+          <Text variant="body" tone="tertiary">
+            —
+          </Text>
+        ) : (
+          <View style={styles.chips}>
+            {(profile?.seek ?? []).map((t) => (
+              <Chip key={t} label={t} variant="match" />
+            ))}
+          </View>
+        )}
+      </Block>
+
+      <View style={styles.links}>
+        <LinkRow label="Modifica profilo" onPress={() => router.push('/(app)/edit-profile')} />
+        <LinkRow label="Impostazioni" onPress={() => router.push('/(app)/settings')} />
+      </View>
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  header: { gap: space.sm, marginTop: space.md },
-  title: { ...typography.displayLg, color: colors.ink.primary },
-  sub: { ...typography.sm, color: colors.ink.muted },
-  biz: { gap: space.lg },
-  identity: { flexDirection: 'row', gap: space.lg, alignItems: 'center' },
-  identityText: { flex: 1, gap: 4 },
-  name: { ...typography.displayMd, color: colors.ink.primary },
-  headline: { ...typography.sm, color: colors.ink.muted },
-  company: { ...typography.tiny, color: colors.gold.base },
-  noSeal: { ...typography.sm, color: colors.ink.muted2 },
-  qrHint: { ...typography.tiny, color: colors.ink.muted2, textAlign: 'center' },
-  block: { gap: space.sm },
-  label: { ...typography.kicker, color: colors.ink.muted2 },
-  body: { ...typography.body, color: colors.ink.primary },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.chipGap },
-  edit: { gap: space.md },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    backgroundColor: colors.surface.field,
-    borderRadius: 11,
-    padding: space.md,
-    color: colors.ink.primary,
-    ...typography.body,
+function Block({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}): React.JSX.Element {
+  const styles = useStyles();
+
+  return (
+    <View style={styles.block}>
+      <Text variant="kicker" tone="tertiary">
+        {label}
+      </Text>
+      {children}
+    </View>
+  );
+}
+
+function LinkRow({ label, onPress }: { label: string; onPress: () => void }): React.JSX.Element {
+  const styles = useStyles();
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.linkRow, pressed && styles.pressed]}
+    >
+      <Text variant="body">{label}</Text>
+      <Icon name="chevronRight" size={18} color={theme.color.text.tertiary} />
+    </Pressable>
+  );
+}
+
+const useStyles = makeStyles((t) => ({
+  biz: { gap: 14 },
+  identity: { flexDirection: 'row', gap: 14, alignItems: 'center' },
+  identityText: { flex: 1, minWidth: 0, gap: 3 },
+  block: { gap: 6 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  links: { marginTop: 4 },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: t.color.border.subtle,
+    minHeight: 48,
   },
-  status: { ...typography.sm, color: colors.ink.muted },
-});
+  pressed: { opacity: 0.6 },
+}));

@@ -1,38 +1,29 @@
 import React, { useState } from 'react';
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from 'react-native';
-import { colors } from '../tokens/colors';
-import { fontFamily, fontWeight } from '../tokens/typography';
+import { Image, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+
+import { makeStyles, useTheme } from '../theme';
+import { Text } from './Text';
 
 export type AvatarProps = {
-  /** Iniziali fallback (es. "MR") */
+  /** Iniziali di ripiego, es. "MR". */
   initials: string;
   uri?: string | null;
   size?: number;
-  /** Gradiente mockup come colore solido di fallback */
   backgroundColor?: string;
   style?: StyleProp<ViewStyle>;
 };
 
-/**
- * Avatar circolare: foto se disponibile, altrimenti iniziali su tinta brand.
- */
 export function Avatar({
   initials,
   uri,
   size = 50,
-  backgroundColor = colors.gold.deep,
+  backgroundColor,
   style,
 }: AvatarProps): React.JSX.Element {
+  const styles = useStyles();
+  const theme = useTheme();
   const [failed, setFailed] = useState(false);
   const showImage = Boolean(uri) && !failed;
-  const fontSize = Math.round(size * 0.32);
 
   return (
     <View
@@ -42,20 +33,12 @@ export function Avatar({
           width: size,
           height: size,
           borderRadius: size / 2,
-          backgroundColor,
+          backgroundColor: backgroundColor ?? theme.color.accent.subtleBg,
         },
         style,
       ]}
     >
-      <Text
-        style={[
-          styles.initials,
-          {
-            fontSize,
-            lineHeight: fontSize + 2,
-          },
-        ]}
-      >
+      <Text variant={size >= 44 ? 'name' : 'score'} tone="accent">
         {initials.slice(0, 2).toUpperCase()}
       </Text>
       {showImage ? (
@@ -70,16 +53,13 @@ export function Avatar({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((t) => ({
   base: {
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
+    borderWidth: 1,
+    borderColor: t.color.accent.subtleBorder,
   },
-  initials: {
-    fontFamily: fontFamily.display,
-    fontWeight: fontWeight.semibold,
-    color: colors.gold.onGold,
-  },
-});
+}));

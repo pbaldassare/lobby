@@ -64,6 +64,12 @@ const dark: ThemeContract = {
       border: 'rgba(95,224,166,0.35)',
     },
     border: { subtle: 'rgba(255,255,255,0.07)', strong: 'rgba(255,255,255,0.14)' },
+    status: {
+      danger: '#EE8888',
+      dangerSubtleBg: 'rgba(238,136,136,0.12)',
+      warning: '#FFBE64',
+      positive: '#5FE0A6',
+    },
   },
   radius,
   type,
@@ -88,6 +94,12 @@ const light: ThemeContract = {
     },
     signal: { default: '#1F7A55', subtleBg: '#E6F4EE', border: '#A5D4C1' },
     border: { subtle: '#E3E0D9', strong: '#CFCBC2' },
+    status: {
+      danger: '#B03A3A',
+      dangerSubtleBg: '#FBEDED',
+      warning: '#8A5E12',
+      positive: '#1F7A55',
+    },
   },
 };
 
