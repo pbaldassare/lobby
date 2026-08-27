@@ -14,6 +14,19 @@ When you are physically in a venue, you can appear and see who is worth meeting.
 
 Monorepo: npm workspaces (`apps/*`, `packages/*`). Node `>=20`.
 
+## Database
+
+Lobby vive nello schema Postgres **`lobby`** di un progetto Supabase **condiviso** che
+ospita anche Mediplan (schema `public`) e Rank AI (schema `rankai`). Lobby non tocca
+`public`. Gli helper `SECURITY DEFINER` stanno in `lobby_private`, che non è esposto
+via Data API.
+
+I client sono costruiti con `db: { schema: 'lobby' }` (`LOBBY_DB_SCHEMA` in
+`packages/shared`), quindi `.from('profiles')` risolve su `lobby.profiles`.
+
+Perché funzioni, `lobby` va aggiunto in **Dashboard → Settings → API → Exposed schemas**
+(accanto a `public`, `graphql_public`, `rankai`).
+
 ## Privacy (product rules)
 
 - Invisible by default; visible only in the room you are in; visibility ends when you leave.
