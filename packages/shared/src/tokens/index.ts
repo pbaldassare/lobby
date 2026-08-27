@@ -27,3 +27,8 @@ export const tokens = {
 } as const;
 
 export type Tokens = typeof tokens;
+
+export type { ThemeContract, ThemeSet, ThemeColors, ThemeType, TypeStyle } from './contract';
+export { editorial } from './themes/editorial';
+export { noir } from './themes/noir';
+export { toCssVars } from './css';

@@ -54,7 +54,7 @@ export default async function ModerationPage({ searchParams }: Props) {
                   {mod.reports.map((r) => (
                     <tr key={r.id}>
                       <td>
-                        <strong style={{ color: 'var(--ink)' }}>{r.reason}</strong>
+                        <strong style={{ color: 'var(--lobby-color-text-primary)' }}>{r.reason}</strong>
                         {r.details ? (
                           <div className="muted">{r.details}</div>
                         ) : null}

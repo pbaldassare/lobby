@@ -60,7 +60,7 @@ export default async function VerifyPage({ searchParams }: Props) {
                   {pending.map((m) => (
                     <tr key={m.id}>
                       <td>
-                        <strong style={{ color: 'var(--ink)' }}>
+                        <strong style={{ color: 'var(--lobby-color-text-primary)' }}>
                           {m.profile?.display_name ?? m.profile_id.slice(0, 8)}
                         </strong>
                         {m.profile?.headline ? (

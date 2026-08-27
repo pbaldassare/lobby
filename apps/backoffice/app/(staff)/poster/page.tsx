@@ -38,7 +38,9 @@ export default async function PosterPage({ searchParams }: Props) {
     qrDataUrl = await QRCode.toDataURL(joinUrl, {
       width: 440,
       margin: 1,
-      color: { dark: '#070809', light: '#ffffff' },
+      // Scuro su bianco a prescindere dal tema: è un codice da
+      // scansionare e verrà stampato su carta.
+      color: { dark: '#0B0B0C', light: '#ffffff' },
     });
   }
 
@@ -82,7 +84,7 @@ export default async function PosterPage({ searchParams }: Props) {
             Scan to join the room
           </p>
           <h2>{venue.name}</h2>
-          <p style={{ color: 'var(--ink)' }}>
+          <p style={{ color: 'var(--lobby-color-text-primary)' }}>
             {room.name} · {venue.city}
           </p>
           <div className="qr">
