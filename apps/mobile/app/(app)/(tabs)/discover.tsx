@@ -55,6 +55,7 @@ export default function DiscoverScreen(): React.JSX.Element {
             roomName={roomName}
             inRoom={Boolean(presence)}
             isVisible={isVisible}
+            closesAt={room?.closes_at ?? null}
             count={ranked.length}
             onEnter={() => void enterRoom(DEMO_ROOM_ID)}
             onLeave={() => void leaveRoom()}
@@ -80,6 +81,7 @@ function Header({
   roomName,
   inRoom,
   isVisible,
+  closesAt,
   count,
   onEnter,
   onLeave,
@@ -89,6 +91,7 @@ function Header({
   roomName: string;
   inRoom: boolean;
   isVisible: boolean;
+  closesAt: string | null;
   count: number;
   onEnter: () => void;
   onLeave: () => void;
@@ -112,6 +115,7 @@ function Header({
         <PresenceBar
           isVisible={isVisible}
           roomName={roomName}
+          closesAt={closesAt}
           onChange={onChangeVisibility}
           onLeave={onLeave}
         />

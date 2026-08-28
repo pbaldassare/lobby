@@ -1,7 +1,34 @@
 import { makeStyles, useTheme } from '@lobby/shared/theme';
 import { Icon, Text } from '@lobby/shared/ui';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
+
+/** Quanto manca alla chiusura, in forma leggibile. Null = stanza permanente
+ *  o già chiusa. */
+function useTimeLeft(closesAt: string | null | undefined): string | null {
+  const [label, setLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!closesAt) {
+      setLabel(null);
+      return;
+    }
+    const tick = () => {
+      const ms = new Date(closesAt).getTime() - Date.now();
+      if (ms <= 0) {
+        setLabel(null);
+        return;
+      }
+      const min = Math.floor(ms / 60000);
+      setLabel(min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min}m`);
+    };
+    tick();
+    const id = setInterval(tick, 30000);
+    return () => clearInterval(id);
+  }, [closesAt]);
+
+  return label;
+}
 
 /**
  * Stato della presenza in una pastiglia compatta.
@@ -17,17 +44,21 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 export function PresenceBar({
   isVisible,
   roomName,
+  closesAt,
   onChange,
   onLeave,
 }: {
   isVisible: boolean;
   roomName: string;
+  /** Una serata finisce. Il permesso scade con lei. */
+  closesAt?: string | null;
   onChange: (visible: boolean) => void | Promise<void>;
   onLeave: () => void | Promise<void>;
 }): React.JSX.Element {
   const styles = useStyles();
   const theme = useTheme();
   const [busy, setBusy] = useState(false);
+  const timeLeft = useTimeLeft(closesAt);
 
   return (
     <View style={styles.root}>
@@ -40,6 +71,11 @@ export function PresenceBar({
         <Text variant="small" tone={isVisible ? 'primary' : 'secondary'} numberOfLines={1}>
           {isVisible ? `Visibile in ${roomName}` : 'Invisibile'}
         </Text>
+        {timeLeft ? (
+          <Text variant="tiny" tone="tertiary" numberOfLines={1}>
+            · {timeLeft}
+          </Text>
+        ) : null}
       </View>
 
       <Pressable

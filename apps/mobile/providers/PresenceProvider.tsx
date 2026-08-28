@@ -20,7 +20,9 @@ type PresenceContextValue = {
   presence: Presence | null;
   isVisible: boolean;
   loading: boolean;
-  enterRoom: (roomId: string) => Promise<{ error: string | null }>;
+  /** Il codice arriva dal QR: senza, il server non rilascia il permesso
+   *  e la presenza non si può nemmeno scrivere. */
+  enterRoom: (roomId: string, code?: string) => Promise<{ error: string | null }>;
   leaveRoom: () => Promise<{ error: string | null }>;
   setVisible: (visible: boolean) => Promise<{ error: string | null }>;
 };
@@ -96,13 +98,25 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
   useEffect(() => () => clearHeartbeat(), [clearHeartbeat]);
 
   const enterRoom = useCallback(
-    async (roomId: string) => {
-      if (!user) return { error: 'Not signed in' };
+    async (roomId: string, code?: string) => {
+      if (!user) return { error: "Non hai fatto l'accesso" };
       if (isDemo) {
         setRoom({ ...demoRoom, id: roomId || DEMO_ROOM_ID });
         setPresence(createDemoPresence(false));
         return { error: null };
       }
+
+      // Prima il permesso, poi la presenza. Senza un permesso valido la
+      // policy di inserimento rifiuta la riga: entrare non è più una cosa
+      // che il client può dichiarare da sé.
+      if (code) {
+        const { error: passError } = await getSupabase().rpc('redeem_room_code', {
+          p_room_id: roomId,
+          p_code: code,
+        });
+        if (passError) return { error: passError.message };
+      }
+
       const { data, error } = await getSupabase()
         .from('presence')
         .upsert(
@@ -118,7 +132,14 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
         )
         .select('*')
         .maybeSingle();
-      if (error) return { error: error.message };
+      if (error) {
+        // Il messaggio grezzo del database non dice nulla a chi è sulla porta.
+        return {
+          error: /row-level security|violates/i.test(error.message)
+            ? 'Serve un codice valido per entrare in questa stanza.'
+            : error.message,
+        };
+      }
       setPresence(data as Presence);
       const { data: roomRow } = await getSupabase()
         .from('rooms')

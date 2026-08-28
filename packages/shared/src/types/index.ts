@@ -58,6 +58,35 @@ export type Room = {
   venue_id: string;
   name: string;
   created_at: string;
+  /** Una serata è una stanza che finisce. Null = stanza permanente. */
+  opens_at: string | null;
+  closes_at: string | null;
+};
+
+/** I canali che aprono una stanza. Dimostrano tutti la stessa cosa. */
+export type AccessMethod = 'qr' | 'wifi_portal' | 'email_domain' | 'invite' | 'membership';
+
+export type RoomAccess = {
+  id: string;
+  room_id: string;
+  method: AccessMethod;
+  /** Il dominio per `email_domain`, la rete per `wifi_portal`. Null per `qr`. */
+  param: string | null;
+  created_at: string;
+};
+
+/** Prova che una persona può stare in una stanza fino a un momento preciso.
+ *  Lo rilascia sempre il server: non esiste una policy che permetta a un
+ *  client di scriverne uno. */
+export type Pass = {
+  id: string;
+  profile_id: string;
+  room_id: string;
+  method: AccessMethod;
+  granted_at: string;
+  expires_at: string;
+  revoked_at: string | null;
+  granted_by: string | null;
 };
 
 export type Presence = {

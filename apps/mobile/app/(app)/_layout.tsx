@@ -61,6 +61,10 @@ export default function AppLayout(): React.JSX.Element {
         options={{ ...nativeHeader, presentation: 'modal', title: 'Modifica profilo' }}
       />
       <Stack.Screen name="settings" options={{ ...nativeHeader, title: 'Impostazioni' }} />
+      <Stack.Screen
+        name="introduce"
+        options={{ ...nativeHeader, presentation: 'modal', title: 'Presenta due persone' }}
+      />
     </Stack>
   );
 }

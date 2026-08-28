@@ -5,7 +5,9 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-function parseJoin(raw: string): { roomId: string } | null {
+/** Il QR porta la stanza e il codice del momento. Il codice è la parte che
+ *  conta: senza, il server non rilascia nessun permesso. */
+function parseJoin(raw: string): { roomId: string; code: string | null } | null {
   try {
     const normalized = raw.includes('://')
       ? raw
@@ -14,11 +16,11 @@ function parseJoin(raw: string): { roomId: string } | null {
         : raw;
     if (normalized.startsWith('lobby://room/')) {
       const roomId = normalized.replace('lobby://room/', '').split(/[?#]/)[0];
-      return roomId ? { roomId } : null;
+      return roomId ? { roomId, code: null } : null;
     }
     const url = new URL(normalized);
     const room = url.searchParams.get('room') ?? url.searchParams.get('roomId');
-    if (room) return { roomId: room };
+    if (room) return { roomId: room, code: url.searchParams.get('code') };
     return null;
   } catch {
     return null;
@@ -59,7 +61,12 @@ export default function ScanScreen(): React.JSX.Element {
           const parsed = parseJoin(data);
           if (parsed) {
             setLocked(true);
-            router.replace({ pathname: '/(app)/join', params: { room: parsed.roomId } });
+            router.replace({
+              pathname: '/(app)/join',
+              params: parsed.code
+                ? { room: parsed.roomId, code: parsed.code }
+                : { room: parsed.roomId },
+            });
             return;
           }
           if (data.startsWith('lobby://member/')) router.back();

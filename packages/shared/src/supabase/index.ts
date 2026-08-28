@@ -31,14 +31,18 @@ export type EdgeFunctionName = (typeof EDGE_FUNCTIONS)[keyof typeof EDGE_FUNCTIO
 export function buildRoomJoinUrl(params: {
   venueId: string;
   roomId: string;
+  /** Codice a rotazione. Senza, il link non apre nulla: la stanza si sblocca
+   *  solo presentando un codice ancora valido. */
+  code?: string;
   /** Optional https origin for universal links; defaults to lobby scheme */
   webOrigin?: string;
 }): string {
-  const path = `/join?venue=${encodeURIComponent(params.venueId)}&room=${encodeURIComponent(params.roomId)}`;
+  const code = params.code ? `&code=${encodeURIComponent(params.code)}` : '';
+  const path = `/join?venue=${encodeURIComponent(params.venueId)}&room=${encodeURIComponent(params.roomId)}${code}`;
   if (params.webOrigin) {
     return `${params.webOrigin.replace(/\/$/, '')}${path}`;
   }
-  return `lobby://join?venue=${encodeURIComponent(params.venueId)}&room=${encodeURIComponent(params.roomId)}`;
+  return `lobby://join?venue=${encodeURIComponent(params.venueId)}&room=${encodeURIComponent(params.roomId)}${code}`;
 }
 
 export type CreateLobbyClientOptions = {

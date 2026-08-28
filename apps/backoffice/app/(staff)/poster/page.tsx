@@ -1,6 +1,5 @@
-import QRCode from 'qrcode';
-import { buildRoomJoinUrl } from '@lobby/shared';
 import { requireStaffPage } from '@/lib/auth/staff';
+import { RoomCode } from '@/components/RoomCode';
 import { listVenueRooms } from '@/lib/data/rooms';
 import { pickVenue } from '@/lib/venue-selection';
 import { VenuePicker } from '@/components/VenuePicker';
@@ -26,36 +25,22 @@ export default async function PosterPage({ searchParams }: Props) {
   }
 
   const room = rooms.find((r) => r.id === params.room) ?? rooms[0] ?? null;
-  let qrDataUrl: string | null = null;
-  let joinUrl: string | null = null;
-
-  if (venue && room) {
-    joinUrl = buildRoomJoinUrl({
-      venueId: venue.id,
-      roomId: room.id,
-      webOrigin: getAppOrigin(),
-    });
-    qrDataUrl = await QRCode.toDataURL(joinUrl, {
-      width: 440,
-      margin: 1,
-      // Scuro su bianco a prescindere dal tema: è un codice da
-      // scansionare e verrà stampato su carta.
-      color: { dark: '#0B0B0C', light: '#ffffff' },
-    });
-  }
 
   return (
     <>
-      <p className="kicker">On-site</p>
-      <h1>QR poster</h1>
-      <p>Printable “scan to join the room” for your venue entrance.</p>
+      <p className="kicker">All'ingresso</p>
+      <h1>Codice della stanza</h1>
+      <p>
+        Si rinnova ogni tre minuti da solo. Tienilo su uno schermo all'ingresso:
+        fotografarlo non serve a nulla il giorno dopo.
+      </p>
       <VenuePicker venues={staff.venues} selectedId={venue?.id ?? null} />
       {loadError ? <div className="error">{loadError}</div> : null}
 
       {venue && rooms.length > 0 ? (
         <form className="field" style={{ maxWidth: 320 }} method="get">
           <input type="hidden" name="venue" value={venue.id} />
-          <label htmlFor="room">Room</label>
+          <label htmlFor="room">Stanza</label>
           <select id="room" name="room" defaultValue={room?.id}>
             {rooms.map((r) => (
               <option key={r.id} value={r.id}>
@@ -64,40 +49,33 @@ export default async function PosterPage({ searchParams }: Props) {
             ))}
           </select>
           <button className="btn btn-ghost" type="submit" style={{ marginTop: 10 }}>
-            Update poster
+            Cambia stanza
           </button>
         </form>
       ) : null}
 
-      {!venue || !room || !qrDataUrl || !joinUrl ? (
+      {!venue || !room ? (
         <div className="panel">
           <p className="muted">
             {venue
-              ? 'No rooms for this venue yet. Seed at least one room.'
-              : 'Select a venue to generate a poster.'}
+              ? 'Questo venue non ha ancora stanze. Creane almeno una.'
+              : 'Scegli un venue per generare il codice.'}
           </p>
         </div>
       ) : (
-        <div className="poster">
-          <div className="brand">Lobby</div>
-          <p className="kicker" style={{ marginTop: 12 }}>
-            Scan to join the room
-          </p>
-          <h2>{venue.name}</h2>
-          <p style={{ color: 'var(--lobby-color-text-primary)' }}>
-            {room.name} · {venue.city}
-          </p>
-          <div className="qr">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrDataUrl} alt={`QR join ${venue.name} ${room.name}`} />
+        <>
+          <div className="section-header">
+            <h2>
+              {venue.name} · {room.name}
+            </h2>
+            <span className="muted">{venue.city}</span>
           </div>
-          <p className="muted" style={{ wordBreak: 'break-all' }}>
-            {joinUrl}
+          <RoomCode venueId={venue.id} roomId={room.id} webOrigin={getAppOrigin()} />
+          <p className="muted" style={{ marginTop: 12 }}>
+            Chi entra resta invisibile finché non decide di apparire, e il
+            permesso scade con la stanza.
           </p>
-          <p className="muted">
-            Visibility stays off until the guest opts in inside the room.
-          </p>
-        </div>
+        </>
       )}
     </>
   );

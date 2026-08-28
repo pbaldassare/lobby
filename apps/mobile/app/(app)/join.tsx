@@ -15,8 +15,9 @@ export default function JoinScreen(): React.JSX.Element {
   const styles = useStyles();
   const theme = useTheme();
   const { enterRoom } = usePresence();
-  const params = useLocalSearchParams<{ venue?: string; room?: string }>();
+  const params = useLocalSearchParams<{ venue?: string; room?: string; code?: string }>();
   const roomId = typeof params.room === 'string' ? params.room : '';
+  const code = typeof params.code === 'string' ? params.code : undefined;
   const [error, setError] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
 
@@ -24,7 +25,7 @@ export default function JoinScreen(): React.JSX.Element {
     if (!roomId) return;
     let cancelled = false;
     setJoining(true);
-    void enterRoom(roomId).then(({ error: err }) => {
+    void enterRoom(roomId, code).then(({ error: err }) => {
       if (cancelled) return;
       if (err) {
         setError(err);
@@ -36,7 +37,7 @@ export default function JoinScreen(): React.JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [roomId, enterRoom]);
+  }, [roomId, code, enterRoom]);
 
   if (!roomId) {
     return (

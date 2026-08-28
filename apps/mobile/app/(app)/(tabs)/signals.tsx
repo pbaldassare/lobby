@@ -15,10 +15,11 @@ import { Pressable, View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
 import { useChatList } from '@/hooks/useChat';
+import { useIntros } from '@/hooks/useIntros';
 import { useSignals } from '@/hooks/useSignals';
 import { initialsFromProfile } from '@/lib/format';
 
-type Tab = 'in' | 'out' | 'chats';
+type Tab = 'in' | 'out' | 'chats' | 'intros';
 
 /**
  * Tre raccolte che non sono la stessa cosa: in arrivo è azionabile, inviati è
@@ -29,10 +30,12 @@ export default function SignalsScreen(): React.JSX.Element {
   const styles = useStyles();
   const { signals, respondToSignal, loading } = useSignals();
   const { chats } = useChatList();
+  const { intros, respond } = useIntros();
   const [tab, setTab] = useState<Tab>('in');
 
   const pendingIn = signals.filter((s) => s.direction === 'incoming' && s.status === 'pending');
   const pendingOut = signals.filter((s) => s.direction === 'outgoing' && s.status === 'pending');
+  const openIntros = intros.filter((i) => i.status === 'pending');
 
   return (
     <Screen>
@@ -48,6 +51,7 @@ export default function SignalsScreen(): React.JSX.Element {
           { value: 'in', label: 'In arrivo', badge: pendingIn.length },
           { value: 'out', label: 'Inviati', badge: pendingOut.length },
           { value: 'chats', label: 'Chat', badge: chats.length },
+          { value: 'intros', label: 'Presentazioni', badge: openIntros.length },
         ]}
       />
 
@@ -149,6 +153,60 @@ export default function SignalsScreen(): React.JSX.Element {
             </Pressable>
           ))
         )
+      ) : null}
+      {tab === 'intros' ? (
+        <>
+          <Button
+            label="Presenta due persone"
+            variant="ghost"
+            onPress={() => router.push('/(app)/introduce')}
+          />
+
+          {openIntros.length === 0 ? (
+            <ListEmpty
+              icon="matches"
+              title="Nessuna presentazione in corso"
+              body="Mettere in contatto due persone che si conoscono tramite te vale più di qualsiasi punteggio."
+            />
+          ) : (
+            openIntros.map((i) => (
+              <Card key={i.id} style={styles.card}>
+                <Text variant="kicker" tone="accent">
+                  {i.direction === 'made'
+                    ? "L'hai fatta tu"
+                    : `Da ${i.introducer?.display_name ?? 'un contatto'}`}
+                </Text>
+                <Text variant="name">
+                  {i.a?.display_name ?? 'Membro'} · {i.b?.display_name ?? 'Membro'}
+                </Text>
+                {i.message ? (
+                  <Text variant="small" tone="secondary">
+                    {i.message}
+                  </Text>
+                ) : null}
+                {i.direction === 'received' ? (
+                  <View style={styles.actions}>
+                    <Button
+                      label="Accetta"
+                      style={styles.action}
+                      onPress={() => void respond(i.id, 'accepted')}
+                    />
+                    <Button
+                      label="Lascia stare"
+                      variant="ghost"
+                      style={styles.action}
+                      onPress={() => void respond(i.id, 'declined')}
+                    />
+                  </View>
+                ) : (
+                  <Text variant="tiny" tone="tertiary">
+                    In attesa che rispondano
+                  </Text>
+                )}
+              </Card>
+            ))
+          )}
+        </>
       ) : null}
     </Screen>
   );

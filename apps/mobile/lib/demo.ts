@@ -1,4 +1,5 @@
 import type {
+  Intro,
   Match,
   MemberAccess,
   Membership,
@@ -28,6 +29,10 @@ export const demoRoom: Room = {
   venue_id: DEMO_VENUE_ID,
   name: 'Members Lounge',
   created_at: new Date().toISOString(),
+  opens_at: null,
+  /** Una serata che finisce fra tre ore: serve a vedere il conto alla
+   *  rovescia della stanza senza un database dietro. */
+  closes_at: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
 };
 
 export const demoProfile: Profile = {
@@ -80,6 +85,21 @@ const other: Profile = {
   offer: ['capital', 'board seats'],
   seek: ['industrial decarbonization'],
   company: 'Northline',
+  avatar_url: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+/** Una terza persona: senza, non c'è nessuno da presentare a nessuno. */
+const third: Profile = {
+  id: '00000000-0000-4000-8000-000000000003',
+  role: 'member',
+  display_name: 'Tomás Ruiz',
+  headline: 'Founder · grid software',
+  spotlight: 'Software di bilanciamento per reti industriali.',
+  offer: ['integrazioni', 'dati di consumo'],
+  seek: ['pilota industriale', 'partner energetici'],
+  company: 'Gridwise',
   avatar_url: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
@@ -159,5 +179,39 @@ export const demoAccess: MemberAccess[] = [
     granted_at: new Date().toISOString(),
     expires_at: null,
     created_at: new Date().toISOString(),
+  },
+];
+
+/** Presentazioni dimostrative: una fatta da te, una ricevuta. */
+export const demoIntros: Array<
+  Intro & { a: Profile; b: Profile; introducer: Profile; direction: 'made' | 'received' }
+> = [
+  {
+    id: '00000000-0000-4000-8000-000000000060',
+    introducer_id: DEMO_USER_ID,
+    profile_a_id: other.id,
+    profile_b_id: third.id,
+    message: 'Mia investe in clima industriale, Tomás costruisce il software. Parlatevi.',
+    status: 'pending' as const,
+    created_at: new Date().toISOString(),
+    responded_at: null,
+    a: other,
+    b: third,
+    introducer: demoProfile,
+    direction: 'made' as const,
+  },
+  {
+    id: '00000000-0000-4000-8000-000000000061',
+    introducer_id: third.id,
+    profile_a_id: DEMO_USER_ID,
+    profile_b_id: other.id,
+    message: 'Vi ho messi in contatto: state guardando lo stesso problema da due lati.',
+    status: 'pending' as const,
+    created_at: new Date().toISOString(),
+    responded_at: null,
+    a: demoProfile,
+    b: other,
+    introducer: third,
+    direction: 'received' as const,
   },
 ];
