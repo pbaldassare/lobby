@@ -22,9 +22,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # wrangler 4.131+ requires Node 22 (Pages Git wrangler 3.114.17 500s OpenNext).
+          node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Require Cloudflare Direct Upload credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Add repo secrets CLOUDFLARE_API_TOKEN (Account → Cloudflare Pages: Edit) and CLOUDFLARE_ACCOUNT_ID. Pages Git deploys with wrangler 3.114.17 and the live site 500s; this job must Direct Upload with wrangler 4."
+            exit 1
+          fi
       - name: Build OpenNext for Pages
         working-directory: apps/backoffice
         env:
@@ -38,5 +48,4 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        # wrangler ≥ 4.33 is required: Pages Git still compiles _worker.js with 3.114.17.
         run: npx wrangler pages deploy .pages-dist --project-name=lobby --commit-dirty=true
