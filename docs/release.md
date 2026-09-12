@@ -38,9 +38,9 @@ Config already in the repo:
 - Root `npm run build` runs OpenNext + the Pages staging script
 - `.github/workflows/deploy-backoffice.yml` — **production deploy** (`wrangler pages deploy`, wrangler 4.x)
 
-Use **Direct Upload via GitHub Actions** for production. Cloudflare Pages **Git builds** still compile `_worker.js` with wrangler `3.114.17`, which miscompiles OpenNext 1.19+ and **500s at runtime** even when the dashboard says Deploy successful. wrangler **≥ 4.33** on **Node 22** (already in `@lobby/backoffice`) is required.
+Use **Direct Upload via GitHub Actions** if Git still 500s. Cloudflare Pages **Git builds** compile `_worker.js` with wrangler `3.114.17` unless `no_bundle` is set (root `wrangler.jsonc`). The staged output is a `_worker.js/` **directory** of modules, not a single bundled file.
 
-GitHub → Settings → Secrets and variables → Actions must include `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, or the Action exits before deploy. Then **Actions → Deploy backoffice (Cloudflare Pages) → Run workflow**. That overwrite is the live site that returns 200.
+GitHub → Settings → Secrets and variables → Actions should include `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the Action path. Then **Actions → Deploy backoffice (Cloudflare Pages) → Run workflow**.
 
 ### One-time Cloudflare setup
 

@@ -57,6 +57,7 @@ apps/backoffice/out/
 # Cloudflare / OpenNext / Wrangler
 .open-next/
 .pages-dist/
+.wrangler-prebundle/
 .wrangler/
 .dev.vars
 apps/backoffice/.open-next/

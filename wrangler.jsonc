@@ -3,6 +3,11 @@
   "name": "lobby",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  // Pages Git / wrangler pages deploy — do not set Worker `main` or `assets`.
-  "pages_build_output_dir": "apps/backoffice/.pages-dist"
+  // Pages Git still pins wrangler 3.114.17; skip that compile (it 500s OpenNext 1.19+).
+  "no_bundle": true,
+  "pages_build_output_dir": "apps/backoffice/.pages-dist",
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://mjzjracjadlybvdttgto.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qempyYWNqYWRseWJ2ZHR0Z3RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNTI0NTIsImV4cCI6MjA5NzcyODQ1Mn0.BH1NHibXiMYLUt5GUah40C_sMwzGdZ5q7X7eBNEAzeo"
+  }
 }
