@@ -12,7 +12,7 @@ export default [
       '**/.next/**',
       '**/.expo/**',
       '**/coverage/**',
-      'apps/mobile/.expo/**',
+      'apps/mobile/public/**',
     ],
   },
   {

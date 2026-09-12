@@ -1,16 +1,13 @@
----
-description: Stack Lobby — monorepo Expo, Next.js, Supabase
-alwaysApply: true
----
-
 # Lobby — stack
 
-- **Mobile**: Expo + React Native + TypeScript (expo-router, EAS). Deploy store via EAS — **mai** su Cloudflare Pages/Workers.
-- **Web (back-office)**: Next.js + TypeScript, deploy su **Cloudflare Pages** (OpenNext, advanced mode).
+- **Mobile nativo**: Expo + React Native + TypeScript (expo-router, EAS). Deploy store via EAS.
+- **App membro web (PWA)**: stesso codice in `apps/mobile`, export Expo web, Cloudflare Pages progetto **`lobby-app`** (statico, separato dal back-office).
+- **Web (back-office)**: Next.js + TypeScript, deploy su **Cloudflare Pages** progetto **`lobby`** (OpenNext, advanced mode).
 - **Backend UNICO**: Supabase (Postgres, Auth, Realtime, Storage, Edge Functions).
 - **Monorepo** npm workspaces; codice condiviso in `packages/shared`.
 
 ## Cosa NON è vero
 
-- L'app React Native NON si deploya su Cloudflare. Va agli store via EAS.
+- L'app nativa React Native NON si deploya su Cloudflare. Va agli store via EAS.
+- Il back-office (`lobby`) e la PWA membro (`lobby-app`) NON condividono lo stesso progetto Pages.
 - Il codice uscito da Stitch è un punto di partenza: va rifinito, non copiato alla cieca.

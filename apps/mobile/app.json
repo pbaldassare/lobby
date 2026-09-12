@@ -33,8 +33,14 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "Lobby",
+      "shortName": "Lobby",
+      "description": "Appari solo nella stanza in cui sei. Incontra chi vale la pena incontrare.",
+      "lang": "it",
+      "themeColor": "#FAF7F2",
+      "backgroundColor": "#FAF7F2"
     },
     "plugins": [
       "expo-router",

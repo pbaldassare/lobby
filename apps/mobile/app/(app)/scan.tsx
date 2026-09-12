@@ -1,47 +1,40 @@
 import { makeStyles, useTheme } from '@lobby/shared/theme';
-import { Button, Text } from '@lobby/shared/ui';
+import { Button, Field, Text } from '@lobby/shared/ui';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
+import { parseScan } from '@/lib/join';
 import { usePresence } from '@/providers/PresenceProvider';
 
-/** Il QR porta la stanza e il codice del momento. Il codice è la parte che
- *  conta: senza, il server non rilascia nessun permesso. */
-function parseJoin(raw: string): {
-  roomId: string;
-  code: string | null;
-  wifi: string | null;
-  method: string | null;
-} | null {
-  try {
-    const normalized = raw.includes('://')
-      ? raw
-      : raw.startsWith('join?')
-        ? `lobby://${raw}`
-        : raw;
-    if (normalized.startsWith('lobby://room/')) {
-      const roomId = normalized.replace('lobby://room/', '').split(/[?#]/)[0];
-      return roomId ? { roomId, code: null, wifi: null, method: null } : null;
-    }
-    const url = new URL(normalized);
-    const room = url.searchParams.get('room') ?? url.searchParams.get('roomId');
-    if (room) {
-      return {
-        roomId: room,
-        code: url.searchParams.get('code'),
-        wifi: url.searchParams.get('wifi'),
-        method: url.searchParams.get('method'),
-      };
-    }
-    return null;
-  } catch {
-    return null;
+function openScan(raw: string, inRoom: boolean): boolean {
+  const parsed = parseScan(raw);
+  if (!parsed) return false;
+  if (parsed.kind === 'join') {
+    router.replace({
+      pathname: '/(app)/join',
+      params: {
+        room: parsed.roomId,
+        ...(parsed.code ? { code: parsed.code } : {}),
+        ...(parsed.wifi ? { wifi: parsed.wifi } : {}),
+        ...(parsed.method ? { method: parsed.method } : {}),
+      },
+    });
+    return true;
   }
+  if (parsed.profileId && inRoom) {
+    router.replace({
+      pathname: '/(app)/invite-guest',
+      params: { profileId: parsed.profileId },
+    });
+    return true;
+  }
+  router.back();
+  return true;
 }
 
-/** Scansione dei QR Lobby: lobby://join?room=… oppure lobby://room/{id} */
+/** Scansione dei QR Lobby: lobby://join?room=…, https://…/join?room=…, oppure incolla il link. */
 export default function ScanScreen(): React.JSX.Element {
   const styles = useStyles();
   const theme = useTheme();
@@ -49,17 +42,50 @@ export default function ScanScreen(): React.JSX.Element {
   const [permission, requestPermission] = useCameraPermissions();
   const [locked, setLocked] = useState(false);
   const [last, setLast] = useState<string | null>(null);
+  const [paste, setPaste] = useState('');
+  const [pasteError, setPasteError] = useState<string | null>(null);
+  const isWeb = Platform.OS === 'web';
+  const cameraReady = Boolean(permission?.granted);
+
+  const submitPaste = () => {
+    setPasteError(null);
+    if (openScan(paste, Boolean(presence))) return;
+    setPasteError('Non è un QR o un link di Lobby.');
+  };
+
+  const pasteBlock = (
+    <View style={styles.paste}>
+      <Field
+        label="Incolla il link o il codice"
+        value={paste}
+        onChangeText={setPaste}
+        autoCapitalize="none"
+        autoCorrect={false}
+        placeholder="https://…/join?room=…  oppure  lobby://join?…"
+        error={pasteError}
+      />
+      <Button label="Entra con questo link" onPress={submitPaste} />
+    </View>
+  );
 
   if (!permission) return <View style={styles.center} />;
 
-  if (!permission.granted) {
+  if (!cameraReady) {
     return (
       <View style={styles.center}>
-        <Text variant="titleLg">Serve la fotocamera</Text>
+        <Text variant="titleLg">{isWeb ? 'Entra con il link' : 'Serve la fotocamera'}</Text>
         <Text variant="body" tone="secondary" style={styles.centerText}>
-          Solo per leggere i QR di Lobby. Niente foto, niente riprese.
+          {isWeb
+            ? 'Sul web puoi incollare il link del QR. La fotocamera è opzionale, e solo su HTTPS.'
+            : 'Solo per leggere i QR di Lobby. Niente foto, niente riprese.'}
         </Text>
-        <Button label="Consenti" onPress={() => void requestPermission()} />
+        {isWeb ? pasteBlock : null}
+        <Button
+          label={isWeb ? 'Usa la fotocamera' : 'Consenti'}
+          variant={isWeb ? 'ghost' : 'gold'}
+          onPress={() => void requestPermission()}
+        />
+        <Button label="Chiudi" variant="ghost" onPress={() => router.back()} />
       </View>
     );
   }
@@ -73,36 +99,12 @@ export default function ScanScreen(): React.JSX.Element {
           const data = event.data;
           if (locked || last === data) return;
           setLast(data);
-          const parsed = parseJoin(data);
-          if (parsed) {
+          if (openScan(data, Boolean(presence))) {
             setLocked(true);
-            router.replace({
-              pathname: '/(app)/join',
-              params: {
-                room: parsed.roomId,
-                ...(parsed.code ? { code: parsed.code } : {}),
-                ...(parsed.wifi ? { wifi: parsed.wifi } : {}),
-                ...(parsed.method ? { method: parsed.method } : {}),
-              },
-            });
-            return;
-          }
-          if (data.startsWith('lobby://member/')) {
-            const profileId = data.replace('lobby://member/', '').split(/[?#]/)[0];
-            if (profileId && presence) {
-              setLocked(true);
-              router.replace({
-                pathname: '/(app)/invite-guest',
-                params: { profileId },
-              });
-            } else {
-              router.back();
-            }
           }
         }}
       />
 
-      {/* Mirino: prima non c'era nulla, si inquadrava a caso. */}
       <View style={styles.reticleWrap} pointerEvents="none">
         <View style={[styles.corner, styles.tl, { borderColor: theme.color.accent.default }]} />
         <View style={[styles.corner, styles.tr, { borderColor: theme.color.accent.default }]} />
@@ -117,6 +119,7 @@ export default function ScanScreen(): React.JSX.Element {
         <Text variant="tiny" tone="secondary" style={styles.centerText}>
           Entri invisibile: nessuno ti vede finché non lo decidi tu.
         </Text>
+        {isWeb ? pasteBlock : null}
         <Button label="Chiudi" variant="ghost" onPress={() => router.back()} />
       </View>
     </View>
@@ -137,6 +140,7 @@ const useStyles = makeStyles((t) => ({
     gap: 12,
   },
   centerText: { textAlign: 'center' },
+  paste: { width: '100%', gap: 10 },
   reticleWrap: {
     position: 'absolute',
     top: '50%',

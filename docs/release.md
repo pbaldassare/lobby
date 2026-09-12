@@ -1,16 +1,19 @@
 # Lobby — release & deploy
 
-This document covers GitHub, Cloudflare Pages (backoffice only), and EAS (mobile).
+This document covers GitHub, Cloudflare Pages (backoffice + member PWA), and EAS (native app).
 
 ## What deploys where
 
 | Surface | Path | Deploy target |
 | --- | --- | --- |
-| Backoffice (Next.js) | `apps/backoffice` | **Cloudflare Pages** via OpenNext (advanced mode `_worker.js`) |
-| Mobile (Expo / RN) | `apps/mobile` | **EAS → App Store / Play** (never Cloudflare) |
+| Backoffice (Next.js) | `apps/backoffice` | **Cloudflare Pages** project **`lobby`** via OpenNext (`_worker.js`) |
+| Member PWA (Expo web) | `apps/mobile` | **Cloudflare Pages** project **`lobby-app`** (static SPA) |
+| Native app (Expo / RN) | `apps/mobile` | **EAS → App Store / Play** |
 | Backend | `supabase/` | Shared project `mjzjracjadlybvdttgto` (schema `lobby`) |
 
 Do **not** deploy `apps/web` — the backoffice app is `apps/backoffice`. Treat `apps/web` as unused/legacy if present.
+
+**Do not Git-connect `lobby-app` to this repo.** Root `wrangler.jsonc` belongs to the backoffice project `lobby`. The member PWA is Direct Upload only (GitHub Action or CLI).
 
 ---
 
@@ -100,7 +103,50 @@ Git builds can pass the OpenNext/Pages layout checks and still serve 500s becaus
 
 ### Reminder
 
-React Native / Expo does **not** deploy to Cloudflare. Mobile builds use EAS.
+The **native** Expo app does **not** deploy to Cloudflare. Store builds use EAS. The **member PWA** is a separate Pages project (`lobby-app`).
+
+---
+
+## 2b. Cloudflare Pages — member PWA (`lobby-app`)
+
+Same Expo app as the stores (`apps/mobile`), exported as a single-page PWA (`web.output: "single"`). Installable from the browser (Add to Home Screen). Push notifications stay native-only.
+
+One-time:
+
+1. Workers & Pages → **Pages** → Create project **`lobby-app`**. Choose **Direct Upload** (do not connect Git — this repo’s root Wrangler config is the backoffice).
+2. GitHub secrets (same Cloudflare token/account as the backoffice Action):
+
+| Secret | Notes |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Account → Cloudflare Pages: Edit |
+| `CLOUDFLARE_ACCOUNT_ID` | `daba97cd2972d30ce6fdcdabd845818a` |
+| `EXPO_PUBLIC_SUPABASE_URL` | `https://mjzjracjadlybvdttgto.supabase.co` (optional; build has a public fallback) |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Publishable / anon key only |
+| `EXPO_PUBLIC_WEB_ORIGIN` | Canonical PWA URL, e.g. `https://lobby-app.pages.dev` |
+
+3. Supabase → Authentication → URL Configuration → Redirect URLs, add:
+   - `https://lobby-app.pages.dev/**`
+   - `https://lobby-app.pages.dev/auth/callback`
+   - `http://localhost:8081/**`
+   - `http://localhost:8081/auth/callback`
+
+CLI:
+
+```bash
+npm install
+npm run mobile:web
+cd apps/mobile
+npx wrangler pages deploy dist --project-name=lobby-app
+```
+
+Or **Actions → Deploy member web (Cloudflare Pages) → Run workflow**.
+
+Local preview of the exported PWA:
+
+```bash
+npm run mobile:web
+npx serve apps/mobile/dist --single
+```
 
 ---
 

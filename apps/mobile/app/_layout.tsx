@@ -24,7 +24,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
+import { WebAppFrame } from '@/components/WebAppFrame';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import '@/lib/join';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { PresenceProvider } from '@/providers/PresenceProvider';
 
@@ -53,6 +55,7 @@ function ThemedShell(): React.JSX.Element {
       >
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
+        <Stack.Screen name="auth/callback" />
         <Stack.Screen name="(app)" />
       </Stack>
     </View>
@@ -101,7 +104,9 @@ export default function RootLayout(): React.JSX.Element | null {
           <AuthProvider>
             <PresenceProvider>
               <PushBootstrap />
-              <ThemedShell />
+              <WebAppFrame>
+                <ThemedShell />
+              </WebAppFrame>
             </PresenceProvider>
           </AuthProvider>
         </ThemeProvider>

@@ -1,0 +1,4 @@
+# Expo web.output=single: every member route is the SPA.
+/sw.js          /sw.js          200
+/manifest.json  /manifest.json  200
+/*              /index.html     200

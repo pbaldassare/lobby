@@ -25,8 +25,11 @@ MCP cannot enable OAuth providers; configure these in the Dashboard.
    Authentication → URL Configuration → Redirect URLs:
    - `http://localhost:3000/auth/callback`
    - `http://localhost:8081`
+   - `http://localhost:8081/auth/callback`
    - `lobby://**`
-   - `https://<your-pages-project>.pages.dev/auth/callback`
+   - `https://<backoffice>.pages.dev/auth/callback`
+   - `https://lobby-app.pages.dev/**`
+   - `https://lobby-app.pages.dev/auth/callback`
 
 ## LinkedIn (OIDC)
 
@@ -40,6 +43,7 @@ MCP cannot enable OAuth providers; configure these in the Dashboard.
 
 ## Client usage notes
 
-- Mobile (Expo): `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+- Mobile (Expo native + member PWA): `EXPO_PUBLIC_SUPABASE_URL` + `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+- Member PWA origin: `EXPO_PUBLIC_WEB_ORIGIN` (QR / join HTTPS links)
 - Web back-office: `NEXT_PUBLIC_SUPABASE_*`; privileged ops use `SUPABASE_SERVICE_ROLE_KEY` server-side only
 - Profile row is auto-created on signup (`lobby_private.handle_new_user` trigger)

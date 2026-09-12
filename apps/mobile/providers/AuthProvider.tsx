@@ -10,6 +10,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 
 import { demoProfile } from '@/lib/demo';
 import { isEnvConfigured } from '@/lib/env';
@@ -116,7 +117,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         setProfile(demoProfile);
         return { error: null };
       }
-      const redirectTo = Linking.createURL('auth/callback');
+      const redirectTo =
+        Platform.OS === 'web' && typeof window !== 'undefined'
+          ? `${window.location.origin}/auth/callback`
+          : Linking.createURL('auth/callback');
+      if (Platform.OS === 'web') {
+        const { error } = await getSupabase().auth.signInWithOAuth({
+          provider,
+          options: { redirectTo, skipBrowserRedirect: false },
+        });
+        return { error: error?.message ?? null };
+      }
       const { data, error } = await getSupabase().auth.signInWithOAuth({
         provider,
         options: { redirectTo, skipBrowserRedirect: true },

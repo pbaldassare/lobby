@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 
 import { createDemoPresence, DEMO_ROOM_ID, demoRoom } from '@/lib/demo';
 import { getSupabase } from '@/lib/supabase';
@@ -107,6 +108,16 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
   }, [user, isDemo, clearHeartbeat, startHeartbeat]);
 
   useEffect(() => () => clearHeartbeat(), [clearHeartbeat]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') clearHeartbeat();
+      else if (presence?.is_visible) startHeartbeat();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [presence?.is_visible, clearHeartbeat, startHeartbeat]);
 
   const enterRoom = useCallback(
     async (roomId: string, access?: EnterRoomAccess) => {

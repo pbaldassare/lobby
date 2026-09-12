@@ -3,17 +3,19 @@ import * as Notifications from 'expo-notifications';
 import { useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
-/** Permissions + Expo push token. TODO: persist token when device_tokens table lands. */
+/** Permissions + Expo push token. No-op on the member PWA (web). */
 export function usePushNotifications(): {
   expoPushToken: string | null;
   permission: Notifications.PermissionStatus | null;
@@ -54,6 +56,7 @@ export function usePushNotifications(): {
   };
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     void requestPermission();
     received.current = Notifications.addNotificationReceivedListener((n) => {
       console.log('notification received', n.request.content.title);

@@ -7,8 +7,9 @@ When you are physically in a venue, you can appear and see who is worth meeting.
 
 | Package | Path | Deploy |
 | --- | --- | --- |
-| Mobile (Expo + RN) | `apps/mobile` | EAS → App Store / Play (**not** Cloudflare) |
-| Backoffice (Next.js) | `apps/backoffice` | Cloudflare Pages (OpenNext) |
+| Native app (Expo + RN) | `apps/mobile` | EAS → App Store / Play |
+| Member PWA (same Expo app, web) | `apps/mobile` | Cloudflare Pages project **`lobby-app`** |
+| Backoffice (Next.js) | `apps/backoffice` | Cloudflare Pages project **`lobby`** (OpenNext) |
 | Shared | `packages/shared` | consumed by apps |
 | Backend | `supabase/` | Supabase project `mjzjracjadlybvdttgto` (schema `lobby`) |
 
@@ -36,7 +37,7 @@ Expose schema `lobby` in Dashboard → Settings → API → Exposed schemas (alr
 
 ## Release & deploy
 
-See **[docs/release.md](docs/release.md)** for GitHub, Cloudflare (backoffice), and EAS (mobile).
+See **[docs/release.md](docs/release.md)** for GitHub, Cloudflare (backoffice + member PWA), and EAS (native).
 
 ## Security
 

@@ -56,6 +56,8 @@ export type CreateLobbyClientOptions = {
     setItem: (key: string, value: string) => Promise<void> | void;
     removeItem: (key: string) => Promise<void> | void;
   };
+  /** Web OAuth (PKCE / implicit). Keep false on native. */
+  detectSessionInUrl?: boolean;
 };
 
 /**
@@ -65,7 +67,7 @@ export type CreateLobbyClientOptions = {
 export function createLobbySupabaseClient(
   options: CreateLobbyClientOptions,
 ): SupabaseClient {
-  const { url, anonKey, authStorage } = options;
+  const { url, anonKey, authStorage, detectSessionInUrl = false } = options;
 
   if (!url || !anonKey) {
     throw new Error(
@@ -83,7 +85,7 @@ export function createLobbySupabaseClient(
       storage: authStorage,
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: false,
+      detectSessionInUrl,
     },
   });
 }

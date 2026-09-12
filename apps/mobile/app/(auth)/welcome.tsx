@@ -10,7 +10,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { InstallBanner } from '@/components/InstallBanner';
 import { isEnvConfigured } from '@/lib/env';
+import { consumePendingDeepLink } from '@/lib/join';
 import { useAuth } from '@/providers/AuthProvider';
 
 /**
@@ -33,7 +35,7 @@ export default function WelcomeScreen(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const run = (fn: () => Promise<{ error: string | null }>) => {
+  const run = (fn: () => Promise<{ error: string | null }>, stayOnPage = false) => {
     setBusy(true);
     setError(null);
     void fn().then(({ error: err }) => {
@@ -42,8 +44,12 @@ export default function WelcomeScreen(): React.JSX.Element {
         setError(err);
         return;
       }
+      // OAuth sul web lascia la pagina (redirect al provider).
+      if (stayOnPage) return;
       // Dopo il login si è invisibili: se ne occupa PresenceProvider.
-      router.replace('/(app)/(tabs)/discover');
+      if (!consumePendingDeepLink()) {
+        router.replace('/(app)/(tabs)/discover');
+      }
     });
   };
 
@@ -126,13 +132,15 @@ export default function WelcomeScreen(): React.JSX.Element {
           <Button
             label="Continua con Google"
             variant="ghost"
-            onPress={() => run(() => signInWithOAuth('google'))}
+            onPress={() => run(() => signInWithOAuth('google'), Platform.OS === 'web' && !isDemo)}
           />
           <Button
             label="Continua con LinkedIn"
             variant="ghost"
-            onPress={() => run(() => signInWithOAuth('linkedin_oidc'))}
+            onPress={() => run(() => signInWithOAuth('linkedin_oidc'), Platform.OS === 'web' && !isDemo)}
           />
+
+          <InstallBanner />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

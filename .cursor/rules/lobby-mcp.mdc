@@ -1,10 +1,5 @@
----
-description: Uso MCP nel progetto Lobby — Stitch, Supabase, Cloudflare
-alwaysApply: true
----
-
 # Lobby — uso MCP
 
 - **Stitch**: PRIMA `extract design context` (design.md/token) POI genera, per coerenza visiva. Le grafiche/template le fornisce l'utente: usale come fonte, non inventare un nuovo stile.
 - **Supabase**: usa il progetto che fornisce l'utente. Ogni modifica allo schema = migration in `/supabase/migrations`.
-- **Cloudflare**: solo per il deploy del back-office web (Pages + OpenNext). Non per l'app mobile.
+- **Cloudflare**: Pages progetto **`lobby`** per il back-office (OpenNext). Pages progetto **`lobby-app`** per la PWA membro (export statico Expo). Non mischiare i due output. L'app nativa resta EAS.
