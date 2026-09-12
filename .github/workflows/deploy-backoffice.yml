@@ -8,6 +8,7 @@ on:
       - 'packages/shared/**'
       - 'package-lock.json'
       - 'package.json'
+      - 'wrangler.jsonc'
   workflow_dispatch:
 
 jobs:

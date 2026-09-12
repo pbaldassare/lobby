@@ -32,9 +32,11 @@ The backoffice runs on Cloudflare Workers through `@opennextjs/cloudflare`.
 
 Config already in the repo:
 
-- `apps/backoffice/wrangler.jsonc` — Worker `lobby-backoffice`
+- `wrangler.jsonc` at the **repo root** — Cloudflare Git builds look here (Worker `lobby-backoffice`)
+- `apps/backoffice/wrangler.jsonc` — same Worker, for `npm run deploy` from `apps/backoffice`
 - `apps/backoffice/open-next.config.ts`
-- `.github/workflows/deploy-backoffice.yml` — deploy on push to `main`
+- Root `npm run build` runs OpenNext in the backoffice workspace
+- `.github/workflows/deploy-backoffice.yml` — optional CLI deploy on push to `main`
 
 ### One-time Cloudflare setup
 
@@ -67,12 +69,27 @@ npx wrangler login
 npm run deploy
 ```
 
-### Dashboard alternative
+### Dashboard (Workers, not Pages)
 
-Workers & Pages → Create → Connect GitHub repo `pbaldassare/lobby`.
+Workers & Pages → **Workers** → Create → Connect GitHub `pbaldassare/lobby`.
 
-- **Root directory**: `apps/backoffice` is **not** enough by itself (npm workspaces live at the repo root). Prefer the GitHub Action, which runs `npm ci` at the root then `opennextjs-cloudflare build` in `apps/backoffice`.
-- Compatibility flags: `nodejs_compat` (already in `wrangler.jsonc`).
+Leave **Root directory empty** (the npm workspace lockfile is at the repo root). Do **not** set it to `apps/backoffice`.
+
+| Setting | Value |
+| --- | --- |
+| Root directory | *(empty / repository root)* |
+| Install command | `npm ci` (or the default `npm clean-install`) |
+| Build command | `npm run build` |
+| Deploy | wrangler uses root `wrangler.jsonc` → `apps/backoffice/.open-next/` |
+
+Also set build-time variables (Settings → Variables):
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_APP_URL`
+- `SUPABASE_SERVICE_ROLE_KEY` as a **secret** (never `NEXT_PUBLIC_`)
+
+Compatibility flags: `nodejs_compat` (already in `wrangler.jsonc`).
 
 ### Reminder
 

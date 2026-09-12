@@ -9,6 +9,8 @@
   "scripts": {
     "mobile": "npm run start --workspace=@lobby/mobile",
     "backoffice": "npm run dev --workspace=@lobby/backoffice",
+    "build": "npm run cf:build --workspace=@lobby/backoffice",
+    "deploy": "npm run deploy --workspace=@lobby/backoffice",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "npm run typecheck --workspaces --if-present"
