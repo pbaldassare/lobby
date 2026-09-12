@@ -12,7 +12,7 @@ Quando sei fisicamente in un venue, puoi apparire e vedere chi vale la pena inco
 
 ## Stack
 - Mobile: Expo + React Native + TypeScript (expo-router, EAS).
-- Web (back-office): Next.js + TypeScript, deploy su Vercel.
+- Web (back-office): Next.js + TypeScript, deploy su Cloudflare Workers (OpenNext).
 - Backend UNICO condiviso: Supabase (Postgres, Auth, Realtime, Storage, Edge Functions).
 - Monorepo npm workspaces; codice condiviso in packages/shared.
 
@@ -20,7 +20,7 @@ Quando sei fisicamente in un venue, puoi apparire e vedere chi vale la pena inco
 - RLS attiva su OGNI tabella. Nessuna tabella senza policy.
 - La service_role key NON tocca mai il client (né bundle mobile né codice web pubblico):
   vive solo server-side (Next.js server actions/route handlers) o nelle Edge Functions.
-- Segreti solo via dashboard (Supabase/Vercel/EAS). Mai committati. .env in .gitignore.
+- Segreti solo via dashboard (Supabase/Cloudflare/EAS). Mai committati. .env in .gitignore.
 - Operazioni privilegiate (rilascio sigillo, calcolo match, moderazione) = server-side.
 
 ## Convenzioni
@@ -33,8 +33,8 @@ Quando sei fisicamente in un venue, puoi apparire e vedere chi vale la pena inco
   Le grafiche/template le fornisce l'utente: usale come fonte, non inventare un nuovo stile.
 - Supabase: usa il progetto che fornisce l'utente. Ogni modifica allo schema = migration
   versionata in /supabase/migrations, mai modifiche "a mano" non tracciate.
-- Vercel: solo per il deploy del back-office web.
+- Cloudflare: solo per il deploy del back-office web (Workers).
 
 ## Cosa NON è vero (evita l'errore classico)
-- L'app React Native NON si deploya su Vercel. Va agli store via EAS.
+- L'app React Native NON si deploya su Cloudflare. Va agli store via EAS.
 - Il codice uscito da Stitch è un punto di partenza, va rifinito.

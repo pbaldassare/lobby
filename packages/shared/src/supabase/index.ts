@@ -34,15 +34,18 @@ export function buildRoomJoinUrl(params: {
   /** Codice a rotazione. Senza, il link non apre nulla: la stanza si sblocca
    *  solo presentando un codice ancora valido. */
   code?: string;
+  /** Token rete del portale Wi‑Fi (`room_access.param`). */
+  wifi?: string;
   /** Optional https origin for universal links; defaults to lobby scheme */
   webOrigin?: string;
 }): string {
   const code = params.code ? `&code=${encodeURIComponent(params.code)}` : '';
-  const path = `/join?venue=${encodeURIComponent(params.venueId)}&room=${encodeURIComponent(params.roomId)}${code}`;
+  const wifi = params.wifi ? `&wifi=${encodeURIComponent(params.wifi)}` : '';
+  const path = `/join?venue=${encodeURIComponent(params.venueId)}&room=${encodeURIComponent(params.roomId)}${code}${wifi}`;
   if (params.webOrigin) {
     return `${params.webOrigin.replace(/\/$/, '')}${path}`;
   }
-  return `lobby://join?venue=${encodeURIComponent(params.venueId)}&room=${encodeURIComponent(params.roomId)}${code}`;
+  return `lobby://join?venue=${encodeURIComponent(params.venueId)}&room=${encodeURIComponent(params.roomId)}${code}${wifi}`;
 }
 
 export type CreateLobbyClientOptions = {

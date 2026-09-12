@@ -2,6 +2,8 @@
 
 Privileged operations — use `SUPABASE_SERVICE_ROLE_KEY` only inside these functions (never in clients).
 
+Deployed on the **shared** project `mjzjracjadlybvdttgto` (schema `lobby`).
+
 | Function | Purpose | Body |
 |---|---|---|
 | `issue-seal` | Venue staff issues membership seal | `{ "membership_id": "<uuid>" }` |
@@ -10,12 +12,14 @@ Privileged operations — use `SUPABASE_SERVICE_ROLE_KEY` only inside these func
 
 All require `Authorization: Bearer <user_jwt>` (`verify_jwt: true`).
 
+Clients must use `db.schema = 'lobby'`. RPCs live in that schema (`lobby.issue_seal`, …).
+
 ## Deploy (CLI alternative)
 
 ```bash
-supabase functions deploy issue-seal --project-ref kxgaqnksylntokyrpaxp
-supabase functions deploy compute-matches --project-ref kxgaqnksylntokyrpaxp
-supabase functions deploy send-signal --project-ref kxgaqnksylntokyrpaxp
+supabase functions deploy issue-seal --project-ref mjzjracjadlybvdttgto
+supabase functions deploy compute-matches --project-ref mjzjracjadlybvdttgto
+supabase functions deploy send-signal --project-ref mjzjracjadlybvdttgto
 ```
 
-SQL helpers: `public.issue_seal`, `public.send_signal`, `public.compute_matches_for_room` (executable by `service_role` only).
+SQL helpers: `lobby.issue_seal`, `lobby.send_signal`, `lobby.compute_matches_for_room` (executable by `service_role` only).

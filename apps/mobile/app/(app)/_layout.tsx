@@ -44,6 +44,14 @@ export default function AppLayout(): React.JSX.Element {
     >
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="join" options={{ presentation: 'modal' }} />
+      <Stack.Screen
+        name="enter"
+        options={{ ...nativeHeader, presentation: 'modal', title: 'Come entri' }}
+      />
+      <Stack.Screen
+        name="invite-guest"
+        options={{ ...nativeHeader, presentation: 'modal', title: 'Porta un ospite' }}
+      />
       {/* La chat disegna la propria intestazione: le serve avatar e stato
           della connessione, che un header nativo non può mostrare. */}
       <Stack.Screen name="chat/[id]" />

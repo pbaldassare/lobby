@@ -1,8 +1,9 @@
 import { makeStyles } from '@lobby/shared/theme';
 import type { RoomPerson } from '@lobby/shared/types';
-import { ListEmpty, ScreenHeader, Text } from '@lobby/shared/ui';
+import { Button, ListEmpty, ScreenHeader } from '@lobby/shared/ui';
+import { router } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { PersonRow } from '@/components/PersonRow';
 import { PresenceBar } from '@/components/PresenceBar';
@@ -14,7 +15,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { usePresence } from '@/providers/PresenceProvider';
 
 export default function DiscoverScreen(): React.JSX.Element {
-  const { profile } = useAuth();
+  const { profile, isDemo } = useAuth();
   const { room, isVisible, enterRoom, leaveRoom, setVisible, presence } = usePresence();
   const { people, loading } = useRoomPeople();
   const [selected, setSelected] = useState<RoomPerson | null>(null);
@@ -57,7 +58,9 @@ export default function DiscoverScreen(): React.JSX.Element {
             isVisible={isVisible}
             closesAt={room?.closes_at ?? null}
             count={ranked.length}
-            onEnter={() => void enterRoom(DEMO_ROOM_ID)}
+            onScan={() => router.push('/(app)/scan')}
+            onOther={() => router.push('/(app)/enter')}
+            onDemo={isDemo ? () => void enterRoom(DEMO_ROOM_ID) : undefined}
             onLeave={() => void leaveRoom()}
             onChangeVisibility={(v) => void setVisible(v)}
           />
@@ -83,7 +86,9 @@ function Header({
   isVisible,
   closesAt,
   count,
-  onEnter,
+  onScan,
+  onOther,
+  onDemo,
   onLeave,
   onChangeVisibility,
 }: {
@@ -93,7 +98,9 @@ function Header({
   isVisible: boolean;
   closesAt: string | null;
   count: number;
-  onEnter: () => void;
+  onScan: () => void;
+  onOther: () => void;
+  onDemo?: () => void;
   onLeave: () => void;
   onChangeVisibility: (visible: boolean) => void;
 }): React.JSX.Element {
@@ -112,24 +119,32 @@ function Header({
       />
 
       {inRoom ? (
-        <PresenceBar
-          isVisible={isVisible}
-          roomName={roomName}
-          closesAt={closesAt}
-          onChange={onChangeVisibility}
-          onLeave={onLeave}
-        />
+        <>
+          <PresenceBar
+            isVisible={isVisible}
+            roomName={roomName}
+            closesAt={closesAt}
+            onChange={onChangeVisibility}
+            onLeave={onLeave}
+          />
+          <Button
+            label="Invita scansionando una card"
+            variant="ghost"
+            onPress={onScan}
+          />
+        </>
       ) : (
-        <Pressable
-          accessibilityRole="button"
-          hitSlop={8}
-          onPress={onEnter}
-          style={({ pressed }) => [styles.demo, pressed && styles.pressed]}
-        >
-          <Text variant="tiny" tone="tertiary">
-            Entra nella stanza dimostrativa
-          </Text>
-        </Pressable>
+        <View style={styles.actions}>
+          <Button label="Scansiona il QR del locale" onPress={onScan} />
+          <Button label="Mail, socio, Wi‑Fi" variant="ghost" onPress={onOther} />
+          {onDemo ? (
+            <Button
+              label="Entra nella stanza dimostrativa"
+              variant="ghost"
+              onPress={onDemo}
+            />
+          ) : null}
+        </View>
       )}
     </View>
   );
@@ -179,8 +194,7 @@ function Body({
 
 const useStyles = makeStyles(() => ({
   header: { gap: 14, paddingBottom: 4 },
-  demo: { alignSelf: 'flex-start', paddingVertical: 6 },
-  pressed: { opacity: 0.6 },
+  actions: { gap: 8 },
 }));
 
 const styles = { list: { paddingBottom: 24 } } as const;

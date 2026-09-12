@@ -7,7 +7,7 @@ export async function listVenueRooms(venueId: string): Promise<Room[]> {
   const admin = createAdminClient();
   const { data } = await admin
     .from('rooms')
-    .select('*')
+    .select('id, venue_id, name, created_at, opens_at, closes_at')
     .eq('venue_id', venueId)
     .order('name');
   return (data ?? []) as Room[];

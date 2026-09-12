@@ -72,6 +72,8 @@ export type RoomAccess = {
   method: AccessMethod;
   /** Il dominio per `email_domain`, la rete per `wifi_portal`. Null per `qr`. */
   param: string | null;
+  /** Durata del permesso concesso da questo canale. */
+  grants_for?: string | null;
   created_at: string;
 };
 

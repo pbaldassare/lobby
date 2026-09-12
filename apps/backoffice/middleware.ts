@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { LOBBY_DB_SCHEMA } from '@lobby/shared/supabase';
 import { NextResponse, type NextRequest } from 'next/server';
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
@@ -34,6 +35,7 @@ export async function middleware(request: NextRequest) {
   }
 
   const supabase = createServerClient(url, anon, {
+    db: { schema: LOBBY_DB_SCHEMA },
     cookies: {
       getAll() {
         return request.cookies.getAll();

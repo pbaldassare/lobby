@@ -8,6 +8,7 @@ const LINKS = [
   { href: '/verify', label: 'Verify & seal' },
   { href: '/moderation', label: 'Moderation' },
   { href: '/poster', label: 'QR poster' },
+  { href: '/access', label: 'Accesso' },
 ] as const;
 
 export function StaffNav() {

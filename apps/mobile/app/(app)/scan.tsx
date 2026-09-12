@@ -5,9 +5,16 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { usePresence } from '@/providers/PresenceProvider';
+
 /** Il QR porta la stanza e il codice del momento. Il codice è la parte che
  *  conta: senza, il server non rilascia nessun permesso. */
-function parseJoin(raw: string): { roomId: string; code: string | null } | null {
+function parseJoin(raw: string): {
+  roomId: string;
+  code: string | null;
+  wifi: string | null;
+  method: string | null;
+} | null {
   try {
     const normalized = raw.includes('://')
       ? raw
@@ -16,11 +23,18 @@ function parseJoin(raw: string): { roomId: string; code: string | null } | null 
         : raw;
     if (normalized.startsWith('lobby://room/')) {
       const roomId = normalized.replace('lobby://room/', '').split(/[?#]/)[0];
-      return roomId ? { roomId, code: null } : null;
+      return roomId ? { roomId, code: null, wifi: null, method: null } : null;
     }
     const url = new URL(normalized);
     const room = url.searchParams.get('room') ?? url.searchParams.get('roomId');
-    if (room) return { roomId: room, code: url.searchParams.get('code') };
+    if (room) {
+      return {
+        roomId: room,
+        code: url.searchParams.get('code'),
+        wifi: url.searchParams.get('wifi'),
+        method: url.searchParams.get('method'),
+      };
+    }
     return null;
   } catch {
     return null;
@@ -31,6 +45,7 @@ function parseJoin(raw: string): { roomId: string; code: string | null } | null 
 export default function ScanScreen(): React.JSX.Element {
   const styles = useStyles();
   const theme = useTheme();
+  const { presence } = usePresence();
   const [permission, requestPermission] = useCameraPermissions();
   const [locked, setLocked] = useState(false);
   const [last, setLast] = useState<string | null>(null);
@@ -63,13 +78,27 @@ export default function ScanScreen(): React.JSX.Element {
             setLocked(true);
             router.replace({
               pathname: '/(app)/join',
-              params: parsed.code
-                ? { room: parsed.roomId, code: parsed.code }
-                : { room: parsed.roomId },
+              params: {
+                room: parsed.roomId,
+                ...(parsed.code ? { code: parsed.code } : {}),
+                ...(parsed.wifi ? { wifi: parsed.wifi } : {}),
+                ...(parsed.method ? { method: parsed.method } : {}),
+              },
             });
             return;
           }
-          if (data.startsWith('lobby://member/')) router.back();
+          if (data.startsWith('lobby://member/')) {
+            const profileId = data.replace('lobby://member/', '').split(/[?#]/)[0];
+            if (profileId && presence) {
+              setLocked(true);
+              router.replace({
+                pathname: '/(app)/invite-guest',
+                params: { profileId },
+              });
+            } else {
+              router.back();
+            }
+          }
         }}
       />
 
