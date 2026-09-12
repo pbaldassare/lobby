@@ -18,6 +18,14 @@ import { getSupabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
+function publicAuthError(message: string | undefined): string | null {
+  if (!message) return null;
+  if (/invalid login credentials/i.test(message)) return 'Email o password non corretti.';
+  if (/email not confirmed/i.test(message)) return 'Conferma l’email prima di entrare.';
+  if (/user already registered/i.test(message)) return 'Questo account esiste già. Accedi.';
+  return message;
+}
+
 type AuthContextValue = {
   session: Session | null;
   user: User | null;
@@ -92,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         return { error: null };
       }
       const { error } = await getSupabase().auth.signInWithPassword({ email, password });
-      return { error: error?.message ?? null };
+      return { error: publicAuthError(error?.message) };
     },
     [isDemo],
   );
@@ -105,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         return { error: null };
       }
       const { error } = await getSupabase().auth.signUp({ email, password });
-      return { error: error?.message ?? null };
+      return { error: publicAuthError(error?.message) };
     },
     [isDemo],
   );
@@ -126,23 +134,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
           provider,
           options: { redirectTo, skipBrowserRedirect: false },
         });
-        return { error: error?.message ?? null };
+        return { error: publicAuthError(error?.message) };
       }
       const { data, error } = await getSupabase().auth.signInWithOAuth({
         provider,
         options: { redirectTo, skipBrowserRedirect: true },
       });
-      if (error) return { error: error.message };
-      if (!data.url) return { error: 'No OAuth URL returned' };
+      if (error) return { error: publicAuthError(error.message) };
+      if (!data.url) return { error: 'Il provider non ha restituito un indirizzo di accesso.' };
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
       if (result.type !== 'success' || !result.url) {
-        return { error: result.type === 'cancel' ? null : 'OAuth cancelled' };
+        return { error: result.type === 'cancel' ? null : 'Accesso interrotto.' };
       }
       const url = Linking.parse(result.url);
       const code = typeof url.queryParams?.code === 'string' ? url.queryParams.code : null;
       if (code) {
         const { error: exchangeError } = await getSupabase().auth.exchangeCodeForSession(code);
-        return { error: exchangeError?.message ?? null };
+        return { error: publicAuthError(exchangeError?.message) };
       }
       return { error: null };
     },
