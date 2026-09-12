@@ -15,6 +15,7 @@ export default function MemberAccessScreen(): React.JSX.Element {
   return (
     <Screen>
       <ScreenHeader
+        icon="card"
         title="Accessi riservati"
         subtitle="Legati alla tua membership. Li concede il locale, non te li assegni tu."
       />

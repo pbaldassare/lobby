@@ -69,6 +69,26 @@ export const icons = {
     paths: ['M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z'],
     filled: true,
   },
+  scan: {
+    viewBox: V,
+    paths: [
+      'M4 8V5h3',
+      'M17 5h3v3',
+      'M20 16v3h-3',
+      'M7 19H4v-3',
+      'M8 8.5h3.5V12H8Z',
+      'M12.5 8.5H16V12h-3.5Z',
+      'M8 12.5h3.5V16H8Z',
+      'M12.5 12.5H16V16h-3.5Z',
+    ],
+  },
+  lock: {
+    viewBox: V,
+    paths: [
+      'M8 11V8a4 4 0 1 1 8 0v3',
+      'M6.5 11h11A1.5 1.5 0 0 1 19 12.5v7A1.5 1.5 0 0 1 17.5 21h-11A1.5 1.5 0 0 1 5 19.5v-7A1.5 1.5 0 0 1 6.5 11Z',
+    ],
+  },
 } as const satisfies Record<string, IconDef>;
 
 export type IconName = keyof typeof icons;

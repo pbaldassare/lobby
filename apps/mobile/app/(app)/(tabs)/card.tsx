@@ -1,79 +1,85 @@
-import { makeStyles, useTheme } from '@lobby/shared/theme';
-import { Avatar, Button, Card, Chip, Icon, ScreenHeader, Text, VerifiedBadge } from '@lobby/shared/ui';
+import { makeStyles } from '@lobby/shared/theme';
+import { Avatar, Button, Card, Chip, ScreenHeader, Text } from '@lobby/shared/ui';
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
 import { useMemberships } from '@/hooks/useMemberships';
 import { initialsFromProfile } from '@/lib/format';
 import { useAuth } from '@/providers/AuthProvider';
 
-/**
- * La propria card.
- *
- * Prima questa schermata teneva insieme identità, QR, tre blocchi in lettura,
- * un form di modifica che compariva inline, e in fondo accessi, scansione e
- * uscita. Cose diverse con tempi diversi, in un unico scorrimento.
- *
- * Ora resta l'identità. Il QR è un gesto a sé — dentro il locale passi il
- * telefono a qualcuno, non gli fai scorrere il tuo profilo — e modifica e
- * impostazioni hanno una loro rotta.
- */
+function formatSince(iso: string | undefined): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('it-IT', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 export default function YourCardScreen(): React.JSX.Element {
   const styles = useStyles();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { memberships } = useMemberships();
   const sealed = memberships.find((m) => m.verified_status === 'verified' && m.seal_issued_at);
 
   return (
     <Screen>
       <ScreenHeader
+        icon="card"
         title="La tua card"
-        subtitle="Identità e sigillo del venue. Il sigillo lo rilascia il locale: non te lo puoi dare da solo."
+        subtitle="Identità e sigillo del venue. Il sigillo lo rilascia il locale."
       />
 
-      <Card variant="biz" style={styles.biz}>
+      <Card variant="biz" style={styles.block}>
+        <View style={styles.blockHead}>
+          <Text variant="titleSm">Identità</Text>
+          <Chip label="Modifica" onPress={() => router.push('/(app)/edit-profile')} />
+        </View>
+
         <View style={styles.identity}>
-          <Avatar initials={initialsFromProfile(profile)} uri={profile?.avatar_url} size={60} />
+          <Avatar initials={initialsFromProfile(profile)} uri={profile?.avatar_url} size={56} />
           <View style={styles.identityText}>
-            <Text variant="titleSm" numberOfLines={1}>
-              {profile?.display_name ?? 'Membro'}
-            </Text>
+            <Text variant="name">{profile?.display_name ?? 'Membro'}</Text>
             {profile?.headline ? (
               <Text variant="small" tone="secondary" numberOfLines={2}>
                 {profile.headline}
               </Text>
             ) : null}
-            {profile?.company ? (
-              <Text variant="tiny" tone="accent" numberOfLines={1}>
-                {profile.company}
-              </Text>
-            ) : null}
           </View>
         </View>
 
-        {sealed?.venue ? (
-          <VerifiedBadge
-            venueName={sealed.venue.name}
-            venueMark={sealed.venue.name.slice(0, 2)}
-            layout="member"
-            since={sealed.since}
-          />
-        ) : (
-          <Text variant="small" tone="tertiary">
-            Nessun sigillo. Chiedilo allo staff del venue: i soci non possono emetterlo da sé.
-          </Text>
-        )}
+        <Fact label="Nome" value={profile?.display_name ?? '—'} />
+        <Fact label="Email" value={user?.email ?? '—'} hint="L’email non si cambia da qui." />
+        <Fact label="Azienda" value={profile?.company ?? '—'} />
+        <Fact
+          label="Sigillo"
+          value={sealed?.venue?.name ?? 'Nessun sigillo'}
+          hint={
+            sealed
+              ? 'Rilasciato dal venue, non da te.'
+              : 'Chiedilo allo staff. I soci non possono emetterlo da sé.'
+          }
+        />
+        <Fact label="Membro da" value={formatSince(profile?.created_at)} last />
       </Card>
 
-      <Button label="Mostra il QR" onPress={() => router.push('/(app)/qr')} />
+      <Button icon="scan" label="Mostra il QR" onPress={() => router.push('/(app)/qr')} />
 
-      <Block label="In evidenza">
+      <Card style={styles.block}>
+        <Text variant="kicker" tone="tertiary">
+          In evidenza
+        </Text>
         <Text variant="body">{profile?.spotlight || '—'}</Text>
-      </Block>
+      </Card>
 
-      <Block label="Offro">
+      <Card style={styles.block}>
+        <Text variant="kicker" tone="tertiary">
+          Offro
+        </Text>
         {(profile?.offer ?? []).length === 0 ? (
           <Text variant="body" tone="tertiary">
             —
@@ -85,9 +91,12 @@ export default function YourCardScreen(): React.JSX.Element {
             ))}
           </View>
         )}
-      </Block>
+      </Card>
 
-      <Block label="Cerco">
+      <Card style={styles.block}>
+        <Text variant="kicker" tone="tertiary">
+          Cerco
+        </Text>
         {(profile?.seek ?? []).length === 0 ? (
           <Text variant="body" tone="tertiary">
             —
@@ -99,66 +108,69 @@ export default function YourCardScreen(): React.JSX.Element {
             ))}
           </View>
         )}
-      </Block>
+      </Card>
 
-      <View style={styles.links}>
-        <LinkRow label="Modifica profilo" onPress={() => router.push('/(app)/edit-profile')} />
-        <LinkRow label="Impostazioni" onPress={() => router.push('/(app)/settings')} />
-      </View>
+      <Card style={styles.block}>
+        <Text variant="titleSm">Privacy</Text>
+        <Text variant="small" tone="secondary">
+          Invisibile di default. Visibile solo nella stanza in cui sei. Le
+          connessioni richiedono il consenso di entrambi. Puoi nasconderti da
+          persone o aziende specifiche.
+        </Text>
+        <Button
+          label="Impostazioni"
+          variant="ghost"
+          onPress={() => router.push('/(app)/settings')}
+        />
+      </Card>
     </Screen>
   );
 }
 
-function Block({
+function Fact({
   label,
-  children,
+  value,
+  hint,
+  last = false,
 }: {
   label: string;
-  children: React.ReactNode;
+  value: string;
+  hint?: string;
+  last?: boolean;
 }): React.JSX.Element {
   const styles = useStyles();
 
   return (
-    <View style={styles.block}>
-      <Text variant="kicker" tone="tertiary">
+    <View style={[styles.fact, last && styles.factLast]}>
+      <Text variant="tiny" tone="tertiary">
         {label}
       </Text>
-      {children}
+      <Text variant="bodyStrong">{value}</Text>
+      {hint ? (
+        <Text variant="tiny" tone="tertiary">
+          {hint}
+        </Text>
+      ) : null}
     </View>
   );
 }
 
-function LinkRow({ label, onPress }: { label: string; onPress: () => void }): React.JSX.Element {
-  const styles = useStyles();
-  const theme = useTheme();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [styles.linkRow, pressed && styles.pressed]}
-    >
-      <Text variant="body">{label}</Text>
-      <Icon name="chevronRight" size={18} color={theme.color.text.tertiary} />
-    </Pressable>
-  );
-}
-
 const useStyles = makeStyles((t) => ({
-  biz: { gap: 14 },
-  identity: { flexDirection: 'row', gap: 14, alignItems: 'center' },
-  identityText: { flex: 1, minWidth: 0, gap: 3 },
-  block: { gap: 6 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
-  links: { marginTop: 4 },
-  linkRow: {
+  block: { gap: 12 },
+  blockHead: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: t.color.border.subtle,
-    minHeight: 48,
+    gap: 12,
   },
-  pressed: { opacity: 0.6 },
+  identity: { flexDirection: 'row', gap: 14, alignItems: 'center' },
+  identityText: { flex: 1, minWidth: 0, gap: 3 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  fact: {
+    gap: 3,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: t.color.border.subtle,
+  },
+  factLast: { borderBottomWidth: 0, paddingBottom: 0 },
 }));

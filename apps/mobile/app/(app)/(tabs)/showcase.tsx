@@ -14,6 +14,7 @@ export default function ShowcaseScreen(): React.JSX.Element {
   return (
     <Screen>
       <ScreenHeader
+        icon="showcase"
         title="Progetti"
         subtitle="Quello che scegli di mostrare. Nessun algoritmo decide per te."
       />

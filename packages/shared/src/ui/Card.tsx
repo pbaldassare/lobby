@@ -51,38 +51,44 @@ export function Glass(props: Omit<CardProps, 'variant'>): React.JSX.Element {
 }
 
 const useStyles = makeStyles((t) => ({
-  base: { borderWidth: 1, borderRadius: t.radius.lg, overflow: 'hidden' },
-  padded: { padding: 15 },
+  base: {
+    borderWidth: 1,
+    borderRadius: 22,
+    ...(t.scheme === 'light'
+      ? {
+          shadowColor: '#1A1917',
+          shadowOpacity: 0.06,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 2,
+        }
+      : {}),
+  },
+  padded: { padding: 16 },
   pressed: { opacity: 0.82 },
 
   glass: {
     backgroundColor: t.color.bg.raised,
     borderColor: t.color.border.subtle,
-    borderRadius: t.radius.lg,
   },
   solid: {
     backgroundColor: t.color.bg.raised,
     borderColor: t.color.border.subtle,
-    borderRadius: t.radius.md,
   },
   ice: {
     backgroundColor: t.color.accent.subtleBg,
     borderColor: t.color.accent.subtleBorder,
-    borderRadius: t.radius.md,
   },
   biz: {
     backgroundColor: t.color.bg.raised,
-    borderColor: t.color.border.strong,
-    borderRadius: t.radius.lg,
+    borderColor: t.color.border.subtle,
   },
   project: {
     backgroundColor: t.color.bg.raised,
     borderColor: t.color.accent.subtleBorder,
-    borderRadius: t.radius.md,
   },
   projectCool: {
     backgroundColor: t.color.bg.raised,
     borderColor: t.color.accent.subtleBorder,
-    borderRadius: t.radius.md,
   },
 }));

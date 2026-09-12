@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { makeStyles, useTheme } from '../theme';
+import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
 export type ButtonVariant = 'gold' | 'ghost';
@@ -16,6 +17,7 @@ export type ButtonVariant = 'gold' | 'ghost';
 export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
   label: string;
   variant?: ButtonVariant;
+  icon?: IconName;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
 };
@@ -30,6 +32,7 @@ export type ButtonProps = Omit<PressableProps, 'children' | 'style'> & {
 export function Button({
   label,
   variant = 'gold',
+  icon,
   loading = false,
   disabled,
   style,
@@ -39,6 +42,7 @@ export function Button({
   const theme = useTheme();
   const isDisabled = Boolean(disabled || loading);
   const isAccent = variant === 'gold';
+  const iconColor = isAccent ? theme.color.text.onAccent : theme.color.accent.default;
 
   return (
     <Pressable
@@ -60,9 +64,12 @@ export function Button({
             color={isAccent ? theme.color.accent.on : theme.color.text.primary}
           />
         ) : (
-          <Text variant="bodyStrong" tone={isAccent ? 'onAccent' : 'primary'}>
-            {label}
-          </Text>
+          <>
+            {icon ? <Icon name={icon} size={18} color={iconColor} strokeWidth={1.8} /> : null}
+            <Text variant="bodyStrong" tone={isAccent ? 'onAccent' : 'accent'}>
+              {label}
+            </Text>
+          </>
         )}
       </View>
     </Pressable>
@@ -70,9 +77,9 @@ export function Button({
 }
 
 const useStyles = makeStyles((t) => ({
-  base: { width: '100%', borderRadius: t.radius.md, overflow: 'hidden', borderWidth: 1 },
+  base: { width: '100%', borderRadius: t.radius.pill, overflow: 'hidden', borderWidth: 1 },
   accent: { backgroundColor: t.color.accent.default, borderColor: t.color.accent.default },
-  ghost: { backgroundColor: t.color.bg.raised, borderColor: t.color.border.strong },
+  ghost: { backgroundColor: t.color.bg.raised, borderColor: t.color.border.subtle },
   inner: {
     alignItems: 'center',
     justifyContent: 'center',

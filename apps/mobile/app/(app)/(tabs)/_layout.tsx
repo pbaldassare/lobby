@@ -3,13 +3,9 @@ import { Icon, Text, type IconName } from '@lobby/shared/ui';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-/**
- * Tab bar.
- *
- * Prima erano sole etichette a 9,5px, sotto il minimo leggibile e senza
- * nessun appiglio visivo. Ora icona più etichetta a 11px.
- */
+/** Pulsante di tab: icona + etichetta, sempre visibili. */
 function TabItem({
   icon,
   label,
@@ -26,8 +22,8 @@ function TabItem({
   const color = focused ? activeColor : idleColor;
 
   return (
-    <View style={{ alignItems: 'center', gap: 3, width: 64 }}>
-      <Icon name={icon} size={21} color={color} strokeWidth={focused ? 2 : 1.6} />
+    <View style={{ alignItems: 'center', gap: 4, minWidth: 56 }}>
+      <Icon name={icon} size={22} color={color} strokeWidth={focused ? 2.1 : 1.6} />
       <Text variant="tab" style={{ color }} numberOfLines={1}>
         {label}
       </Text>
@@ -39,12 +35,13 @@ const TABS: { name: string; icon: IconName; label: string }[] = [
   { name: 'discover', icon: 'room', label: 'Stanza' },
   { name: 'matches', icon: 'matches', label: 'Match' },
   { name: 'showcase', icon: 'showcase', label: 'Progetti' },
-  { name: 'card', icon: 'card', label: 'Card' },
   { name: 'signals', icon: 'signals', label: 'Signal' },
+  { name: 'card', icon: 'card', label: 'Card' },
 ];
 
 export default function TabsLayout(): React.JSX.Element {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -52,12 +49,14 @@ export default function TabsLayout(): React.JSX.Element {
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: theme.color.bg.canvas,
+          backgroundColor: theme.color.bg.raised,
           borderTopColor: theme.color.border.subtle,
           borderTopWidth: 1,
-          height: 66,
+          height: 64 + Math.max(insets.bottom, 10),
           paddingTop: 8,
+          paddingBottom: Math.max(insets.bottom, 10),
         },
+        tabBarItemStyle: { flex: 1 },
       }}
     >
       {TABS.map(({ name, icon, label }) => (
@@ -65,6 +64,7 @@ export default function TabsLayout(): React.JSX.Element {
           key={name}
           name={name}
           options={{
+            title: label,
             tabBarIcon: ({ focused }) => (
               <TabItem
                 icon={icon}

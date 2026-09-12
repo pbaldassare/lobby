@@ -108,9 +108,21 @@ const useStyles = makeStyles((t) => ({
   root: {
     flexDirection: 'row',
     gap: 12,
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: t.color.border.subtle,
+    padding: 14,
+    marginBottom: 10,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: t.color.border.subtle,
+    backgroundColor: t.color.bg.raised,
+    ...(t.scheme === 'light'
+      ? {
+          shadowColor: '#1A1917',
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 1,
+        }
+      : {}),
   },
   pressed: { opacity: 0.6 },
   avatar: {

@@ -1,11 +1,10 @@
 import { makeStyles } from '@lobby/shared/theme';
-import { Button, Field, Text } from '@lobby/shared/ui';
+import { Button, Field, GlyphMark, Text } from '@lobby/shared/ui';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   View,
 } from 'react-native';
@@ -59,8 +58,9 @@ export default function WelcomeScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <Text variant="titleLg" tone="accent" style={styles.wordmark}>
-            LOBBY
+          <GlyphMark name="lock" size={56} />
+          <Text variant="titleLg" style={styles.wordmark}>
+            Accedi a Lobby
           </Text>
           <Text variant="body" tone="secondary" style={styles.tagline}>
             Appari solo quando lo decidi tu. Incontra chi vale la pena incontrare.
@@ -107,19 +107,13 @@ export default function WelcomeScreen(): React.JSX.Element {
               run(() => signInWithEmail(email || 'demo@lobby.app', password || 'demo'))
             }
           />
-
-          <Pressable
-            accessibilityRole="button"
-            hitSlop={8}
+          <Button
+            label="Crea un account"
+            variant="ghost"
             onPress={() =>
               run(() => signUpWithEmail(email || 'demo@lobby.app', password || 'demo'))
             }
-            style={({ pressed }) => [styles.link, pressed && styles.pressed]}
-          >
-            <Text variant="small" tone="accent">
-              Non hai un account? Creane uno
-            </Text>
-          </Pressable>
+          />
 
           <View style={styles.divider}>
             <View style={styles.rule} />
@@ -148,9 +142,9 @@ export default function WelcomeScreen(): React.JSX.Element {
 const useStyles = makeStyles((t) => ({
   root: { flex: 1, backgroundColor: t.color.bg.canvas },
   scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 18, paddingVertical: 32 },
-  hero: { marginBottom: 28, gap: 10 },
-  wordmark: { fontSize: 34, lineHeight: 40, letterSpacing: 5 },
-  tagline: { maxWidth: 320 },
+  hero: { marginBottom: 28, gap: 10, alignItems: 'center' },
+  wordmark: { textAlign: 'center' },
+  tagline: { maxWidth: 320, textAlign: 'center' },
   form: { gap: 12 },
   demo: {
     alignSelf: 'flex-start',
@@ -161,8 +155,6 @@ const useStyles = makeStyles((t) => ({
     borderColor: t.color.accent.subtleBorder,
     backgroundColor: t.color.accent.subtleBg,
   },
-  link: { alignSelf: 'center', paddingVertical: 8 },
-  pressed: { opacity: 0.6 },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 4 },
   rule: { flex: 1, height: 1, backgroundColor: t.color.border.subtle },
 }));

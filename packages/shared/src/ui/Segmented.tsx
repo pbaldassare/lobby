@@ -43,7 +43,7 @@ export function Segmented<T extends string>({
             style={[styles.item, active && styles.itemActive]}
           >
             <Text
-              variant="tiny"
+              variant="small"
               tone={active ? 'primary' : 'secondary'}
               numberOfLines={1}
             >
@@ -60,20 +60,17 @@ export function Segmented<T extends string>({
 const useStyles = makeStyles((t) => ({
   root: {
     flexDirection: 'row',
-    padding: 3,
-    borderRadius: t.radius.sm,
-    borderWidth: 1,
-    borderColor: t.color.border.subtle,
-    backgroundColor: t.color.bg.raised,
+    padding: 4,
+    borderRadius: t.radius.pill,
+    backgroundColor: t.color.bg.sunken,
   },
   item: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: t.radius.sm - 2,
-    /** Minimo 44pt di area toccabile insieme al padding del contenitore. */
-    minHeight: 38,
+    paddingVertical: 10,
+    borderRadius: t.radius.pill,
+    minHeight: 44,
   },
-  itemActive: { backgroundColor: t.color.bg.sunken },
+  itemActive: { backgroundColor: t.color.bg.raised },
 }));
