@@ -43,7 +43,7 @@ Use **Direct Upload via GitHub Actions** for production. Cloudflare Pages **Git 
 ### One-time Cloudflare setup
 
 1. Create a Cloudflare account and an API token with **Account → Cloudflare Pages: Edit** + **Account Settings: Read**.
-2. Workers & Pages → **Pages** → Create project → **Direct Upload** (or keep Git connected for source, but pause Git auto-deploys). Project name: `lobby-backoffice`.
+2. Workers & Pages → **Pages** → project **`lobby`** (already connected). Production branch must be **`main`** (or a branch that contains the Pages `wrangler.jsonc`). Do not retry old deployments of `e459347`.
 3. In GitHub → repo → Settings → Secrets and variables → Actions, set:
 
 | Secret | Notes |
@@ -53,7 +53,7 @@ Use **Direct Upload via GitHub Actions** for production. Cloudflare Pages **Git 
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://mjzjracjadlybvdttgto.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Publishable / anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Server only.** Never `NEXT_PUBLIC_` |
-| `NEXT_PUBLIC_APP_URL` | Public Pages URL, e.g. `https://lobby-backoffice.pages.dev` |
+| `NEXT_PUBLIC_APP_URL` | Public Pages URL, e.g. `https://lobby.pages.dev` |
 
 `NEXT_PUBLIC_*` must be present at **build** time. In the Pages project, also set the same values under Settings → Environment variables (Production + Preview), with `SUPABASE_SERVICE_ROLE_KEY` as a **secret**.
 
@@ -72,6 +72,8 @@ That runs OpenNext, stages `.pages-dist`, then `wrangler pages deploy`.
 ### Dashboard (Pages Git — optional)
 
 If the Pages project is Git-connected to `pbaldassare/lobby`:
+
+**Production branch must be a commit that has root `package.json` `"build"` and root `wrangler.jsonc` with `pages_build_output_dir`.** A Retry of commit `e459347` will always fail (`Missing script: "build"`). Change production branch to `main` after this lands, or redeploy the latest SHA — do not retry the old job.
 
 Leave **Root directory empty** (the npm workspace lockfile is at the repo root). Do **not** set it to `apps/backoffice`.
 

@@ -8,8 +8,8 @@
     "cf:build": "opennextjs-cloudflare build && node ../../scripts/cf-pages-stage.mjs",
     "start": "next start --port 3000",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "npm run cf:build && wrangler pages deploy .pages-dist --project-name lobby-backoffice",
-    "upload": "npm run cf:build && wrangler pages deploy .pages-dist --project-name lobby-backoffice",
+    "deploy": "npm run cf:build && wrangler pages deploy .pages-dist --project-name lobby",
+    "upload": "npm run cf:build && wrangler pages deploy .pages-dist --project-name lobby",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"

@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "lobby-backoffice",
+  "name": "lobby",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   // Pages Git / wrangler pages deploy — do not set Worker `main` or `assets`.

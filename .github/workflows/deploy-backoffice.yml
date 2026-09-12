@@ -39,4 +39,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         # wrangler ≥ 4.33 is required: Pages Git still compiles _worker.js with 3.114.17.
-        run: npx wrangler pages deploy .pages-dist --project-name=lobby-backoffice --commit-dirty=true
+        run: npx wrangler pages deploy .pages-dist --project-name=lobby --commit-dirty=true
