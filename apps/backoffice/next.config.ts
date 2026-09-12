@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@lobby/shared'],
-  // Monorepo: file tracing from the workspace root (OpenNext / Cloudflare Workers).
+  // Monorepo: file tracing from the workspace root (OpenNext / Cloudflare Pages).
   outputFileTracingRoot: path.join(__dirname, '../..'),
 };
 

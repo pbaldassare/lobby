@@ -8,7 +8,7 @@ When you are physically in a venue, you can appear and see who is worth meeting.
 | Package | Path | Deploy |
 | --- | --- | --- |
 | Mobile (Expo + RN) | `apps/mobile` | EAS → App Store / Play (**not** Cloudflare) |
-| Backoffice (Next.js) | `apps/backoffice` | Cloudflare Workers (OpenNext) |
+| Backoffice (Next.js) | `apps/backoffice` | Cloudflare Pages (OpenNext) |
 | Shared | `packages/shared` | consumed by apps |
 | Backend | `supabase/` | Supabase project `mjzjracjadlybvdttgto` (schema `lobby`) |
 

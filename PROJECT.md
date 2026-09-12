@@ -12,7 +12,7 @@ Quando sei fisicamente in un venue, puoi apparire e vedere chi vale la pena inco
 
 ## Stack
 - Mobile: Expo + React Native + TypeScript (expo-router, EAS).
-- Web (back-office): Next.js + TypeScript, deploy su Cloudflare Workers (OpenNext).
+- Web (back-office): Next.js + TypeScript, deploy su Cloudflare Pages (OpenNext).
 - Backend UNICO condiviso: Supabase (Postgres, Auth, Realtime, Storage, Edge Functions).
 - Monorepo npm workspaces; codice condiviso in packages/shared.
 
@@ -33,7 +33,7 @@ Quando sei fisicamente in un venue, puoi apparire e vedere chi vale la pena inco
   Le grafiche/template le fornisce l'utente: usale come fonte, non inventare un nuovo stile.
 - Supabase: usa il progetto che fornisce l'utente. Ogni modifica allo schema = migration
   versionata in /supabase/migrations, mai modifiche "a mano" non tracciate.
-- Cloudflare: solo per il deploy del back-office web (Workers).
+- Cloudflare: solo per il deploy del back-office web (Pages).
 
 ## Cosa NON è vero (evita l'errore classico)
 - L'app React Native NON si deploya su Cloudflare. Va agli store via EAS.

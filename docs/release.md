@@ -1,12 +1,12 @@
 # Lobby — release & deploy
 
-This document covers GitHub, Cloudflare Workers (backoffice only), and EAS (mobile).
+This document covers GitHub, Cloudflare Pages (backoffice only), and EAS (mobile).
 
 ## What deploys where
 
 | Surface | Path | Deploy target |
 | --- | --- | --- |
-| Backoffice (Next.js) | `apps/backoffice` | **Cloudflare Workers** via OpenNext |
+| Backoffice (Next.js) | `apps/backoffice` | **Cloudflare Pages** via OpenNext (advanced mode `_worker.js`) |
 | Mobile (Expo / RN) | `apps/mobile` | **EAS → App Store / Play** (never Cloudflare) |
 | Backend | `supabase/` | Shared project `mjzjracjadlybvdttgto` (schema `lobby`) |
 
@@ -26,38 +26,36 @@ Do **not** commit `.env`, service role keys, or store credentials.
 
 ---
 
-## 2. Cloudflare Workers — backoffice only
+## 2. Cloudflare Pages — backoffice only
 
-The backoffice runs on Cloudflare Workers through `@opennextjs/cloudflare`.
+The backoffice is a Next.js app. OpenNext builds it, then `scripts/cf-pages-stage.mjs` stages **Pages advanced mode** output (`_worker.js` + static assets). This is **Pages**, not a Workers (`*.workers.dev`) project.
 
 Config already in the repo:
 
-- `wrangler.jsonc` at the **repo root** — Cloudflare Git builds look here (Worker `lobby-backoffice`)
-- `apps/backoffice/wrangler.jsonc` — same Worker, for `npm run deploy` from `apps/backoffice`
+- `wrangler.jsonc` at the **repo root** — `pages_build_output_dir` → `apps/backoffice/.pages-dist` (Pages Git looks here)
+- `apps/backoffice/wrangler.jsonc` — same Pages project, for `npm run deploy` from `apps/backoffice`
 - `apps/backoffice/open-next.config.ts`
-- Root `npm run build` runs OpenNext in the backoffice workspace
-- `.github/workflows/deploy-backoffice.yml` — optional CLI deploy on push to `main`
+- Root `npm run build` runs OpenNext + the Pages staging script
+- `.github/workflows/deploy-backoffice.yml` — **production deploy** (`wrangler pages deploy`, wrangler 4.x)
+
+Use **Direct Upload via GitHub Actions** for production. Cloudflare Pages **Git builds** still compile `_worker.js` with wrangler `3.114.17`, which miscompiles OpenNext 1.19+ and can 500 at runtime. wrangler **≥ 4.33** (already in `@lobby/backoffice`) is required.
 
 ### One-time Cloudflare setup
 
-1. Create a Cloudflare account and an API token with **Workers Scripts: Edit** + **Account: Read**.
-2. In GitHub → repo → Settings → Secrets and variables → Actions, set:
+1. Create a Cloudflare account and an API token with **Account → Cloudflare Pages: Edit** + **Account Settings: Read**.
+2. Workers & Pages → **Pages** → Create project → **Direct Upload** (or keep Git connected for source, but pause Git auto-deploys). Project name: `lobby-backoffice`.
+3. In GitHub → repo → Settings → Secrets and variables → Actions, set:
 
 | Secret | Notes |
 | --- | --- |
 | `CLOUDFLARE_API_TOKEN` | Token above |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Workers |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → Overview |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://mjzjracjadlybvdttgto.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Publishable / anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Server only.** Never `NEXT_PUBLIC_` |
-| `NEXT_PUBLIC_APP_URL` | Public Worker URL, e.g. `https://lobby-backoffice.<subdomain>.workers.dev` |
+| `NEXT_PUBLIC_APP_URL` | Public Pages URL, e.g. `https://lobby-backoffice.pages.dev` |
 
-`NEXT_PUBLIC_*` must be present at **build** time. Runtime secrets can also be set with:
-
-```bash
-cd apps/backoffice
-npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
-```
+`NEXT_PUBLIC_*` must be present at **build** time. In the Pages project, also set the same values under Settings → Environment variables (Production + Preview), with `SUPABASE_SERVICE_ROLE_KEY` as a **secret**.
 
 ### CLI deploy (from monorepo root)
 
@@ -69,18 +67,21 @@ npx wrangler login
 npm run deploy
 ```
 
-### Dashboard (Workers, not Pages)
+That runs OpenNext, stages `.pages-dist`, then `wrangler pages deploy`.
 
-Workers & Pages → **Workers** → Create → Connect GitHub `pbaldassare/lobby`.
+### Dashboard (Pages Git — optional)
+
+If the Pages project is Git-connected to `pbaldassare/lobby`:
 
 Leave **Root directory empty** (the npm workspace lockfile is at the repo root). Do **not** set it to `apps/backoffice`.
 
 | Setting | Value |
 | --- | --- |
 | Root directory | *(empty / repository root)* |
+| Framework preset | None |
 | Install command | `npm ci` (or the default `npm clean-install`) |
 | Build command | `npm run build` |
-| Deploy | wrangler uses root `wrangler.jsonc` → `apps/backoffice/.open-next/` |
+| Build output | from root `wrangler.jsonc` → `apps/backoffice/.pages-dist` |
 
 Also set build-time variables (Settings → Variables):
 
@@ -90,6 +91,8 @@ Also set build-time variables (Settings → Variables):
 - `SUPABASE_SERVICE_ROLE_KEY` as a **secret** (never `NEXT_PUBLIC_`)
 
 Compatibility flags: `nodejs_compat` (already in `wrangler.jsonc`).
+
+Git builds can pass the OpenNext/Pages layout checks and still serve 500s because of the pinned wrangler 3 compiler. Prefer the GitHub Action Direct Upload for a working site.
 
 ### Reminder
 
@@ -147,7 +150,7 @@ Aligned with `eas.json` build `channel` fields: `development`, `preview`, `produ
 ## 4. Secrets policy
 
 - `.env` / `.env.*` / `.dev.vars` are gitignored (except `*.env.example`).
-- Cloudflare dashboard / Wrangler secrets for backoffice server secrets.
+- Cloudflare Pages dashboard / GitHub Actions env for backoffice server secrets.
 - EAS Secrets / Expo dashboard for mobile public env used at build time.
 - Supabase service role: Edge Functions + Next.js server only.
 

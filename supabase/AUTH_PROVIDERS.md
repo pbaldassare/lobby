@@ -21,12 +21,12 @@ MCP cannot enable OAuth providers; configure these in the Dashboard.
 3. Supabase Dashboard → **Authentication** → **Providers** → **Google**:
    - Enable
    - Paste Client ID + Client Secret
-4. Add the same redirect URI plus the backoffice Worker URL and Expo scheme to
+4. Add the same redirect URI plus the backoffice Pages URL and Expo scheme to
    Authentication → URL Configuration → Redirect URLs:
    - `http://localhost:3000/auth/callback`
    - `http://localhost:8081`
    - `lobby://**`
-   - `https://<your-worker>.workers.dev/auth/callback`
+   - `https://<your-pages-project>.pages.dev/auth/callback`
 
 ## LinkedIn (OIDC)
 

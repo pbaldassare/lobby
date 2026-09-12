@@ -6,7 +6,7 @@ alwaysApply: true
 # Lobby — stack
 
 - **Mobile**: Expo + React Native + TypeScript (expo-router, EAS). Deploy store via EAS — **mai** su Cloudflare Pages/Workers.
-- **Web (back-office)**: Next.js + TypeScript, deploy su **Cloudflare Workers** (OpenNext).
+- **Web (back-office)**: Next.js + TypeScript, deploy su **Cloudflare Pages** (OpenNext, advanced mode).
 - **Backend UNICO**: Supabase (Postgres, Auth, Realtime, Storage, Edge Functions).
 - **Monorepo** npm workspaces; codice condiviso in `packages/shared`.
 

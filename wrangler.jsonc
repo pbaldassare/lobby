@@ -1,17 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lobby-backoffice",
-  "main": "apps/backoffice/.open-next/worker.js",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": {
-    "directory": "apps/backoffice/.open-next/assets",
-    "binding": "ASSETS"
-  },
-  "services": [
-    {
-      "binding": "WORKER_SELF_REFERENCE",
-      "service": "lobby-backoffice"
-    }
-  ]
+  // Pages Git / wrangler pages deploy — do not set Worker `main` or `assets`.
+  "pages_build_output_dir": "apps/backoffice/.pages-dist"
 }
