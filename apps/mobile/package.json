@@ -20,6 +20,7 @@
     "@lobby/shared": "*",
     "@supabase/supabase-js": "^2.52.0",
     "expo": "~57.0.16",
+    "expo-apple-authentication": "~57.0.1",
     "expo-auth-session": "~57.0.9",
     "expo-camera": "~57.0.4",
     "expo-constants": "~57.0.14",

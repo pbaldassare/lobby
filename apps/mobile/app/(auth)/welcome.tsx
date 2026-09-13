@@ -13,18 +13,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { InstallBanner } from '@/components/InstallBanner';
 import { isEnvConfigured } from '@/lib/env';
 import { consumePendingDeepLink } from '@/lib/join';
+import type { SocialProvider } from '@/lib/oauth';
 import { useAuth } from '@/providers/AuthProvider';
 
 /**
- * Ingresso.
- *
- * Prima erano quattro bottoni a tutta larghezza di peso identico — email,
- * registrazione, Google, LinkedIn — senza nessuna gerarchia: guardandoli non
- * capivi qual era la strada principale. Ora l'accesso email è l'azione
- * primaria, gli altri stanno sotto un separatore.
- *
- * Il `KeyboardAvoidingView` sta FUORI dallo scorrimento, non dentro: annidato
- * al contrario si comportava male su Android.
+ * Ingresso: LinkedIn, Google e Apple iscrivono e accedono con lo stesso tasto.
+ * Email resta l'alternativa. Invisibili dopo l'ingresso, in app e sul web.
  */
 export default function WelcomeScreen(): React.JSX.Element {
   const styles = useStyles();
@@ -33,25 +27,34 @@ export default function WelcomeScreen(): React.JSX.Element {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<SocialProvider | 'email' | 'signup' | null>(null);
 
-  const run = (fn: () => Promise<{ error: string | null }>, stayOnPage = false) => {
-    setBusy(true);
+  const run = (
+    fn: () => Promise<{ error: string | null; skipped?: boolean }>,
+    key: SocialProvider | 'email' | 'signup',
+    stayOnPage = false,
+  ) => {
+    setBusy(key);
     setError(null);
-    void fn().then(({ error: err }) => {
-      setBusy(false);
+    void fn().then(({ error: err, skipped }) => {
+      setBusy(null);
       if (err) {
         setError(err);
         return;
       }
-      // OAuth sul web lascia la pagina (redirect al provider).
-      if (stayOnPage) return;
-      // Dopo il login si è invisibili: se ne occupa PresenceProvider.
+      if (skipped || stayOnPage) return;
       if (!consumePendingDeepLink()) {
         router.replace('/(app)/(tabs)/discover');
       }
     });
   };
+
+  const social = (provider: SocialProvider) =>
+    run(
+      () => signInWithOAuth(provider),
+      provider,
+      Platform.OS === 'web' && !isDemo,
+    );
 
   return (
     <KeyboardAvoidingView
@@ -66,17 +69,18 @@ export default function WelcomeScreen(): React.JSX.Element {
         <View style={styles.hero}>
           <GlyphMark name="lock" size={56} />
           <Text variant="titleLg" style={styles.wordmark}>
-            Accedi a Lobby
+            Accedi o iscriviti
           </Text>
           <Text variant="body" tone="secondary" style={styles.tagline}>
-            Appari solo quando lo decidi tu. Incontra chi vale la pena incontrare.
+            Un tasto per entrare la prima volta e le successive. Appari solo
+            quando lo decidi tu.
           </Text>
         </View>
 
         <View style={styles.form}>
           <Text variant="small" tone="secondary">
-            Resti invisibile anche dopo l'accesso. La visibilità si attiva a mano,
-            vale solo nella stanza in cui sei e si spegne quando esci.
+            Resti invisibile anche dopo l&apos;accesso. La visibilità si attiva a
+            mano, vale solo nella stanza in cui sei e si spegne quando esci.
           </Text>
 
           {!isEnvConfigured() ? (
@@ -86,6 +90,35 @@ export default function WelcomeScreen(): React.JSX.Element {
               </Text>
             </View>
           ) : null}
+
+          <Button
+            label="Accedi o iscriviti con LinkedIn"
+            loading={busy === 'linkedin_oidc'}
+            disabled={busy !== null && busy !== 'linkedin_oidc'}
+            onPress={() => social('linkedin_oidc')}
+          />
+          <Button
+            label="Accedi o iscriviti con Google"
+            variant="ghost"
+            loading={busy === 'google'}
+            disabled={busy !== null && busy !== 'google'}
+            onPress={() => social('google')}
+          />
+          <Button
+            label="Accedi o iscriviti con Apple"
+            variant="ghost"
+            loading={busy === 'apple'}
+            disabled={busy !== null && busy !== 'apple'}
+            onPress={() => social('apple')}
+          />
+
+          <View style={styles.divider}>
+            <View style={styles.rule} />
+            <Text variant="tiny" tone="tertiary">
+              oppure con email
+            </Text>
+            <View style={styles.rule} />
+          </View>
 
           <Field
             label="Email"
@@ -107,37 +140,28 @@ export default function WelcomeScreen(): React.JSX.Element {
           />
 
           <Button
-            label={isDemo ? 'Entra (dimostrativo)' : 'Accedi'}
-            loading={busy}
+            label={isDemo ? 'Entra (dimostrativo)' : 'Accedi con email'}
+            variant="ghost"
+            loading={busy === 'email'}
+            disabled={busy !== null && busy !== 'email'}
             onPress={() =>
-              run(() => signInWithEmail(email || 'demo@lobby.app', password || 'demo'))
+              run(
+                () => signInWithEmail(email || 'demo@lobby.app', password || 'demo'),
+                'email',
+              )
             }
           />
           <Button
-            label="Crea un account"
+            label="Crea un account con email"
             variant="ghost"
+            loading={busy === 'signup'}
+            disabled={busy !== null && busy !== 'signup'}
             onPress={() =>
-              run(() => signUpWithEmail(email || 'demo@lobby.app', password || 'demo'))
+              run(
+                () => signUpWithEmail(email || 'demo@lobby.app', password || 'demo'),
+                'signup',
+              )
             }
-          />
-
-          <View style={styles.divider}>
-            <View style={styles.rule} />
-            <Text variant="tiny" tone="tertiary">
-              oppure
-            </Text>
-            <View style={styles.rule} />
-          </View>
-
-          <Button
-            label="Continua con Google"
-            variant="ghost"
-            onPress={() => run(() => signInWithOAuth('google'), Platform.OS === 'web' && !isDemo)}
-          />
-          <Button
-            label="Continua con LinkedIn"
-            variant="ghost"
-            onPress={() => run(() => signInWithOAuth('linkedin_oidc'), Platform.OS === 'web' && !isDemo)}
           />
 
           <InstallBanner />

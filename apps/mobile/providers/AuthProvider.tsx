@@ -12,8 +12,11 @@ import React, {
 } from 'react';
 import { Platform } from 'react-native';
 
+import { signInWithNativeApple } from '@/lib/appleAuth';
 import { demoProfile } from '@/lib/demo';
 import { isEnvConfigured } from '@/lib/env';
+import { type AuthActionResult, type SocialProvider } from '@/lib/oauth';
+import { completeNativeOAuthRedirect } from '@/lib/oauthSession';
 import { getSupabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -23,6 +26,12 @@ function publicAuthError(message: string | undefined): string | null {
   if (/invalid login credentials/i.test(message)) return 'Email o password non corretti.';
   if (/email not confirmed/i.test(message)) return 'Conferma l’email prima di entrare.';
   if (/user already registered/i.test(message)) return 'Questo account esiste già. Accedi.';
+  if (/provider is not enabled/i.test(message)) {
+    return 'Questo accesso non è ancora attivo. Riprova tra poco o usa l’email.';
+  }
+  if (/unable to exchange external code|invalid (jwt|id.?token|grant)/i.test(message)) {
+    return 'Il provider non ha confermato l’accesso. Riprova.';
+  }
   return message;
 }
 
@@ -32,9 +41,9 @@ type AuthContextValue = {
   profile: Profile | null;
   loading: boolean;
   isDemo: boolean;
-  signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUpWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
-  signInWithOAuth: (provider: 'google' | 'linkedin_oidc') => Promise<{ error: string | null }>;
+  signInWithEmail: (email: string, password: string) => Promise<AuthActionResult>;
+  signUpWithEmail: (email: string, password: string) => Promise<AuthActionResult>;
+  signInWithOAuth: (provider: SocialProvider) => Promise<AuthActionResult>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateProfile: (
@@ -119,11 +128,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   );
 
   const signInWithOAuth = useCallback(
-    async (provider: 'google' | 'linkedin_oidc') => {
+    async (provider: SocialProvider) => {
       if (isDemo) {
         setDemoSignedIn(true);
         setProfile(demoProfile);
         return { error: null };
+      }
+      if (provider === 'apple') {
+        const native = await signInWithNativeApple();
+        if (native === 'ok') return { error: null };
+        if (native === 'canceled') return { error: null, skipped: true };
+        if (native !== 'unavailable') return { error: publicAuthError(native.error) };
       }
       const redirectTo =
         Platform.OS === 'web' && typeof window !== 'undefined'
@@ -144,15 +159,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       if (!data.url) return { error: 'Il provider non ha restituito un indirizzo di accesso.' };
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
       if (result.type !== 'success' || !result.url) {
-        return { error: result.type === 'cancel' ? null : 'Accesso interrotto.' };
+        return result.type === 'cancel' || result.type === 'dismiss'
+          ? { error: null, skipped: true }
+          : { error: 'Accesso interrotto.' };
       }
-      const url = Linking.parse(result.url);
-      const code = typeof url.queryParams?.code === 'string' ? url.queryParams.code : null;
-      if (code) {
-        const { error: exchangeError } = await getSupabase().auth.exchangeCodeForSession(code);
-        return { error: publicAuthError(exchangeError?.message) };
-      }
-      return { error: null };
+      const completed = await completeNativeOAuthRedirect(result.url);
+      return { error: publicAuthError(completed.error ?? undefined), skipped: completed.skipped };
     },
     [isDemo],
   );
