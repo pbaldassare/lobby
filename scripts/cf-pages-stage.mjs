@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 /**
  * Converte l'output OpenNext in Pages advanced mode:
- * static assets + `_worker.js` (file unico già bundlato) + `_routes.json`.
+ * static assets + `_worker.js/index.js` (bundle wrangler 4) + `_routes.json`.
  *
- * OpenNext lascia import nudi (`node:process` → `@cloudflare/unenv-preset`).
- * Con `no_bundle` Pages non li risolve e il Worker muore all'avvio (Error 1101).
- * Wrangler 4 li inlinea qui; `no_bundle` resta attivo così Pages Git
- * (wrangler 3.114.17) non ricompila il bundle.
+ * Perché è una directory e non un file:
+ * - file `_worker.js` → Pages Git (wrangler 3.114.17) lo ricompila e il
+ *   runtime risponde 500 su ogni request
+ * - directory + `no_bundle` → wrangler 3 carica i moduli così come sono
+ *
+ * Il bundle wrangler 4 inlinea `@cloudflare/unenv-preset` (senza di esso
+ * workerd muore all'avvio: Error 1101).
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -132,12 +135,20 @@ const nodeBareImport = new RegExp(
 const workerSource = fs
   .readFileSync(bundledWorker, 'utf8')
   .replace(nodeFrom, '$1"node:$2$3"')
-  .replace(nodeBareImport, '$1"node:$2$3"');
+  .replace(nodeBareImport, '$1"node:$2$3"')
+  .replace(/\n\/\/# sourceMappingURL=worker\.js\.map\s*$/u, '\n');
 
 fs.rmSync(dest, { recursive: true, force: true });
 fs.mkdirSync(dest, { recursive: true });
 fs.cpSync(assetsSrc, dest, { recursive: true });
-fs.writeFileSync(path.join(dest, '_worker.js'), workerSource);
+
+const workerDir = path.join(dest, '_worker.js');
+fs.mkdirSync(workerDir, { recursive: true });
+fs.writeFileSync(path.join(workerDir, 'index.js'), workerSource);
+fs.writeFileSync(
+  path.join(dest, '.assetsignore'),
+  '_worker.js\n_routes.json\n',
+);
 
 fs.writeFileSync(
   path.join(dest, '_routes.json'),
@@ -152,14 +163,14 @@ fs.writeFileSync(
   )}\n`,
 );
 
-const stagedWorker = path.join(dest, '_worker.js');
-if (!fs.existsSync(stagedWorker) || fs.statSync(stagedWorker).isDirectory()) {
-  console.error('Expected _worker.js to be a single pre-bundled file');
+const stagedWorker = path.join(dest, '_worker.js', 'index.js');
+if (!fs.existsSync(stagedWorker) || !fs.statSync(path.join(dest, '_worker.js')).isDirectory()) {
+  console.error('Expected _worker.js/index.js (pre-bundled module directory)');
   process.exit(1);
 }
 if (workerSource.includes('from "@cloudflare/unenv-preset')) {
   console.error(
-    'Staged _worker.js still imports @cloudflare/unenv-preset (Error 1101 at runtime)',
+    'Staged worker still imports @cloudflare/unenv-preset (Error 1101 at runtime)',
   );
   process.exit(1);
 }

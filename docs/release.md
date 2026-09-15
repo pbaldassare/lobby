@@ -41,7 +41,7 @@ Config already in the repo:
 - Root `npm run build` runs OpenNext + the Pages staging script
 - `.github/workflows/deploy-backoffice.yml` — **production deploy** (`wrangler pages deploy`, wrangler 4.x)
 
-Use **Direct Upload via GitHub Actions** if Git still 500s. Cloudflare Pages **Git builds** compile `_worker.js` with wrangler `3.114.17` unless `no_bundle` is set (root `wrangler.jsonc`). The staged output is a **single pre-bundled** `_worker.js` (wrangler 4 inlines `@cloudflare/unenv-preset`). Do not ship the OpenNext module directory: workerd cannot resolve that package and the Worker dies with Error 1101.
+Use **Direct Upload via GitHub Actions** if Git still 500s. Cloudflare Pages **Git builds** compile `_worker.js` with wrangler `3.114.17` unless `no_bundle` is set (root `wrangler.jsonc`). The staged output is a `_worker.js/` **directory** whose `index.js` is a wrangler 4 bundle (`@cloudflare/unenv-preset` inlined). A single `_worker.js` file gets recompiled by Pages Git (wrangler 3.114.17) and serves HTTP 500. The raw OpenNext module directory dies at startup with Error 1101 (`@cloudflare/unenv-preset` unresolved).
 
 GitHub → Settings → Secrets and variables → Actions should include `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the Action path. Then **Actions → Deploy backoffice (Cloudflare Pages) → Run workflow**.
 
