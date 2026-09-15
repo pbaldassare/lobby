@@ -4,9 +4,8 @@
  * static assets + `_worker.js/index.js` (bundle wrangler 4) + `_routes.json`.
  *
  * Il bundle wrangler 4 inlinea `@cloudflare/unenv-preset` (Error 1101
- * se manca). Pages Git ricompila comunque con wrangler 3.114.17 e
- * serve 500 (`reading 'require'`): `cf-pages-publish.mjs` pubblica
- * con wrangler 4 e blocca quell'upload.
+ * se manca). Pages Git ricompila con wrangler 3.114.17 e il runtime
+ * risponde 500: vedi `cf-pages-publish.mjs`.
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';

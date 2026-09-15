@@ -41,20 +41,16 @@ Config already in the repo:
 - Root `npm run build` runs OpenNext + the Pages staging script
 - `.github/workflows/deploy-backoffice.yml` — **production deploy** (`wrangler pages deploy`, wrangler 4.x)
 
-OpenNext cannot be uploaded by the Pages Git compiler. That step pins wrangler `3.114.17`, rebundles `_worker.js`, and the site then serves HTTP 500:
+OpenNext is staged as a wrangler 4 `_worker.js` bundle. Pages Git then recompiles that file with wrangler `3.114.17`. The recompiled worker serves HTTP 500 (`Cannot read properties of undefined (reading 'require')` in Next `require-hook.js`). That compiler cannot be upgraded from the repo.
 
-`Failed to load external module next/dist/compiled/next-server/app-page-turbo.runtime.prod.js: Cannot read properties of undefined (reading 'require')`
+Root `npm run build` stages the bundle, then (only on `CF_PAGES=1`) Direct-Uploads with wrangler 4 **if** `CLOUDFLARE_API_TOKEN` is set, and fails the Git job on purpose so wrangler 3 cannot overwrite a working deploy. Without the token the Git job stays green and wrangler 3 uploads the broken compile.
 
-Root `npm run build` stages a wrangler 4 bundle, then (only on `CF_PAGES=1`) Direct-Uploads it with wrangler 4 and **fails the Git job on purpose** so wrangler 3 cannot overwrite it.
-
-Add these as **Pages → Settings → Environment variables** (available at build time, Production + Preview):
+Add these as **Pages → Settings → Environment variables** (Build + Production), also useful as GitHub Actions secrets:
 
 | Variable | Notes |
 | --- | --- |
 | `CLOUDFLARE_API_TOKEN` | Account → Cloudflare Pages: Edit |
 | `CLOUDFLARE_ACCOUNT_ID` | Dashboard → Overview |
-
-Also set the same values as GitHub Actions secrets so **Actions → Deploy backoffice** can publish without the Git compiler.
 
 GitHub → Settings → Secrets and variables → Actions should include `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the Action path. Then **Actions → Deploy backoffice (Cloudflare Pages) → Run workflow**.
 
@@ -109,11 +105,11 @@ Also set build-time variables (Settings → Variables):
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_APP_URL`
 - `SUPABASE_SERVICE_ROLE_KEY` as a **secret** (never `NEXT_PUBLIC_`)
-- `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (required so wrangler 4 can publish during the Git build)
+- `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (needed for a working site: wrangler 4 Direct Upload during the Git build)
 
 Compatibility flags: `nodejs_compat` (already in `wrangler.jsonc`).
 
-A green Pages Git check that used wrangler 3 is not a working site. Prefer the wrangler 4 Direct Upload (build script or GitHub Action).
+A green Pages Git check without those two Cloudflare vars still uploads via wrangler 3 and the live site stays HTTP 500. After you add them, the Git job may go red on purpose (wrangler 4 already published; wrangler 3 must not overwrite).
 
 ### Reminder
 
