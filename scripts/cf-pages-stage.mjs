@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
  * Converte l'output OpenNext in Pages advanced mode:
- * static assets + `_worker.js/index.js` (bundle wrangler 4) + `_routes.json`.
+ * static assets + `_worker.js/` + `_routes.json`.
  *
- * Il bundle wrangler 4 inlinea `@cloudflare/unenv-preset` (Error 1101
- * se manca). Pages Git ricompila con wrangler 3.114.17 e il runtime
- * risponde 500: vedi `cf-pages-publish.mjs`.
+ * Il bundle wrangler 4 va in `_worker.js/app.js`. `index.js` è solo un
+ * re-export: Pages Git (wrangler 3.114.17) ribundle l'entrypoint ma
+ * tratta gli altri `.js` della directory come moduli esterni, quindi
+ * non ricompila OpenNext (quel compile dà HTTP 500 su `require`).
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -140,7 +141,13 @@ fs.cpSync(assetsSrc, dest, { recursive: true });
 
 const workerDir = path.join(dest, '_worker.js');
 fs.mkdirSync(workerDir, { recursive: true });
-fs.writeFileSync(path.join(workerDir, 'index.js'), workerSource);
+// Entry is a trampoline. Wrangler 3 rebundles index.js only and leaves
+// app.js untouched (additional ESModule, marked external).
+fs.writeFileSync(path.join(workerDir, 'app.js'), workerSource);
+fs.writeFileSync(
+  path.join(workerDir, 'index.js'),
+  'export { default } from "./app.js";\nexport * from "./app.js";\n',
+);
 fs.writeFileSync(
   path.join(dest, '.assetsignore'),
   '_worker.js\n_routes.json\n',
@@ -160,8 +167,13 @@ fs.writeFileSync(
 );
 
 const stagedWorker = path.join(dest, '_worker.js', 'index.js');
-if (!fs.existsSync(stagedWorker) || !fs.statSync(path.join(dest, '_worker.js')).isDirectory()) {
-  console.error('Expected _worker.js/index.js (pre-bundled module directory)');
+const stagedApp = path.join(dest, '_worker.js', 'app.js');
+if (
+  !fs.existsSync(stagedWorker) ||
+  !fs.existsSync(stagedApp) ||
+  !fs.statSync(path.join(dest, '_worker.js')).isDirectory()
+) {
+  console.error('Expected _worker.js/index.js trampoline + _worker.js/app.js bundle');
   process.exit(1);
 }
 if (workerSource.includes('from "@cloudflare/unenv-preset')) {

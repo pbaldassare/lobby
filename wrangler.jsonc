@@ -3,8 +3,9 @@
   "name": "lobby",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  // Pages Git still pins wrangler 3.114.17; skip that compile (it 500s OpenNext).
-  // `_worker.js/` is a directory whose index.js is already a wrangler-4 bundle.
+  // `_worker.js/index.js` is a trampoline; `app.js` is the wrangler-4 OpenNext
+  // bundle. Pages Git (wrangler 3) rebundles only the entry and leaves app.js
+  // as an external module — do not inline OpenNext into the entry.
   "no_bundle": true,
   "pages_build_output_dir": "apps/backoffice/.pages-dist",
   "vars": {

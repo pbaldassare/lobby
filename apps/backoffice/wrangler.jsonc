@@ -3,7 +3,7 @@
   "name": "lobby",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  // `_worker.js/` directory; index.js is already a wrangler-4 bundle.
+  // `_worker.js/index.js` trampoline + `app.js` OpenNext bundle.
   "no_bundle": true,
   "pages_build_output_dir": ".pages-dist",
   "vars": {

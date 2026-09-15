@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Pages Git ricompila `_worker.js` con wrangler 3.114.17 e il runtime
- * risponde 500 (`Cannot read properties of undefined (reading 'require')`).
+ * Optional wrangler 4 Direct Upload during a Pages Git build.
  *
- * In un build CF_PAGES, se c'è CLOUDFLARE_API_TOKEN, pubblichiamo con
- * wrangler 4 e falliamo il job Git così wrangler 3 non sovrascrive.
- * Senza token usciamo 0: il check Git resta verde (il sito Pages
- * continuerà a rispondere 500 finché non c'è il token).
+ * The staged `_worker.js/` trampoline already survives wrangler 3.114.17
+ * (it rebundles only index.js; app.js stays an external module). A token
+ * is no longer required for a working site. If one is set, we still
+ * publish with wrangler 4 as a faster extra path, then exit 0 so the
+ * Git job stays green.
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -34,15 +34,6 @@ if (!fs.existsSync(wranglerJs)) {
   process.exit(1);
 }
 if (!token.trim()) {
-  console.warn(`
-Skipping wrangler 4 Direct Upload (CLOUDFLARE_API_TOKEN is not set).
-
-Pages Git will finish with wrangler 3.114.17. The Git check can go green;
-that compiler still 500s this OpenNext worker at runtime. To publish a
-working site, add Pages → Settings → Environment variables (Build + Production):
-  CLOUDFLARE_API_TOKEN   Account → Cloudflare Pages: Edit
-  CLOUDFLARE_ACCOUNT_ID  Cloudflare dashboard → Overview
-`);
   process.exit(0);
 }
 
@@ -51,7 +42,7 @@ if (accountId.trim()) {
   env.CLOUDFLARE_ACCOUNT_ID = accountId;
 }
 
-console.log('Publishing .pages-dist with wrangler 4 (skip Pages Git wrangler 3 compile)');
+console.log('Publishing .pages-dist with wrangler 4 Direct Upload');
 execFileSync(
   process.execPath,
   [
@@ -64,12 +55,3 @@ execFileSync(
   ],
   { cwd: repoRoot, env, stdio: 'inherit' },
 );
-
-console.error(`
-Wrangler 4 Direct Upload succeeded.
-
-Failing this Pages Git job on purpose so wrangler 3.114.17 does not
-recompile _worker.js and overwrite the working deployment with HTTP 500.
-The site is already live from the wrangler 4 upload above.
-`);
-process.exit(1);
