@@ -41,7 +41,20 @@ Config already in the repo:
 - Root `npm run build` runs OpenNext + the Pages staging script
 - `.github/workflows/deploy-backoffice.yml` — **production deploy** (`wrangler pages deploy`, wrangler 4.x)
 
-Use **Direct Upload via GitHub Actions** if Git still 500s. Cloudflare Pages **Git builds** compile `_worker.js` with wrangler `3.114.17` unless `no_bundle` is set (root `wrangler.jsonc`). The staged output is a `_worker.js/` **directory** whose `index.js` is a wrangler 4 bundle (`@cloudflare/unenv-preset` inlined). A single `_worker.js` file gets recompiled by Pages Git (wrangler 3.114.17) and serves HTTP 500. The raw OpenNext module directory dies at startup with Error 1101 (`@cloudflare/unenv-preset` unresolved).
+OpenNext cannot be uploaded by the Pages Git compiler. That step pins wrangler `3.114.17`, rebundles `_worker.js`, and the site then serves HTTP 500:
+
+`Failed to load external module next/dist/compiled/next-server/app-page-turbo.runtime.prod.js: Cannot read properties of undefined (reading 'require')`
+
+Root `npm run build` stages a wrangler 4 bundle, then (only on `CF_PAGES=1`) Direct-Uploads it with wrangler 4 and **fails the Git job on purpose** so wrangler 3 cannot overwrite it.
+
+Add these as **Pages → Settings → Environment variables** (available at build time, Production + Preview):
+
+| Variable | Notes |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Account → Cloudflare Pages: Edit |
+| `CLOUDFLARE_ACCOUNT_ID` | Dashboard → Overview |
+
+Also set the same values as GitHub Actions secrets so **Actions → Deploy backoffice** can publish without the Git compiler.
 
 GitHub → Settings → Secrets and variables → Actions should include `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the Action path. Then **Actions → Deploy backoffice (Cloudflare Pages) → Run workflow**.
 
@@ -96,10 +109,11 @@ Also set build-time variables (Settings → Variables):
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_APP_URL`
 - `SUPABASE_SERVICE_ROLE_KEY` as a **secret** (never `NEXT_PUBLIC_`)
+- `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (required so wrangler 4 can publish during the Git build)
 
 Compatibility flags: `nodejs_compat` (already in `wrangler.jsonc`).
 
-Git builds must not recompile `_worker.js` (`no_bundle` in `wrangler.jsonc`). The file is already a wrangler 4 bundle; wrangler 3.114.17 cannot resolve `@cloudflare/unenv-preset` and serves Error 1101. Direct Upload via GitHub Actions is still the safer path.
+A green Pages Git check that used wrangler 3 is not a working site. Prefer the wrangler 4 Direct Upload (build script or GitHub Action).
 
 ### Reminder
 
