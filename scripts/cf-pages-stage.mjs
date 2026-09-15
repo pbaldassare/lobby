@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 /**
  * Converte l'output OpenNext in Pages advanced mode:
- * static assets + `_worker.js/` (directory di moduli) + `_routes.json`.
+ * static assets + `_worker.js` (file unico già bundlato) + `_routes.json`.
  *
- * La directory (non un singolo file) + `no_bundle` evita che Pages Git
- * ricompili OpenNext con wrangler 3.114.17 (500 a runtime).
+ * OpenNext lascia import nudi (`node:process` → `@cloudflare/unenv-preset`).
+ * Con `no_bundle` Pages non li risolve e il Worker muore all'avvio (Error 1101).
+ * Wrangler 4 li inlinea qui; `no_bundle` resta attivo così Pages Git
+ * (wrangler 3.114.17) non ricompila il bundle.
  */
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,10 +17,13 @@ const backofficeRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../apps/backoffice',
 );
+const repoRoot = path.resolve(backofficeRoot, '../..');
 const src = path.join(backofficeRoot, '.open-next');
 const dest = path.join(backofficeRoot, '.pages-dist');
 const workerSrc = path.join(src, 'worker.js');
 const assetsSrc = path.join(src, 'assets');
+const bundleDir = path.join(backofficeRoot, '.wrangler-prebundle');
+const bundleConfig = path.join(backofficeRoot, '.wrangler-prebundle.jsonc');
 
 if (!fs.existsSync(workerSrc)) {
   console.error('Missing OpenNext output: apps/backoffice/.open-next/worker.js');
@@ -28,25 +34,110 @@ if (!fs.existsSync(assetsSrc)) {
   process.exit(1);
 }
 
-fs.rmSync(dest, { recursive: true, force: true });
-fs.mkdirSync(dest, { recursive: true });
-
-fs.cpSync(assetsSrc, dest, { recursive: true });
-
-const workerDir = path.join(dest, '_worker.js');
-fs.rmSync(workerDir, { recursive: true, force: true });
-fs.mkdirSync(workerDir, { recursive: true });
-
-for (const entry of fs.readdirSync(src)) {
-  if (entry === 'assets' || entry === 'worker.js') {
-    continue;
-  }
-  fs.cpSync(path.join(src, entry), path.join(workerDir, entry), {
-    recursive: true,
-  });
+const wranglerJs = path.join(repoRoot, 'node_modules/wrangler/bin/wrangler.js');
+if (!fs.existsSync(wranglerJs)) {
+  console.error('Missing wrangler: run npm ci at the repo root');
+  process.exit(1);
 }
 
-fs.copyFileSync(workerSrc, path.join(workerDir, 'index.js'));
+fs.writeFileSync(
+  bundleConfig,
+  `${JSON.stringify(
+    {
+      name: 'lobby',
+      main: workerSrc,
+      compatibility_date: '2025-04-01',
+      compatibility_flags: ['nodejs_compat', 'global_fetch_strictly_public'],
+    },
+    null,
+    2,
+  )}\n`,
+);
+
+fs.rmSync(bundleDir, { recursive: true, force: true });
+execFileSync(
+  process.execPath,
+  [
+    wranglerJs,
+    'deploy',
+    '--dry-run',
+    '--outdir',
+    bundleDir,
+    '--config',
+    bundleConfig,
+  ],
+  { cwd: backofficeRoot, stdio: 'inherit' },
+);
+
+const bundledWorker = path.join(bundleDir, 'worker.js');
+if (!fs.existsSync(bundledWorker)) {
+  console.error('Wrangler dry-run did not write .wrangler-prebundle/worker.js');
+  process.exit(1);
+}
+
+const NODE_BUILTINS = [
+  'assert',
+  'async_hooks',
+  'buffer',
+  'child_process',
+  'cluster',
+  'console',
+  'constants',
+  'crypto',
+  'dgram',
+  'diagnostics_channel',
+  'dns',
+  'domain',
+  'events',
+  'fs',
+  'http',
+  'http2',
+  'https',
+  'inspector',
+  'module',
+  'net',
+  'os',
+  'path',
+  'perf_hooks',
+  'process',
+  'punycode',
+  'querystring',
+  'readline',
+  'repl',
+  'stream',
+  'string_decoder',
+  'sys',
+  'timers',
+  'tls',
+  'trace_events',
+  'tty',
+  'url',
+  'util',
+  'v8',
+  'vm',
+  'wasi',
+  'worker_threads',
+  'zlib',
+];
+// Wrangler Workers bundle leaves some Node builtins unprefixed.
+// Pages `no_bundle` only allows `node:` / `cloudflare:` specifiers.
+const nodeFrom = new RegExp(
+  `(\\b(?:import|export)\\b[^;\\n]*?\\sfrom\\s+)["'](?!node:|cloudflare:)(${NODE_BUILTINS.join('|')})(/[^"']*)?["']`,
+  'g',
+);
+const nodeBareImport = new RegExp(
+  `(\\bimport\\s+)["'](?!node:|cloudflare:)(${NODE_BUILTINS.join('|')})(/[^"']*)?["']`,
+  'g',
+);
+const workerSource = fs
+  .readFileSync(bundledWorker, 'utf8')
+  .replace(nodeFrom, '$1"node:$2$3"')
+  .replace(nodeBareImport, '$1"node:$2$3"');
+
+fs.rmSync(dest, { recursive: true, force: true });
+fs.mkdirSync(dest, { recursive: true });
+fs.cpSync(assetsSrc, dest, { recursive: true });
+fs.writeFileSync(path.join(dest, '_worker.js'), workerSource);
 
 fs.writeFileSync(
   path.join(dest, '_routes.json'),
@@ -61,9 +152,18 @@ fs.writeFileSync(
   )}\n`,
 );
 
-if (fs.existsSync(path.join(dest, '_worker.js')) && !fs.statSync(path.join(dest, '_worker.js')).isDirectory()) {
-  console.error('Expected _worker.js to be a directory of modules');
+const stagedWorker = path.join(dest, '_worker.js');
+if (!fs.existsSync(stagedWorker) || fs.statSync(stagedWorker).isDirectory()) {
+  console.error('Expected _worker.js to be a single pre-bundled file');
   process.exit(1);
 }
+if (workerSource.includes('from "@cloudflare/unenv-preset')) {
+  console.error(
+    'Staged _worker.js still imports @cloudflare/unenv-preset (Error 1101 at runtime)',
+  );
+  process.exit(1);
+}
+
+fs.rmSync(bundleConfig, { force: true });
 
 console.log(`Staged Cloudflare Pages output at ${dest}`);

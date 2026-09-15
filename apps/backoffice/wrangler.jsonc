@@ -3,6 +3,7 @@
   "name": "lobby",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // `_worker.js` is already a wrangler-4 bundle (unenv-preset inlined).
   "no_bundle": true,
   "pages_build_output_dir": ".pages-dist",
   "vars": {

@@ -58,6 +58,7 @@ apps/backoffice/out/
 .open-next/
 .pages-dist/
 .wrangler-prebundle/
+.wrangler-prebundle.jsonc
 .wrangler/
 .dev.vars
 apps/backoffice/.open-next/

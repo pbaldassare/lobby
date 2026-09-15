@@ -31,7 +31,7 @@ Do **not** commit `.env`, service role keys, or store credentials.
 
 ## 2. Cloudflare Pages — backoffice only
 
-The backoffice is a Next.js app. OpenNext builds it, then `scripts/cf-pages-stage.mjs` stages **Pages advanced mode** output (`_worker.js` + static assets). This is **Pages**, not a Workers (`*.workers.dev`) project.
+The backoffice is a Next.js app. OpenNext builds it, then `scripts/cf-pages-stage.mjs` stages **Pages advanced mode** output (static assets + a pre-bundled `_worker.js`). This is **Pages**, not a Workers (`*.workers.dev`) project.
 
 Config already in the repo:
 
@@ -41,7 +41,7 @@ Config already in the repo:
 - Root `npm run build` runs OpenNext + the Pages staging script
 - `.github/workflows/deploy-backoffice.yml` — **production deploy** (`wrangler pages deploy`, wrangler 4.x)
 
-Use **Direct Upload via GitHub Actions** if Git still 500s. Cloudflare Pages **Git builds** compile `_worker.js` with wrangler `3.114.17` unless `no_bundle` is set (root `wrangler.jsonc`). The staged output is a `_worker.js/` **directory** of modules, not a single bundled file.
+Use **Direct Upload via GitHub Actions** if Git still 500s. Cloudflare Pages **Git builds** compile `_worker.js` with wrangler `3.114.17` unless `no_bundle` is set (root `wrangler.jsonc`). The staged output is a **single pre-bundled** `_worker.js` (wrangler 4 inlines `@cloudflare/unenv-preset`). Do not ship the OpenNext module directory: workerd cannot resolve that package and the Worker dies with Error 1101.
 
 GitHub → Settings → Secrets and variables → Actions should include `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` for the Action path. Then **Actions → Deploy backoffice (Cloudflare Pages) → Run workflow**.
 
@@ -99,7 +99,7 @@ Also set build-time variables (Settings → Variables):
 
 Compatibility flags: `nodejs_compat` (already in `wrangler.jsonc`).
 
-Git builds can pass the OpenNext/Pages layout checks and still serve 500s because of the pinned wrangler 3 compiler. Prefer the GitHub Action Direct Upload for a working site.
+Git builds must not recompile `_worker.js` (`no_bundle` in `wrangler.jsonc`). The file is already a wrangler 4 bundle; wrangler 3.114.17 cannot resolve `@cloudflare/unenv-preset` and serves Error 1101. Direct Upload via GitHub Actions is still the safer path.
 
 ### Reminder
 
