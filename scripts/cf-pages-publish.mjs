@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 /**
- * Pages Git ricompila `_worker.js` con wrangler 3.114.17 e il runtime
- * risponde 500 (`Cannot read properties of undefined (reading 'require')`).
+ * Optional wrangler 4 Direct Upload during a Pages Git build.
  *
- * In un build CF_PAGES pubblichiamo noi con wrangler 4, poi usciamo con
- * errore così l'upload wrangler 3 non sovrascrive il deploy buono.
+ * The staged `_worker.js/` trampoline already survives wrangler 3.114.17
+ * (it rebundles only index.js; app.js stays an external module). A token
+ * is no longer required for a working site. If one is set, we still
+ * publish with wrangler 4 as a faster extra path, then exit 0 so the
+ * Git job stays green.
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -32,21 +34,7 @@ if (!fs.existsSync(wranglerJs)) {
   process.exit(1);
 }
 if (!token.trim()) {
-  console.error(`
-Pages Git cannot publish this OpenNext worker.
-
-The Pages upload step uses wrangler 3.114.17, which recompiles _worker.js
-and the site then serves HTTP 500:
-  Failed to load external module .../app-page-turbo.runtime.prod.js
-  TypeError: Cannot read properties of undefined (reading 'require')
-
-Add these as Pages → Settings → Environment variables (Build + Production):
-  CLOUDFLARE_API_TOKEN   Account → Cloudflare Pages: Edit
-  CLOUDFLARE_ACCOUNT_ID  Cloudflare dashboard → Overview
-
-Then retry the deployment.
-`);
-  process.exit(1);
+  process.exit(0);
 }
 
 const env = { ...process.env, CLOUDFLARE_API_TOKEN: token };
@@ -54,7 +42,7 @@ if (accountId.trim()) {
   env.CLOUDFLARE_ACCOUNT_ID = accountId;
 }
 
-console.log('Publishing .pages-dist with wrangler 4 (skip Pages Git wrangler 3 compile)');
+console.log('Publishing .pages-dist with wrangler 4 Direct Upload');
 execFileSync(
   process.execPath,
   [
@@ -67,12 +55,3 @@ execFileSync(
   ],
   { cwd: repoRoot, env, stdio: 'inherit' },
 );
-
-console.error(`
-Wrangler 4 Direct Upload succeeded.
-
-Failing this Pages Git job on purpose so wrangler 3.114.17 does not
-recompile _worker.js and overwrite the working deployment with HTTP 500.
-The site is already live from the wrangler 4 upload above.
-`);
-process.exit(1);
