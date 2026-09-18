@@ -15,6 +15,7 @@ import { Platform } from 'react-native';
 import { signInWithNativeApple } from '@/lib/appleAuth';
 import { demoProfile } from '@/lib/demo';
 import { isEnvConfigured } from '@/lib/env';
+import { lobbyUserError } from '@/lib/errors';
 import { type AuthActionResult, type SocialProvider } from '@/lib/oauth';
 import { completeNativeOAuthRedirect } from '@/lib/oauthSession';
 import { getSupabase } from '@/lib/supabase';
@@ -22,17 +23,7 @@ import { getSupabase } from '@/lib/supabase';
 WebBrowser.maybeCompleteAuthSession();
 
 function publicAuthError(message: string | undefined): string | null {
-  if (!message) return null;
-  if (/invalid login credentials/i.test(message)) return 'Email o password non corretti.';
-  if (/email not confirmed/i.test(message)) return 'Conferma l’email prima di entrare.';
-  if (/user already registered/i.test(message)) return 'Questo account esiste già. Accedi.';
-  if (/provider is not enabled/i.test(message)) {
-    return 'Questo accesso non è ancora attivo. Riprova tra poco o usa l’email.';
-  }
-  if (/unable to exchange external code|invalid (jwt|id.?token|grant)/i.test(message)) {
-    return 'Il provider non ha confermato l’accesso. Riprova.';
-  }
-  return message;
+  return lobbyUserError(message);
 }
 
 type AuthContextValue = {

@@ -111,6 +111,25 @@ export async function removeBlockAction(input: {
   try {
     await requireVenueStaff(input.venue_id);
     const admin = createAdminClient();
+    const { data: block } = await admin
+      .from('blocks')
+      .select('id, blocker_id, blocked_profile_id')
+      .eq('id', input.block_id)
+      .maybeSingle();
+    if (!block) return { ok: false, error: 'Blocco non trovato.' };
+    const involved = [block.blocker_id, block.blocked_profile_id].filter(
+      (id): id is string => typeof id === 'string' && id.length > 0,
+    );
+    if (involved.length === 0) return { ok: false, error: 'Blocco non di questo venue.' };
+    const { data: memberships } = await admin
+      .from('memberships')
+      .select('id')
+      .eq('venue_id', input.venue_id)
+      .in('profile_id', involved)
+      .limit(1);
+    if (!memberships?.length) {
+      return { ok: false, error: 'Il blocco non riguarda membri di questo venue.' };
+    }
     const { error } = await admin.from('blocks').delete().eq('id', input.block_id);
     if (error) return { ok: false, error: error.message };
     revalidatePath('/moderation');

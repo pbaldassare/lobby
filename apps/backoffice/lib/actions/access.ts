@@ -11,13 +11,24 @@ export type AccessActionResult =
   | { ok: false; error: string };
 
 export async function listRoomAccess(roomId: string): Promise<RoomAccess[]> {
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from('room_access')
-    .select('*')
-    .eq('room_id', roomId)
-    .order('method');
-  return (data ?? []) as RoomAccess[];
+  try {
+    const admin = createAdminClient();
+    const { data: room } = await admin
+      .from('rooms')
+      .select('venue_id')
+      .eq('id', roomId)
+      .maybeSingle();
+    if (!room?.venue_id) return [];
+    await requireVenueStaff(String(room.venue_id));
+    const { data } = await admin
+      .from('room_access')
+      .select('*')
+      .eq('room_id', roomId)
+      .order('method');
+    return (data ?? []) as RoomAccess[];
+  } catch {
+    return [];
+  }
 }
 
 export async function addRoomAccessAction(input: {
@@ -29,6 +40,14 @@ export async function addRoomAccessAction(input: {
   try {
     await requireVenueStaff(input.venueId);
     const admin = createAdminClient();
+    const { data: room } = await admin
+      .from('rooms')
+      .select('venue_id')
+      .eq('id', input.roomId)
+      .maybeSingle();
+    if (!room || String(room.venue_id) !== input.venueId) {
+      return { ok: false, error: 'La stanza non appartiene a questo venue.' };
+    }
     const param =
       input.method === 'email_domain' || input.method === 'wifi_portal'
         ? (input.param ?? '').trim().toLowerCase()
@@ -61,6 +80,20 @@ export async function removeRoomAccessAction(input: {
   try {
     await requireVenueStaff(input.venueId);
     const admin = createAdminClient();
+    const { data: access } = await admin
+      .from('room_access')
+      .select('room_id')
+      .eq('id', input.accessId)
+      .maybeSingle();
+    if (!access?.room_id) return { ok: false, error: 'Canale non trovato.' };
+    const { data: room } = await admin
+      .from('rooms')
+      .select('venue_id')
+      .eq('id', access.room_id)
+      .maybeSingle();
+    if (!room || String(room.venue_id) !== input.venueId) {
+      return { ok: false, error: 'Il canale non appartiene a questo venue.' };
+    }
     const { error } = await admin.from('room_access').delete().eq('id', input.accessId);
     if (error) return { ok: false, error: error.message };
     revalidatePath('/access');
@@ -79,6 +112,15 @@ export async function grantPassAction(input: {
 }): Promise<AccessActionResult | { ok: true; pass: Pass }> {
   try {
     await requireVenueStaff(input.venueId);
+    const admin = createAdminClient();
+    const { data: room } = await admin
+      .from('rooms')
+      .select('venue_id')
+      .eq('id', input.roomId)
+      .maybeSingle();
+    if (!room || String(room.venue_id) !== input.venueId) {
+      return { ok: false, error: 'La stanza non appartiene a questo venue.' };
+    }
     const supabase = await createClient();
     const { data, error } = await supabase.rpc('grant_pass', {
       p_room_id: input.roomId,

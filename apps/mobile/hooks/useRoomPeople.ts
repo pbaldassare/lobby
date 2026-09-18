@@ -111,7 +111,7 @@ export function useRoomPeople(): {
         'postgres_changes',
         {
           event: '*',
-          schema: 'public',
+          schema: 'lobby',
           table: 'presence',
           filter: `room_id=eq.${presence.room_id}`,
         },

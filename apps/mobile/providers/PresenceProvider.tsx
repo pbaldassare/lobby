@@ -11,6 +11,7 @@ import React, {
 import { Platform } from 'react-native';
 
 import { createDemoPresence, DEMO_ROOM_ID, demoRoom } from '@/lib/demo';
+import { lobbyUserError } from '@/lib/errors';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 
@@ -59,7 +60,11 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     clearHeartbeat();
     if (isDemo || !user) return;
     heartbeatRef.current = setInterval(() => {
-      void getSupabase().rpc('heartbeat_presence');
+      void getSupabase()
+        .rpc('heartbeat_presence')
+        .then(({ data }) => {
+          if (data) setPresence(data as Presence);
+        });
     }, HEARTBEAT_MS);
   }, [clearHeartbeat, isDemo, user]);
 
@@ -137,23 +142,23 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
           p_room_id: roomId,
           p_code: access.code,
         });
-        if (passError) return { error: passError.message };
+        if (passError) return { error: lobbyUserError(passError.message) };
       } else if (access?.wifi) {
         const { error: passError } = await client.rpc('claim_room_by_wifi', {
           p_room_id: roomId,
           p_network: access.wifi,
         });
-        if (passError) return { error: passError.message };
+        if (passError) return { error: lobbyUserError(passError.message) };
       } else if (access?.claimEmail) {
         const { error: passError } = await client.rpc('claim_room_by_email', {
           p_room_id: roomId,
         });
-        if (passError) return { error: passError.message };
+        if (passError) return { error: lobbyUserError(passError.message) };
       } else if (access?.claimMembership) {
         const { error: passError } = await client.rpc('claim_room_by_membership', {
           p_room_id: roomId,
         });
-        if (passError) return { error: passError.message };
+        if (passError) return { error: lobbyUserError(passError.message) };
       }
 
       const { data, error } = await client
@@ -174,9 +179,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
       if (error) {
         // Il messaggio grezzo del database non dice nulla a chi è sulla porta.
         return {
-          error: /row-level security|violates/i.test(error.message)
-            ? 'Serve un permesso valido per entrare in questa stanza.'
-            : error.message,
+          error: lobbyUserError(error.message) ?? error.message,
         };
       }
       setPresence(data as Presence);
@@ -201,13 +204,13 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
         p_room_id: presence.room_id,
         p_guest_id: guestId,
       });
-      return { error: error?.message ?? null };
+      return { error: lobbyUserError(error?.message) };
     },
     [user, isDemo, presence?.room_id],
   );
 
   const leaveRoom = useCallback(async () => {
-    if (!user) return { error: 'Not signed in' };
+    if (!user) return { error: 'Non hai fatto l’accesso' };
     if (isDemo) {
       setPresence(null);
       setRoom(null);
@@ -217,13 +220,13 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     const { error } = await getSupabase().from('presence').delete().eq('profile_id', user.id);
     setPresence(null);
     setRoom(null);
-    return { error: error?.message ?? null };
+    return { error: lobbyUserError(error?.message) };
   }, [user, isDemo, clearHeartbeat]);
 
   const setVisible = useCallback(
     async (visible: boolean) => {
-      if (!user) return { error: 'Not signed in' };
-      if (!presence) return { error: 'Enter a room first' };
+      if (!user) return { error: 'Non hai fatto l’accesso' };
+      if (!presence) return { error: 'Entra in una stanza prima.' };
       if (isDemo) {
         setPresence(createDemoPresence(visible));
         return { error: null };
@@ -246,7 +249,8 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
           .eq('profile_id', user.id)
           .select('*')
           .maybeSingle();
-        if (updateError) return { error: updateError.message };
+        if (updateError) return { error: lobbyUserError(updateError.message) ?? updateError.message };
+        if (!updated) return { error: 'Serve un permesso valido per apparire in stanza.' };
         setPresence(updated as Presence);
       } else {
         setPresence(data as Presence);

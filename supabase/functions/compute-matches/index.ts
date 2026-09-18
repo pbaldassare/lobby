@@ -69,6 +69,9 @@ Deno.serve(async (req: Request) => {
     if (!presence) {
       return json({ error: "not_present_in_room" }, 403);
     }
+    if (!presence.is_visible) {
+      return json({ error: "not_visible_in_room" }, 403);
+    }
 
     const admin = createClient(supabaseUrl, serviceKey, {
       db: { schema: "lobby" },
@@ -83,7 +86,11 @@ Deno.serve(async (req: Request) => {
       return json({ error: error.message }, 400);
     }
 
-    return json({ matches: data ?? [] });
+    const mine = ((data ?? []) as Array<{ profile_a_id: string; profile_b_id: string }>).filter(
+      (row) => row.profile_a_id === user.id || row.profile_b_id === user.id,
+    );
+
+    return json({ matches: mine });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown_error";
     return json({ error: message }, 500);

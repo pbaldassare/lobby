@@ -1,6 +1,7 @@
 import type { Chat, Message, Profile } from '@lobby/shared/types';
 import { useCallback, useEffect, useState } from 'react';
 
+import { lobbyUserError } from '@/lib/errors';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 
@@ -110,7 +111,7 @@ export function useChatThread(chatId: string | undefined): {
       .channel(`chat:${chatId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
+        { event: 'INSERT', schema: 'lobby', table: 'messages', filter: `chat_id=eq.${chatId}` },
         (payload) => setMessages((prev) => [...prev, payload.new as Message]),
       )
       .subscribe();
@@ -121,16 +122,16 @@ export function useChatThread(chatId: string | undefined): {
 
   const sendMessage = useCallback(
     async (body: string) => {
-      if (!user || !chatId) return { error: 'Missing chat' };
-      if (!connected) return { error: 'Chat unlocks only after mutual connection.' };
+      if (!user || !chatId) return { error: 'Chat non trovata' };
+      if (!connected) return { error: 'La chat si apre solo dopo il consenso reciproco.' };
       const trimmed = body.trim();
-      if (!trimmed) return { error: 'Empty message' };
+      if (!trimmed) return { error: 'Scrivi un messaggio.' };
       const { error } = await getSupabase().from('messages').insert({
         chat_id: chatId,
         sender_id: user.id,
         body: trimmed,
       });
-      return { error: error?.message ?? null };
+      return { error: lobbyUserError(error?.message) };
     },
     [user, chatId, connected],
   );

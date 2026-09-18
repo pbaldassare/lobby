@@ -56,6 +56,21 @@ export default function WelcomeScreen(): React.JSX.Element {
       Platform.OS === 'web' && !isDemo,
     );
 
+  const withEmail = (mode: 'email' | 'signup') => {
+    const trimmed = email.trim();
+    if (!isDemo && (!trimmed || !password)) {
+      setError('Inserisci email e password.');
+      return;
+    }
+    run(
+      () =>
+        mode === 'email'
+          ? signInWithEmail(trimmed || 'demo@lobby.app', password || 'demo')
+          : signUpWithEmail(trimmed || 'demo@lobby.app', password || 'demo'),
+      mode,
+    );
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -144,24 +159,14 @@ export default function WelcomeScreen(): React.JSX.Element {
             variant="ghost"
             loading={busy === 'email'}
             disabled={busy !== null && busy !== 'email'}
-            onPress={() =>
-              run(
-                () => signInWithEmail(email || 'demo@lobby.app', password || 'demo'),
-                'email',
-              )
-            }
+            onPress={() => withEmail('email')}
           />
           <Button
             label="Crea un account con email"
             variant="ghost"
             loading={busy === 'signup'}
             disabled={busy !== null && busy !== 'signup'}
-            onPress={() =>
-              run(
-                () => signUpWithEmail(email || 'demo@lobby.app', password || 'demo'),
-                'signup',
-              )
-            }
+            onPress={() => withEmail('signup')}
           />
 
           <InstallBanner />

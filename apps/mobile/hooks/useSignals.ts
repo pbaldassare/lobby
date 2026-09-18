@@ -2,6 +2,7 @@ import type { Profile, Signal, SignalStatus } from '@lobby/shared/types';
 import { useCallback, useEffect, useState } from 'react';
 
 import { demoSignals } from '@/lib/demo';
+import { lobbyUserError } from '@/lib/errors';
 import { getSupabase, invokeEdgeFunction } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 
@@ -73,7 +74,7 @@ export function useSignals(): {
 
   const sendSignal = useCallback(
     async (toProfileId: string, message?: string) => {
-      if (isDemo) return { error: 'Demo mode — wire Supabase env to send signals' };
+      if (isDemo) return { error: 'Modalità dimostrativa: i signal non partono.' };
       const { error } = await invokeEdgeFunction<
         { to_profile_id: string; message?: string | null },
         { signal: Signal }
@@ -82,7 +83,7 @@ export function useSignals(): {
         message: message ?? null,
       });
       if (!error) await refresh();
-      return { error: error?.message ?? null };
+      return { error: lobbyUserError(error?.message) };
     },
     [isDemo, refresh],
   );
@@ -93,7 +94,7 @@ export function useSignals(): {
       status: Extract<SignalStatus, 'connected' | 'declined'>,
     ) => {
       if (isDemo) return { error: null };
-      if (!user) return { error: 'Not signed in' };
+      if (!user) return { error: 'Non hai fatto l’accesso' };
       const { error } = await getSupabase()
         .from('signals')
         .update({
@@ -104,7 +105,7 @@ export function useSignals(): {
         .eq('to_profile_id', user.id)
         .eq('status', 'pending');
       if (!error) await refresh();
-      return { error: error?.message ?? null };
+      return { error: lobbyUserError(error?.message) };
     },
     [user, isDemo, refresh],
   );
