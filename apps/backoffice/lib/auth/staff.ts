@@ -81,7 +81,7 @@ export async function getStaffContext(): Promise<StaffContext | null> {
   const assignments = (staffRows ?? []) as VenueStaff[];
 
   let venues: Venue[] = [];
-  if (profile.role === 'admin' && assignments.length === 0) {
+  if (profile.role === 'admin') {
     const { data: allVenues } = await supabase.from('venues').select('*').order('name');
     venues = (allVenues ?? []) as Venue[];
   } else {
