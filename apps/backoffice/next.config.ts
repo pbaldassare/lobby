@@ -3,8 +3,18 @@ import path from 'node:path';
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@lobby/shared'],
+  allowedDevOrigins: ['127.0.0.1'],
   // Monorepo: file tracing from the workspace root (OpenNext / Cloudflare Pages).
   outputFileTracingRoot: path.join(__dirname, '../..'),
+  async redirects() {
+    return [
+      { source: '/dashboard', destination: '/risultati', permanent: false },
+      { source: '/poster', destination: '/qr', permanent: false },
+      { source: '/verify', destination: '/registrati', permanent: false },
+      { source: '/moderation', destination: '/istanze', permanent: false },
+      { source: '/access', destination: '/qr', permanent: false },
+    ];
+  },
   // Chiavi publishable (RLS). Così `next build` su Pages Git non resta senza env.
   env: {
     NEXT_PUBLIC_SUPABASE_URL:

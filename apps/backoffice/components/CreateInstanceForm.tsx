@@ -44,7 +44,12 @@ export function CreateInstanceForm() {
         <label htmlFor="closes_at">Chiusura (facoltativa)</label>
         <input id="closes_at" name="closes_at" type="datetime-local" />
       </div>
-      <button className="btn btn-gold" type="submit" disabled={pending}>
+      <button
+        className="btn btn-gold"
+        type="submit"
+        name="create_instance"
+        disabled={pending}
+      >
         {pending ? 'Creo…' : 'Crea istanza'}
       </button>
     </form>
