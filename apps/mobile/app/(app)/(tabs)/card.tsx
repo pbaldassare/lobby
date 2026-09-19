@@ -1,10 +1,11 @@
 import { makeStyles } from '@lobby/shared/theme';
 import { Avatar, Button, Card, Chip, ScreenHeader, Text } from '@lobby/shared/ui';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
+import { useDocuments } from '@/hooks/useDocuments';
 import { useMemberships } from '@/hooks/useMemberships';
 import { initialsFromProfile } from '@/lib/format';
 import { useAuth } from '@/providers/AuthProvider';
@@ -24,14 +25,26 @@ export default function YourCardScreen(): React.JSX.Element {
   const styles = useStyles();
   const { profile, user } = useAuth();
   const { memberships } = useMemberships();
+  const { cv, uploadCv, removeCv, openOwnCv, canUpload } = useDocuments();
+  const [cvBusy, setCvBusy] = useState(false);
+  const [cvError, setCvError] = useState<string | null>(null);
   const sealed = memberships.find((m) => m.verified_status === 'verified' && m.seal_issued_at);
+
+  const runCv = (fn: () => Promise<{ error: string | null }>) => {
+    setCvBusy(true);
+    setCvError(null);
+    void fn().then(({ error }) => {
+      setCvBusy(false);
+      if (error) setCvError(error);
+    });
+  };
 
   return (
     <Screen>
       <ScreenHeader
         icon="card"
         title="La tua card"
-        subtitle="Identità e sigillo del venue. Il sigillo lo rilascia il locale."
+        subtitle="Identità in Lobby. LinkedIn e CV alimentano questo profilo, non lo sostituiscono."
       />
 
       <Card variant="biz" style={styles.block}>
@@ -54,7 +67,17 @@ export default function YourCardScreen(): React.JSX.Element {
 
         <Fact label="Nome" value={profile?.display_name ?? '—'} />
         <Fact label="Email" value={user?.email ?? '—'} hint="L’email non si cambia da qui." />
+        <Fact label="Occupazione" value={profile?.occupation ?? '—'} />
         <Fact label="Azienda" value={profile?.company ?? '—'} />
+        <Fact
+          label="LinkedIn"
+          value={profile?.linkedin_url ?? 'Non indicato'}
+          hint="Copia nel nostro DB. Non è una scheda live di LinkedIn."
+        />
+        <Fact
+          label="Hobby"
+          value={(profile?.hobbies ?? []).length ? (profile?.hobbies ?? []).join(' · ') : '—'}
+        />
         <Fact
           label="Sigillo"
           value={sealed?.venue?.name ?? 'Nessun sigillo'}
@@ -65,6 +88,39 @@ export default function YourCardScreen(): React.JSX.Element {
           }
         />
         <Fact label="Membro da" value={formatSince(profile?.created_at)} last />
+      </Card>
+
+      <Card style={styles.block}>
+        <Text variant="titleSm">Curriculum</Text>
+        <Text variant="small" tone="secondary">
+          Resta sul tuo profilo. Lo vede solo chi è connesso con te.
+        </Text>
+        {cv ? (
+          <Fact label="File" value={cv.file_name} last />
+        ) : (
+          <Text variant="body" tone="tertiary">
+            Nessun file caricato.
+          </Text>
+        )}
+        {cvError ? (
+          <Text variant="tiny" tone="danger">
+            {cvError}
+          </Text>
+        ) : null}
+        <View style={styles.cvActions}>
+          <Button
+            label={cv ? 'Sostituisci' : 'Carica CV'}
+            loading={cvBusy}
+            disabled={!canUpload}
+            onPress={() => runCv(uploadCv)}
+          />
+          {cv ? (
+            <>
+              <Button label="Apri" variant="ghost" onPress={() => void runCv(openOwnCv)} />
+              <Button label="Rimuovi" variant="ghost" onPress={() => runCv(removeCv)} />
+            </>
+          ) : null}
+        </View>
       </Card>
 
       <Button icon="scan" label="Mostra il QR" onPress={() => router.push('/(app)/qr')} />
@@ -166,6 +222,7 @@ const useStyles = makeStyles((t) => ({
   identity: { flexDirection: 'row', gap: 14, alignItems: 'center' },
   identityText: { flex: 1, minWidth: 0, gap: 3 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  cvActions: { gap: 8 },
   fact: {
     gap: 3,
     paddingBottom: 12,

@@ -1,7 +1,10 @@
 import { makeStyles, useTheme } from '@lobby/shared/theme';
 import { Icon, Text } from '@lobby/shared/ui';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Easing, Pressable, View } from 'react-native';
+
+const SLIDE = Easing.bezier(0.32, 0.72, 0, 1);
+const TRAVEL = 18;
 
 /** Quanto manca alla chiusura, in forma leggibile. Null = stanza permanente
  *  o già chiusa. */
@@ -59,6 +62,16 @@ export function PresenceBar({
   const theme = useTheme();
   const [busy, setBusy] = useState(false);
   const timeLeft = useTimeLeft(closesAt);
+  const progress = useRef(new Animated.Value(isVisible ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(progress, {
+      toValue: isVisible ? 1 : 0,
+      duration: 240,
+      easing: SLIDE,
+      useNativeDriver: false,
+    }).start();
+  }, [isVisible, progress]);
 
   return (
     <View style={styles.root}>
@@ -88,13 +101,46 @@ export function PresenceBar({
           setBusy(true);
           void Promise.resolve(onChange(!isVisible)).finally(() => setBusy(false));
         }}
-        style={[styles.track, isVisible && styles.trackOn]}
       >
-        {busy ? (
-          <ActivityIndicator size="small" color={theme.color.accent.on} />
-        ) : (
-          <View style={[styles.knob, isVisible && styles.knobOn]} />
-        )}
+        <Animated.View
+          style={[
+            styles.track,
+            {
+              backgroundColor: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [theme.color.bg.sunken, theme.color.signal.default],
+              }),
+              borderColor: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [theme.color.border.strong, theme.color.signal.default],
+              }),
+            },
+          ]}
+        >
+          {busy ? (
+            <ActivityIndicator size="small" color={theme.color.accent.on} />
+          ) : (
+            <Animated.View
+              style={[
+                styles.knob,
+                {
+                  backgroundColor: progress.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [theme.color.text.tertiary, theme.color.bg.canvas],
+                  }),
+                  transform: [
+                    {
+                      translateX: progress.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, TRAVEL],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            />
+          )}
+        </Animated.View>
       </Pressable>
 
       <Pressable
@@ -143,14 +189,12 @@ const useStyles = makeStyles((t) => ({
     justifyContent: 'center',
     paddingHorizontal: 3,
   },
-  trackOn: { backgroundColor: t.color.signal.default, borderColor: t.color.signal.default },
   knob: {
     width: 18,
     height: 18,
     borderRadius: 9,
     backgroundColor: t.color.text.tertiary,
   },
-  knobOn: { alignSelf: 'flex-end', backgroundColor: t.color.bg.canvas },
   leave: { paddingHorizontal: 8, paddingVertical: 6 },
   pressed: { opacity: 0.6 },
 }));
