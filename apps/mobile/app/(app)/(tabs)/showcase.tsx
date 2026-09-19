@@ -2,7 +2,7 @@ import { makeStyles } from '@lobby/shared/theme';
 import type { Project } from '@lobby/shared/types';
 import { Button, Card, Chip, ListEmpty, ScreenHeader, Text } from '@lobby/shared/ui';
 import { type Href, router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
@@ -17,7 +17,22 @@ const STATUS_LABEL: Record<Project['status'], string> = {
 /** Progetti scelti a mano — non è un feed. */
 export default function ShowcaseScreen(): React.JSX.Element {
   const styles = useStyles();
-  const { projects, loading } = useProjects();
+  const { projects, loading, canUpload, createProjectFromFile } = useProjects();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const uploadFromHere = () => {
+    setBusy(true);
+    setError(null);
+    void createProjectFromFile().then(({ error: err, id }) => {
+      setBusy(false);
+      if (err) {
+        setError(err);
+        return;
+      }
+      if (id) router.push(`/(app)/edit-project?id=${id}` as Href);
+    });
+  };
 
   return (
     <Screen>
@@ -28,7 +43,14 @@ export default function ShowcaseScreen(): React.JSX.Element {
       />
 
       <Button
+        label="Carica file"
+        loading={busy}
+        disabled={!canUpload}
+        onPress={uploadFromHere}
+      />
+      <Button
         label="Aggiungi a mano"
+        variant="ghost"
         onPress={() => router.push('/(app)/edit-project' as Href)}
       />
       <Button
@@ -36,6 +58,11 @@ export default function ShowcaseScreen(): React.JSX.Element {
         variant="ghost"
         onPress={() => router.push('/(app)/import-projects' as Href)}
       />
+      {error ? (
+        <Text variant="tiny" tone="danger">
+          {error}
+        </Text>
+      ) : null}
 
       {loading ? <ListEmpty loading title="Carico i progetti" /> : null}
 
@@ -43,7 +70,7 @@ export default function ShowcaseScreen(): React.JSX.Element {
         <ListEmpty
           icon="showcase"
           title="Nessun progetto sulla tua card"
-          body="Aggiungilo a mano o copia Esperienza/Progetti da LinkedIn. Restano in Lobby."
+          body="Carica un PDF, aggiungilo a mano o copia Esperienza/Progetti da LinkedIn. Restano in Lobby."
         />
       ) : null}
 
@@ -68,13 +95,15 @@ export default function ShowcaseScreen(): React.JSX.Element {
             <Chip label={STATUS_LABEL[p.status]} />
             {!p.is_visible ? <Chip label="Nascosto" /> : null}
           </View>
-          {p.deck_requestable ? (
-            <View style={styles.deck}>
-              <Text variant="tiny" tone="tertiary">
-                Deck privato su richiesta · dopo connessione reciproca
-              </Text>
-            </View>
-          ) : null}
+          <View style={styles.deck}>
+            <Text variant="tiny" tone="tertiary">
+              {p.private_deck_file_name
+                ? `File: ${p.private_deck_file_name} · privato fino a connessione reciproca`
+                : p.deck_requestable
+                  ? 'Nessun file ancora · deck su richiesta dopo connessione reciproca'
+                  : 'Nessun file caricato'}
+            </Text>
+          </View>
         </Card>
       ))}
     </Screen>

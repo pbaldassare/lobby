@@ -151,6 +151,7 @@ export type Project = {
   title: string;
   public_pitch: string;
   private_deck_url: string | null;
+  private_deck_file_name: string | null;
   deck_requestable: boolean;
   role_title: string | null;
   status: ProjectStatus;

@@ -165,6 +165,7 @@ export const demoProjects: Project[] = [
     title: 'Hearth Exchange',
     public_pitch: 'Marketplace matching factories with district heating buyers.',
     private_deck_url: null,
+    private_deck_file_name: null,
     deck_requestable: true,
     role_title: 'Founder',
     status: 'active',

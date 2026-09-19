@@ -7,6 +7,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useProjects } from '@/hooks/useProjects';
+import { canPickDocument, pickDocument, type PickedDocument } from '@/lib/pickDocument';
 
 const STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
   { value: 'active', label: 'In corso' },
@@ -19,7 +20,16 @@ export default function EditProjectScreen(): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const rawId = useLocalSearchParams<{ id?: string | string[] }>().id;
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
-  const { projects, createProject, updateProject, deleteProject } = useProjects();
+  const {
+    projects,
+    canUpload,
+    createProject,
+    updateProject,
+    deleteProject,
+    uploadDeck,
+    removeDeck,
+    openOwnDeck,
+  } = useProjects();
   const existing = useMemo(() => projects.find((p) => p.id === id), [projects, id]);
 
   const [title, setTitle] = useState(existing?.title ?? '');
@@ -30,6 +40,7 @@ export default function EditProjectScreen(): React.JSX.Element {
   const [deck, setDeck] = useState(existing?.deck_requestable ?? true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pendingFile, setPendingFile] = useState<PickedDocument | null>(null);
 
   useEffect(() => {
     if (!existing) return;
@@ -57,15 +68,36 @@ export default function EditProjectScreen(): React.JSX.Element {
       deck_requestable: deck,
       is_visible: visible,
     };
-    const op = existing ? updateProject(existing.id, draft) : createProject(draft);
-    void op.then(({ error: err }) => {
-      setBusy(false);
-      if (err) {
-        setError(err);
+    void (async () => {
+      if (existing) {
+        const updated = await updateProject(existing.id, draft);
+        setBusy(false);
+        if (updated.error) {
+          setError(updated.error);
+          return;
+        }
+        router.back();
         return;
       }
+
+      const created = await createProject(draft);
+      if (created.error || !created.id) {
+        setBusy(false);
+        setError(created.error ?? 'Impossibile salvare il progetto.');
+        return;
+      }
+      if (pendingFile) {
+        const uploaded = await uploadDeck(created.id, pendingFile);
+        setBusy(false);
+        if (uploaded.error) {
+          setError(uploaded.error);
+          return;
+        }
+      } else {
+        setBusy(false);
+      }
       router.back();
-    });
+    })();
   };
 
   const remove = () => {
@@ -145,6 +177,73 @@ export default function EditProjectScreen(): React.JSX.Element {
             value={deck ? 'yes' : 'no'}
             onChange={(v) => setDeck(v === 'yes')}
           />
+          {existing ? (
+            <>
+              <Text variant="tiny" tone="tertiary">
+                {existing.private_deck_file_name
+                  ? `Caricato: ${existing.private_deck_file_name}. Lo vede solo chi è connesso con te.`
+                  : 'Nessun file. Caricalo da qui: resta privato fino a connessione reciproca.'}
+              </Text>
+              <Button
+                label={existing.private_deck_file_name ? 'Sostituisci file' : 'Carica file'}
+                variant="ghost"
+                loading={busy}
+                disabled={!canUpload}
+                onPress={() => {
+                  setBusy(true);
+                  setError(null);
+                  void uploadDeck(existing.id).then(({ error: err }) => {
+                    setBusy(false);
+                    if (err) setError(err);
+                  });
+                }}
+              />
+              {existing.private_deck_file_name ? (
+                <>
+                  <Button
+                    label="Apri"
+                    variant="ghost"
+                    disabled={busy}
+                    onPress={() => {
+                      void openOwnDeck(existing.id).then(({ error: err }) => {
+                        if (err) setError(err);
+                      });
+                    }}
+                  />
+                  <Button
+                    label="Rimuovi file"
+                    variant="ghost"
+                    disabled={busy}
+                    onPress={() => {
+                      setBusy(true);
+                      void removeDeck(existing.id).then(({ error: err }) => {
+                        setBusy(false);
+                        if (err) setError(err);
+                      });
+                    }}
+                  />
+                </>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <Text variant="tiny" tone="tertiary">
+                {pendingFile
+                  ? `Pronto: ${pendingFile.name}. Resta privato fino a connessione reciproca.`
+                  : 'Puoi allegare il PDF ora: resta privato fino a connessione reciproca.'}
+              </Text>
+              <Button
+                label={pendingFile ? 'Cambia file' : 'Allega file'}
+                variant="ghost"
+                disabled={!canPickDocument() && !canUpload}
+                onPress={() => {
+                  void pickDocument().then((picked) => {
+                    if (picked) setPendingFile(picked);
+                  });
+                }}
+              />
+            </>
+          )}
         </View>
 
         {error ? (
