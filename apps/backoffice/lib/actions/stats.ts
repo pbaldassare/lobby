@@ -2,7 +2,8 @@
 
 import type { VenueDashboardStats } from '@lobby/shared';
 import { requireVenueStaff, StaffAuthError } from '@/lib/auth/staff';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { tryCreateAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 
 export type StatsResult =
   | { ok: true; stats: VenueDashboardStats }
@@ -27,7 +28,7 @@ export async function getVenueDashboardStats(
 ): Promise<StatsResult> {
   try {
     await requireVenueStaff(venueId);
-    const admin = createAdminClient();
+    const admin = tryCreateAdminClient() ?? (await createClient());
 
     const { data: rooms } = await admin
       .from('rooms')

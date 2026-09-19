@@ -72,34 +72,28 @@ export async function getStaffContext(): Promise<StaffContext | null> {
   const profile = asProfile(profileRow);
   if (!isStaffRole(profile.role)) return null;
 
-  let assignments: VenueStaff[] = [];
+  // Own venue_staff + venues are readable under RLS. Do not require service_role
+  // for the dashboard shell — missing SERVICE_ROLE used to wipe assignments.
+  const { data: staffRows } = await supabase
+    .from('venue_staff')
+    .select('*')
+    .eq('profile_id', user.id);
+  const assignments = (staffRows ?? []) as VenueStaff[];
+
   let venues: Venue[] = [];
-
-  try {
-    const admin = createAdminClient();
-    const { data: staffRows } = await admin
-      .from('venue_staff')
-      .select('*')
-      .eq('profile_id', user.id);
-    assignments = (staffRows ?? []) as VenueStaff[];
-
-    if (profile.role === 'admin' && assignments.length === 0) {
-      const { data: allVenues } = await admin.from('venues').select('*').order('name');
-      venues = (allVenues ?? []) as Venue[];
-    } else {
-      const venueIds = assignments.map((a) => a.venue_id);
-      if (venueIds.length > 0) {
-        const { data: venueRows } = await admin
-          .from('venues')
-          .select('*')
-          .in('id', venueIds)
-          .order('name');
-        venues = (venueRows ?? []) as Venue[];
-      }
+  if (profile.role === 'admin' && assignments.length === 0) {
+    const { data: allVenues } = await supabase.from('venues').select('*').order('name');
+    venues = (allVenues ?? []) as Venue[];
+  } else {
+    const venueIds = assignments.map((a) => a.venue_id);
+    if (venueIds.length > 0) {
+      const { data: venueRows } = await supabase
+        .from('venues')
+        .select('*')
+        .in('id', venueIds)
+        .order('name');
+      venues = (venueRows ?? []) as Venue[];
     }
-  } catch {
-    assignments = [];
-    venues = [];
   }
 
   return { userId: user.id, profile, venues, assignments };
