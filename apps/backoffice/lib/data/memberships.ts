@@ -56,3 +56,30 @@ export async function listVenueMemberships(
       },
     }));
 }
+
+export type MembershipWithVenue = MembershipWithProfile & {
+  venue_id: string;
+  venue_name: string;
+};
+
+/** Elenco registrati su tutti i venue visibili allo staff (admin: tutti). */
+export async function listMembershipsAcrossVenues(
+  venues: { id: string; name: string }[],
+): Promise<MembershipWithVenue[]> {
+  const groups = await Promise.all(
+    venues.map(async (venue) => {
+      const rows = await listVenueMemberships(venue.id);
+      return rows.map((row) => ({
+        ...row,
+        venue_id: venue.id,
+        venue_name: venue.name,
+      }));
+    }),
+  );
+  return groups.flat().sort((a, b) => {
+    const nameA = (a.profile?.display_name ?? a.email ?? '').toLowerCase();
+    const nameB = (b.profile?.display_name ?? b.email ?? '').toLowerCase();
+    if (nameA !== nameB) return nameA.localeCompare(nameB, 'it');
+    return a.venue_name.localeCompare(b.venue_name, 'it');
+  });
+}

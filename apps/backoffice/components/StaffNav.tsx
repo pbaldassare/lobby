@@ -7,6 +7,7 @@ const LINKS = [
   { href: '/istanze', label: 'Istanze' },
   { href: '/qr', label: 'QR' },
   { href: '/registrati', label: 'Registrati' },
+  { href: '/utenti', label: 'Utenti' },
   { href: '/risultati', label: 'Risultati' },
 ] as const;
 
