@@ -53,4 +53,4 @@ $fn$;
 
 revoke all on function lobby.staff_list_memberships(uuid) from public;
 grant execute on function lobby.staff_list_memberships(uuid)
-  to authenticated, service_role;
+  to anon, authenticated, service_role;
