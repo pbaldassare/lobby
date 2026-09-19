@@ -5,7 +5,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
+import { RoomEnterList } from '@/components/RoomEnterList';
 import { Screen } from '@/components/Screen';
+import { useEnterableRooms } from '@/hooks/useEnterableRooms';
 import { useMemberships } from '@/hooks/useMemberships';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
@@ -22,6 +24,7 @@ export default function EnterScreen(): React.JSX.Element {
   const { isDemo } = useAuth();
   const { enterRoom } = usePresence();
   const { memberships } = useMemberships();
+  const { rooms: enterable } = useEnterableRooms();
   const params = useLocalSearchParams<{ room?: string }>();
   const [roomId, setRoomId] = useState(
     typeof params.room === 'string' && params.room.length > 0 ? params.room : SEEDED_ROOM_ID,
@@ -73,6 +76,11 @@ export default function EnterScreen(): React.JSX.Element {
           Il perimetro è una prova che scade. QR all&apos;ingresso, mail del
           venue, sigillo da socio o rete Wi‑Fi: stesso permesso, canali diversi.
         </Text>
+
+        <RoomEnterList
+          rooms={enterable}
+          onEntered={() => router.replace('/(app)/(tabs)/discover')}
+        />
 
         {rooms.length > 1 ? (
           <View style={styles.stack}>

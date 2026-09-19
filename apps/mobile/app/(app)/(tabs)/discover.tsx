@@ -8,7 +8,12 @@ import { FlatList, View } from 'react-native';
 import { PersonRow } from '@/components/PersonRow';
 import { PresenceBar } from '@/components/PresenceBar';
 import { ProfileSheet } from '@/components/ProfileSheet';
+import { RoomEnterList } from '@/components/RoomEnterList';
 import { Screen } from '@/components/Screen';
+import {
+  useEnterableRooms,
+  type EnterableRoom,
+} from '@/hooks/useEnterableRooms';
 import { useMemberships } from '@/hooks/useMemberships';
 import { useRoomPeople } from '@/hooks/useRoomPeople';
 import { DEMO_ROOM_ID } from '@/lib/demo';
@@ -22,6 +27,7 @@ export default function DiscoverScreen(): React.JSX.Element {
   const { room, isVisible, enterRoom, leaveRoom, setVisible, presence } = usePresence();
   const { people, loading } = useRoomPeople();
   const { memberships } = useMemberships();
+  const { rooms } = useEnterableRooms();
   const [selected, setSelected] = useState<RoomPerson | null>(null);
 
   const roomName = room?.name ?? 'questa stanza';
@@ -64,6 +70,7 @@ export default function DiscoverScreen(): React.JSX.Element {
             sealedVenue={sealed?.venue?.name ?? null}
             onScan={() => router.push('/(app)/scan')}
             onOther={() => router.push('/(app)/enter')}
+            rooms={rooms}
             onDemo={isDemo ? () => void enterRoom(DEMO_ROOM_ID) : undefined}
             onLeave={() => void leaveRoom()}
             onChangeVisibility={(v) => void setVisible(v)}
@@ -93,6 +100,7 @@ function Header({
   sealedVenue,
   onScan,
   onOther,
+  rooms,
   onDemo,
   onLeave,
   onChangeVisibility,
@@ -106,6 +114,7 @@ function Header({
   sealedVenue: string | null;
   onScan: () => void;
   onOther: () => void;
+  rooms: EnterableRoom[];
   onDemo?: () => void;
   onLeave: () => void;
   onChangeVisibility: (visible: boolean) => void;
@@ -132,7 +141,10 @@ function Header({
         />
 
         {enterMode === 'qr' ? (
-          <Button icon="scan" label="Scansiona il QR del locale" onPress={onScan} />
+          <>
+            <Button icon="scan" label="Scansiona il QR del locale" onPress={onScan} />
+            <RoomEnterList rooms={rooms} />
+          </>
         ) : (
           <Button label="Mail, socio, Wi‑Fi" onPress={onOther} />
         )}
