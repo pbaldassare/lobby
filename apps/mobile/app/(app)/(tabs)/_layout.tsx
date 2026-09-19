@@ -22,7 +22,7 @@ function TabItem({
   const color = focused ? activeColor : idleColor;
 
   return (
-    <View style={{ alignItems: 'center', gap: 4, minWidth: 56 }}>
+    <View style={{ alignItems: 'center', gap: 4, minWidth: 44 }}>
       <Icon name={icon} size={22} color={color} strokeWidth={focused ? 2.1 : 1.6} />
       <Text variant="tab" style={{ color }} numberOfLines={1}>
         {label}
@@ -36,6 +36,7 @@ const TABS: { name: string; icon: IconName; label: string }[] = [
   { name: 'matches', icon: 'matches', label: 'Match' },
   { name: 'showcase', icon: 'showcase', label: 'Progetti' },
   { name: 'signals', icon: 'signals', label: 'Signal' },
+  { name: 'memory', icon: 'memory', label: 'Memoria' },
   { name: 'card', icon: 'card', label: 'Card' },
 ];
 
@@ -56,7 +57,7 @@ export default function TabsLayout(): React.JSX.Element {
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, 10),
         },
-        tabBarItemStyle: { flex: 1 },
+        tabBarItemStyle: { flex: 1, minWidth: 0 },
       }}
     >
       {TABS.map(({ name, icon, label }) => (

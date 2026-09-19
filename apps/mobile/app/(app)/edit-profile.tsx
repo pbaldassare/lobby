@@ -13,28 +13,52 @@ const toList = (raw: string): string[] =>
     .map((s) => s.trim())
     .filter(Boolean);
 
+function normalizeLinkedIn(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/linkedin\.com\//i.test(trimmed)) return `https://${trimmed.replace(/^\/+/, '')}`;
+  return trimmed;
+}
+
 /**
- * Modifica del profilo.
- *
- * Era un form che compariva dentro la card scambiando il contenuto della
- * stessa schermata: entravi in modifica e perdevi il contesto di cosa stavi
- * modificando. Ora è una rotta con salva ed esci espliciti.
+ * Modifica del profilo Lobby.
+ * LinkedIn può riempire i campi vuoti una volta: poi l'identità vive qui.
  */
 export default function EditProfileScreen(): React.JSX.Element {
   const styles = useStyles();
   const insets = useSafeAreaInsets();
-  const { profile, updateProfile } = useAuth();
+  const {
+    profile,
+    updateProfile,
+    hasLinkedIn,
+    linkLinkedIn,
+    importLinkedInIdentity,
+  } = useAuth();
 
+  const [displayName, setDisplayName] = useState(profile?.display_name ?? '');
+  const [headline, setHeadline] = useState(profile?.headline ?? '');
+  const [occupation, setOccupation] = useState(profile?.occupation ?? '');
+  const [company, setCompany] = useState(profile?.company ?? '');
+  const [linkedinUrl, setLinkedinUrl] = useState(profile?.linkedin_url ?? '');
+  const [hobbies, setHobbies] = useState((profile?.hobbies ?? []).join(', '));
   const [spotlight, setSpotlight] = useState(profile?.spotlight ?? '');
   const [offer, setOffer] = useState((profile?.offer ?? []).join(', '));
   const [seek, setSeek] = useState((profile?.seek ?? []).join(', '));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [liBusy, setLiBusy] = useState(false);
 
   const save = () => {
     setBusy(true);
     setError(null);
     void updateProfile({
+      display_name: displayName.trim() || null,
+      headline: headline.trim() || null,
+      occupation: occupation.trim() || null,
+      company: company.trim() || null,
+      linkedin_url: normalizeLinkedIn(linkedinUrl),
+      hobbies: toList(hobbies),
       spotlight: spotlight.trim() || null,
       offer: toList(offer),
       seek: toList(seek),
@@ -45,6 +69,24 @@ export default function EditProfileScreen(): React.JSX.Element {
         return;
       }
       router.back();
+    });
+  };
+
+  const onLinkedIn = () => {
+    setLiBusy(true);
+    setError(null);
+    const run = hasLinkedIn ? importLinkedInIdentity : linkLinkedIn;
+    void run().then((result) => {
+      setLiBusy(false);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      if ('profile' in result && result.profile) {
+        const next = result.profile;
+        setDisplayName((prev) => prev || next.display_name || '');
+        setHeadline((prev) => prev || next.headline || '');
+      }
     });
   };
 
@@ -59,9 +101,58 @@ export default function EditProfileScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         <Text variant="small" tone="secondary">
-          Cosa offri e cosa cerchi sono i due campi su cui viene calcolata
-          l'affinità. Tenerli aggiornati cambia chi ti compare davanti.
+          Questa è l'identità che gli altri vedono quando sei visibile nella
+          stanza. LinkedIn può copiare nome e foto nei campi vuoti: dopo, resta
+          in Lobby.
         </Text>
+
+        <Button
+          label={hasLinkedIn ? 'Usa i dati LinkedIn (campi vuoti)' : 'Collega LinkedIn'}
+          variant="ghost"
+          loading={liBusy}
+          onPress={onLinkedIn}
+        />
+
+        <Field
+          label="Nome"
+          value={displayName}
+          onChangeText={setDisplayName}
+          placeholder="Come ti chiami in stanza"
+        />
+        <Field
+          label="Headline"
+          value={headline}
+          onChangeText={setHeadline}
+          placeholder="Product · climate tech"
+        />
+        <Field
+          label="Occupazione"
+          value={occupation}
+          onChangeText={setOccupation}
+          placeholder="Founder, GP, counsel…"
+        />
+        <Field
+          label="Azienda"
+          value={company}
+          onChangeText={setCompany}
+          placeholder="Nome dell'azienda"
+        />
+        <Field
+          label="URL LinkedIn"
+          value={linkedinUrl}
+          onChangeText={setLinkedinUrl}
+          placeholder="https://www.linkedin.com/in/…"
+          autoCapitalize="none"
+          autoCorrect={false}
+          hint="Opzionale. Lo mostri sulla card, non è una scheda live."
+        />
+        <Field
+          label="Hobby"
+          value={hobbies}
+          onChangeText={setHobbies}
+          placeholder="alpinismo, vinile, cucina"
+          hint="Separa con la virgola"
+        />
 
         <Field
           label="In evidenza"
@@ -77,7 +168,7 @@ export default function EditProfileScreen(): React.JSX.Element {
           value={offer}
           onChangeText={setOffer}
           placeholder="presentazioni a operatori, consulenza di prodotto"
-          hint="Separa con la virgola"
+          hint="Separa con la virgola. Su questi campi si calcola l'affinità."
           autoCapitalize="none"
         />
 

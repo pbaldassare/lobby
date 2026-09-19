@@ -75,6 +75,32 @@ export function ProfileSheet({
         </Text>
       )}
 
+      {profile.occupation || profile.company ? (
+        <Section title="Occupazione">
+          <Text variant="body">
+            {[profile.occupation, profile.company].filter(Boolean).join(' · ')}
+          </Text>
+        </Section>
+      ) : null}
+
+      {(profile.hobbies ?? []).length > 0 ? (
+        <Section title="Hobby">
+          <View style={styles.chips}>
+            {(profile.hobbies ?? []).map((t) => (
+              <Chip key={t} label={t} />
+            ))}
+          </View>
+        </Section>
+      ) : null}
+
+      {profile.linkedin_url ? (
+        <Section title="LinkedIn">
+          <Text variant="small" tone="secondary">
+            {profile.linkedin_url}
+          </Text>
+        </Section>
+      ) : null}
+
       {profile.spotlight ? (
         <Section title="In evidenza">
           <Text variant="body">{profile.spotlight}</Text>

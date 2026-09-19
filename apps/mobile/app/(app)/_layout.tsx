@@ -68,6 +68,10 @@ export default function AppLayout(): React.JSX.Element {
         name="edit-profile"
         options={{ ...nativeHeader, presentation: 'modal', title: 'Modifica profilo' }}
       />
+      <Stack.Screen
+        name="edit-project"
+        options={{ ...nativeHeader, presentation: 'modal', title: 'Progetto' }}
+      />
       <Stack.Screen name="settings" options={{ ...nativeHeader, title: 'Impostazioni' }} />
       <Stack.Screen
         name="introduce"

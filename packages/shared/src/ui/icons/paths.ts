@@ -89,6 +89,14 @@ export const icons = {
       'M6.5 11h11A1.5 1.5 0 0 1 19 12.5v7A1.5 1.5 0 0 1 17.5 21h-11A1.5 1.5 0 0 1 5 19.5v-7A1.5 1.5 0 0 1 6.5 11Z',
     ],
   },
+  memory: {
+    viewBox: V,
+    paths: [
+      'M12 7v5l3 2',
+      'M12 4.5a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Z',
+      'M12 3v1.5',
+    ],
+  },
 } as const satisfies Record<string, IconDef>;
 
 export type IconName = keyof typeof icons;
