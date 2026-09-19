@@ -28,8 +28,13 @@ export default function ShowcaseScreen(): React.JSX.Element {
       />
 
       <Button
-        label="Aggiungi un progetto"
+        label="Aggiungi a mano"
         onPress={() => router.push('/(app)/edit-project' as Href)}
+      />
+      <Button
+        label="Copia da LinkedIn"
+        variant="ghost"
+        onPress={() => router.push('/(app)/import-projects' as Href)}
       />
 
       {loading ? <ListEmpty loading title="Carico i progetti" /> : null}
@@ -38,7 +43,7 @@ export default function ShowcaseScreen(): React.JSX.Element {
         <ListEmpty
           icon="showcase"
           title="Nessun progetto sulla tua card"
-          body="Aggiungine uno per far capire su cosa stai lavorando."
+          body="Aggiungilo a mano o copia Esperienza/Progetti da LinkedIn. Restano in Lobby."
         />
       ) : null}
 

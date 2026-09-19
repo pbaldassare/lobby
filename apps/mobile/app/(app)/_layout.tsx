@@ -72,6 +72,10 @@ export default function AppLayout(): React.JSX.Element {
         name="edit-project"
         options={{ ...nativeHeader, presentation: 'modal', title: 'Progetto' }}
       />
+      <Stack.Screen
+        name="import-projects"
+        options={{ ...nativeHeader, presentation: 'modal', title: 'Copia da LinkedIn' }}
+      />
       <Stack.Screen name="settings" options={{ ...nativeHeader, title: 'Impostazioni' }} />
       <Stack.Screen
         name="introduce"

@@ -21,6 +21,7 @@ export function useProjects(): {
   loading: boolean;
   refresh: () => Promise<void>;
   createProject: (draft: ProjectDraft) => Promise<{ error: string | null }>;
+  createProjects: (drafts: ProjectDraft[]) => Promise<{ error: string | null; created: number }>;
   updateProject: (id: string, draft: ProjectDraft) => Promise<{ error: string | null }>;
   deleteProject: (id: string) => Promise<{ error: string | null }>;
 } {
@@ -97,6 +98,62 @@ export function useProjects(): {
     [isDemo, user, refresh],
   );
 
+  const createProjects = useCallback(
+    async (drafts: ProjectDraft[]) => {
+      const clean = drafts
+        .map((d) => ({
+          ...d,
+          title: d.title.trim(),
+          public_pitch: d.public_pitch.trim(),
+          role_title: d.role_title?.trim() || null,
+        }))
+        .filter((d) => d.title.length > 0);
+      if (clean.length === 0) return { error: 'Nessun progetto da salvare.', created: 0 };
+
+      if (isDemo) {
+        const now = new Date().toISOString();
+        setProjects((prev) => [
+          ...clean.map((draft, i) => ({
+            id: `demo-${now}-${i}`,
+            profile_id: user?.id ?? 'demo',
+            private_deck_url: null,
+            sort_order: prev.length + i,
+            created_at: now,
+            updated_at: now,
+            ...draft,
+          })),
+          ...prev,
+        ]);
+        return { error: null, created: clean.length };
+      }
+      if (!user) return { error: "Non hai fatto l'accesso", created: 0 };
+
+      const existingTitles = new Set(projects.map((p) => p.title.trim().toLowerCase()));
+      const fresh = clean.filter((d) => !existingTitles.has(d.title.toLowerCase()));
+      if (fresh.length === 0) {
+        return { error: 'Questi progetti sono già sulla card.', created: 0 };
+      }
+
+      const { error } = await getSupabase()
+        .from('projects')
+        .insert(
+          fresh.map((draft) => ({
+            profile_id: user.id,
+            title: draft.title,
+            public_pitch: draft.public_pitch,
+            role_title: draft.role_title,
+            status: draft.status,
+            deck_requestable: draft.deck_requestable,
+            is_visible: draft.is_visible,
+          })),
+        );
+      if (error) return { error: lobbyUserError(error.message) ?? error.message, created: 0 };
+      await refresh();
+      return { error: null, created: fresh.length };
+    },
+    [isDemo, user, projects, refresh],
+  );
+
   const updateProject = useCallback(
     async (id: string, draft: ProjectDraft) => {
       if (isDemo) {
@@ -146,5 +203,13 @@ export function useProjects(): {
     [isDemo, user, refresh],
   );
 
-  return { projects, loading, refresh, createProject, updateProject, deleteProject };
+  return {
+    projects,
+    loading,
+    refresh,
+    createProject,
+    createProjects,
+    updateProject,
+    deleteProject,
+  };
 }
