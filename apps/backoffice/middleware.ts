@@ -85,7 +85,7 @@ export async function middleware(request: NextRequest) {
 
   if (user && pathname === '/login') {
     const dash = request.nextUrl.clone();
-    dash.pathname = '/dashboard';
+    dash.pathname = '/istanze';
     return NextResponse.redirect(dash);
   }
 

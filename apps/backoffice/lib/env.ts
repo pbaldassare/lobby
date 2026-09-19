@@ -48,3 +48,12 @@ export function getAppOrigin(): string {
   }
   return 'http://localhost:3000';
 }
+
+/** Origine dell'app membro (PWA) per i QR all'ingresso — non il back-office. */
+export function getMemberWebOrigin(): string {
+  const raw =
+    process.env.NEXT_PUBLIC_MEMBER_APP_URL ||
+    process.env.EXPO_PUBLIC_WEB_ORIGIN ||
+    'https://lobby-app.pages.dev';
+  return raw.replace(/\/$/, '');
+}

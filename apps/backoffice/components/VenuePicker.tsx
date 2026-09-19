@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import type { Venue } from '@lobby/shared';
 
@@ -13,8 +14,8 @@ export function VenuePicker({ venues, selectedId }: Props) {
   if (venues.length === 0) {
     return (
       <p className="muted">
-        Nessun venue assegnato. Chiedi a un amministratore di aggiungerti allo
-        staff del locale.
+        Nessun locale.{' '}
+        <Link href="/istanze">Crea un’istanza</Link> per partire.
       </p>
     );
   }

@@ -54,7 +54,7 @@ export async function signInWithPassword(
   }
 
   revalidatePath('/', 'layout');
-  redirect('/dashboard');
+  redirect('/istanze');
 }
 
 export async function signOut(): Promise<void> {

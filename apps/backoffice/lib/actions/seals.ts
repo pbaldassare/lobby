@@ -47,8 +47,8 @@ export async function issueSealAction(
 
     const viaEdge = await callIssueSealEdge(input.membership_id);
     if (viaEdge) {
-      revalidatePath('/verify');
-      revalidatePath('/dashboard');
+      revalidatePath('/registrati');
+      revalidatePath('/risultati');
       return viaEdge;
     }
 
@@ -58,8 +58,8 @@ export async function issueSealAction(
     });
 
     if (!rpcErr && rpcMembership) {
-      revalidatePath('/verify');
-      revalidatePath('/dashboard');
+      revalidatePath('/registrati');
+      revalidatePath('/risultati');
       return { ok: true, membership: rpcMembership as Membership };
     }
 
@@ -86,8 +86,8 @@ export async function issueSealAction(
       };
     }
 
-    revalidatePath('/verify');
-    revalidatePath('/dashboard');
+    revalidatePath('/registrati');
+    revalidatePath('/risultati');
     return { ok: true, membership: updated as Membership };
   } catch (err) {
     if (err instanceof StaffAuthError) return { ok: false, error: err.message };
@@ -120,8 +120,8 @@ export async function rejectMembershipAction(input: {
     if (error || !updated) {
       return { ok: false, error: error?.message ?? 'Rifiuto non riuscito' };
     }
-    revalidatePath('/verify');
-    revalidatePath('/dashboard');
+    revalidatePath('/registrati');
+    revalidatePath('/risultati');
     return { ok: true, membership: updated as Membership };
   } catch (err) {
     if (err instanceof StaffAuthError) return { ok: false, error: err.message };

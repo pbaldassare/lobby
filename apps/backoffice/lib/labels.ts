@@ -63,3 +63,16 @@ export function accessMethodLabel(method: string): string {
 export function formatWhen(iso: string): string {
   return new Date(iso).toLocaleString('it-IT');
 }
+
+/** Finestra oraria di una stanza. Null = sempre aperta. */
+export function roomWindowLabel(
+  opensAt: string | null,
+  closesAt: string | null,
+): string {
+  if (!opensAt && !closesAt) return 'Sempre aperta';
+  if (opensAt && closesAt) {
+    return `${formatWhen(opensAt)} – ${formatWhen(closesAt)}`;
+  }
+  if (opensAt) return `Da ${formatWhen(opensAt)}`;
+  return `Fino a ${formatWhen(closesAt as string)}`;
+}

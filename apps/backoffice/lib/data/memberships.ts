@@ -1,6 +1,6 @@
 import type { Membership, Profile } from '@lobby/shared';
 import { requireVenueStaff } from '@/lib/auth/staff';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 
 export type MembershipWithProfile = Membership & {
   profile: Pick<
@@ -14,25 +14,28 @@ export async function listVenueMemberships(
   status?: Membership['verified_status'],
 ): Promise<MembershipWithProfile[]> {
   await requireVenueStaff(venueId);
-  const admin = createAdminClient();
+  const supabase = await createClient();
 
-  let query = admin
+  let query = supabase
     .from('memberships')
     .select('*')
     .eq('venue_id', venueId)
     .order('created_at', { ascending: false });
   if (status) query = query.eq('verified_status', status);
 
-  const { data: rows } = await query;
+  const { data: rows, error } = await query;
+  if (error) throw new Error(error.message);
   const list = (rows ?? []) as Membership[];
   const profileIds = list.map((m) => m.profile_id);
 
-  const { data: profiles } = profileIds.length
-    ? await admin
+  const { data: profiles, error: profileErr } = profileIds.length
+    ? await supabase
         .from('profiles')
         .select('id, display_name, headline, company, avatar_url')
         .in('id', profileIds)
-    : { data: [] };
+    : { data: [] as { id: string }[], error: null };
+
+  if (profileErr) throw new Error(profileErr.message);
 
   const byId = new Map(
     (profiles ?? []).map((p) => [
