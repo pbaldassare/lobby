@@ -2,7 +2,6 @@ import { makeStyles } from '@lobby/shared/theme';
 import type { Encounter, RoomVisit } from '@lobby/shared/types';
 import { Card, ListEmpty, ScreenHeader, Segmented, Text } from '@lobby/shared/ui';
 import React, { useMemo, useState } from 'react';
-import { View } from 'react-native';
 
 import { Screen } from '@/components/Screen';
 import { useMemory } from '@/hooks/useMemory';
@@ -28,7 +27,6 @@ function visitRange(visit: RoomVisit): string {
 
 /** Storico privato: snapshot, non presence live. */
 export default function MemoryScreen(): React.JSX.Element {
-  const styles = useStyles();
   const { visits, encounters, loading } = useMemory();
   const [tab, setTab] = useState<MemoryTab>('rooms');
 
