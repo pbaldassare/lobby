@@ -54,7 +54,7 @@ export default async function RegistratiPage({ searchParams }: Props) {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Membro</th>
+                      <th>Etichetta</th>
                       <th>Azienda</th>
                       <th>Dal</th>
                       <th>Azioni</th>
@@ -69,6 +69,9 @@ export default async function RegistratiPage({ searchParams }: Props) {
                           >
                             {m.profile?.display_name ?? m.profile_id.slice(0, 8)}
                           </strong>
+                          {m.email ? (
+                            <div className="muted">{m.email}</div>
+                          ) : null}
                           {m.profile?.headline ? (
                             <div className="muted">{m.profile.headline}</div>
                           ) : null}
@@ -97,7 +100,7 @@ export default async function RegistratiPage({ searchParams }: Props) {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Membro</th>
+                      <th>Etichetta</th>
                       <th>Stato</th>
                       <th>Sigillo rilasciato</th>
                     </tr>
@@ -106,7 +109,17 @@ export default async function RegistratiPage({ searchParams }: Props) {
                     {verified.map((m) => (
                       <tr key={m.id}>
                         <td>
-                          {m.profile?.display_name ?? m.profile_id.slice(0, 8)}
+                          <strong
+                            style={{ color: 'var(--lobby-color-text-primary)' }}
+                          >
+                            {m.profile?.display_name ?? m.profile_id.slice(0, 8)}
+                          </strong>
+                          {m.email ? (
+                            <div className="muted">{m.email}</div>
+                          ) : null}
+                          {m.profile?.headline ? (
+                            <div className="muted">{m.profile.headline}</div>
+                          ) : null}
                         </td>
                         <td>
                           <span className="badge badge-green">

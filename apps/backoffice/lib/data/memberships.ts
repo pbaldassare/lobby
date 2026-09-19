@@ -1,12 +1,25 @@
-import type { Membership, Profile } from '@lobby/shared';
+import type { Membership, Profile, VerificationStatus } from '@lobby/shared';
 import { requireVenueStaff } from '@/lib/auth/staff';
 import { createClient } from '@/lib/supabase/server';
 
 export type MembershipWithProfile = Membership & {
+  email: string | null;
   profile: Pick<
     Profile,
     'id' | 'display_name' | 'headline' | 'company' | 'avatar_url'
   > | null;
+};
+
+type StaffMembershipRow = {
+  membership_id: string;
+  profile_id: string;
+  email: string | null;
+  display_name: string | null;
+  headline: string | null;
+  company: string | null;
+  verified_status: VerificationStatus;
+  since: string;
+  seal_issued_at: string | null;
 };
 
 export async function listVenueMemberships(
@@ -15,37 +28,31 @@ export async function listVenueMemberships(
 ): Promise<MembershipWithProfile[]> {
   await requireVenueStaff(venueId);
   const supabase = await createClient();
-
-  let query = supabase
-    .from('memberships')
-    .select('*')
-    .eq('venue_id', venueId)
-    .order('created_at', { ascending: false });
-  if (status) query = query.eq('verified_status', status);
-
-  const { data: rows, error } = await query;
+  const { data, error } = await supabase.rpc('staff_list_memberships', {
+    p_venue_id: venueId,
+  });
   if (error) throw new Error(error.message);
-  const list = (rows ?? []) as Membership[];
-  const profileIds = list.map((m) => m.profile_id);
 
-  const { data: profiles, error: profileErr } = profileIds.length
-    ? await supabase
-        .from('profiles')
-        .select('id, display_name, headline, company, avatar_url')
-        .in('id', profileIds)
-    : { data: [] as { id: string }[], error: null };
-
-  if (profileErr) throw new Error(profileErr.message);
-
-  const byId = new Map(
-    (profiles ?? []).map((p) => [
-      p.id as string,
-      p as MembershipWithProfile['profile'],
-    ]),
-  );
-
-  return list.map((m) => ({
-    ...m,
-    profile: byId.get(m.profile_id) ?? null,
-  }));
+  const rows = (data ?? []) as StaffMembershipRow[];
+  return rows
+    .filter((row) => (status ? row.verified_status === status : true))
+    .map((row) => ({
+      id: row.membership_id,
+      profile_id: row.profile_id,
+      venue_id: venueId,
+      since: row.since,
+      verified_status: row.verified_status,
+      seal_issued_at: row.seal_issued_at,
+      seal_issued_by: null,
+      created_at: row.since,
+      updated_at: row.since,
+      email: row.email,
+      profile: {
+        id: row.profile_id,
+        display_name: row.display_name,
+        headline: row.headline,
+        company: row.company,
+        avatar_url: null,
+      },
+    }));
 }
