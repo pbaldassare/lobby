@@ -7,6 +7,7 @@ import {
   grantPassAction,
   removeRoomAccessAction,
 } from '@/lib/actions/access';
+import { accessMethodLabel } from '@/lib/labels';
 
 const METHODS: { value: AccessMethod; label: string; needsParam: boolean }[] = [
   { value: 'qr', label: 'QR a rotazione', needsParam: false },
@@ -54,7 +55,7 @@ export function AccessManager({
           ) : (
             channels.map((c) => (
               <tr key={c.id}>
-                <td>{c.method}</td>
+                <td>{accessMethodLabel(c.method)}</td>
                 <td>{c.param ?? '—'}</td>
                 <td>
                   <button

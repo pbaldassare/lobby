@@ -116,7 +116,7 @@ export async function getVenueDashboardStats(
     }
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Stats unavailable',
+      error: err instanceof Error ? err.message : 'Statistiche non disponibili',
       stats,
     };
   }

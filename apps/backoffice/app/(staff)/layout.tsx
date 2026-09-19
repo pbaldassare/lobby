@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { requireStaffPage } from '@/lib/auth/staff';
+import { roleLabel } from '@/lib/labels';
 import { StaffNav } from '@/components/StaffNav';
 import { SignOutButton } from '@/components/SignOutButton';
 
@@ -17,7 +18,9 @@ export default async function StaffLayout({
           <div className="brand">Lobby</div>
           <p className="muted" style={{ marginTop: 8 }}>
             {staff.profile.display_name ?? 'Staff'} ·{' '}
-            <span className="badge badge-gold">{staff.profile.role}</span>
+            <span className="badge badge-gold">
+              {roleLabel(staff.profile.role)}
+            </span>
           </p>
         </div>
         <StaffNav />
@@ -26,7 +29,7 @@ export default async function StaffLayout({
         </div>
       </aside>
       <main className="main">
-        <Suspense fallback={<p className="muted">Loading…</p>}>
+        <Suspense fallback={<p className="muted">Caricamento…</p>}>
           {children}
         </Suspense>
       </main>

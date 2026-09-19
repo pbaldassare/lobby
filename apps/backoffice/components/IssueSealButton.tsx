@@ -29,7 +29,7 @@ export function IssueSealButton({ membershipId, venueId }: Props) {
           });
         }}
       >
-        {pending ? 'Issuing…' : 'Verify & issue seal'}
+        {pending ? 'Rilascio…' : 'Verifica e rilascia sigillo'}
       </button>
       <button
         type="button"
@@ -46,7 +46,7 @@ export function IssueSealButton({ membershipId, venueId }: Props) {
           });
         }}
       >
-        Reject
+        Rifiuta
       </button>
       {error ? (
         <span className="error" style={{ margin: 0 }}>

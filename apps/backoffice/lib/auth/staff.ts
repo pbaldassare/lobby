@@ -112,21 +112,21 @@ export async function requireVenueStaff(venueId: string): Promise<StaffContext> 
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    throw new StaffAuthError('unauthenticated', 'Authentication required');
+    throw new StaffAuthError('unauthenticated', 'Devi fare l’accesso.');
   }
 
   const ctx = await getStaffContext();
   if (!ctx) {
     throw new StaffAuthError(
       'forbidden',
-      'Staff or admin role required — members cannot access the backoffice',
+      'Serve il ruolo staff o amministratore — i membri non accedono al back-office',
     );
   }
 
   const hasAssignment = ctx.assignments.some((a) => a.venue_id === venueId);
   const isGlobalAdmin = ctx.profile.role === 'admin';
   if (!hasAssignment && !isGlobalAdmin) {
-    throw new StaffAuthError('venue_forbidden', 'Not authorized for this venue');
+    throw new StaffAuthError('venue_forbidden', 'Non sei autorizzato per questo venue');
   }
   return ctx;
 }

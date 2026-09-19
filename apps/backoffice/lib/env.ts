@@ -28,12 +28,12 @@ export function getServiceRoleKey(): string {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key || key.trim().length === 0) {
     throw new Error(
-      'Missing SUPABASE_SERVICE_ROLE_KEY (server-only). Never use NEXT_PUBLIC_ for this.',
+      'Manca SUPABASE_SERVICE_ROLE_KEY (solo server). Non usare mai NEXT_PUBLIC_ per questa chiave.',
     );
   }
   if (process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error(
-      'SERVICE_ROLE must not be exposed as NEXT_PUBLIC_*. Remove NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY.',
+      'SERVICE_ROLE non deve essere esposta come NEXT_PUBLIC_*. Rimuovi NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY.',
     );
   }
   return key;

@@ -6,7 +6,7 @@ export function SignOutButton() {
   return (
     <form action={signOut}>
       <button className="btn btn-ghost" type="submit">
-        Sign out
+        Esci
       </button>
     </form>
   );

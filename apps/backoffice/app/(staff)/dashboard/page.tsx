@@ -14,16 +14,18 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   return (
     <>
-      <p className="kicker">Overview</p>
-      <h1>Venue dashboard</h1>
-      <p>Read-only aggregates for presence, seals, intros, and connections.</p>
+      <p className="kicker">Panoramica</p>
+      <h1>Dashboard del venue</h1>
+      <p>
+        Riepilogo in sola lettura di presenze, sigilli, intro e connessioni.
+      </p>
       <VenuePicker venues={staff.venues} selectedId={venue?.id ?? null} />
 
       {!venue ? (
         <div className="panel">
           <p className="muted">
-            No venue in scope. You need a <code>venue_staff</code> assignment
-            (or admin role).
+            Nessun venue in carico. Serve un assegnamento staff sul locale
+            (oppure il ruolo amministratore).
           </p>
         </div>
       ) : (
@@ -33,42 +35,42 @@ export default async function DashboardPage({ searchParams }: Props) {
           ) : null}
           <div className="stats">
             <div className="stat">
-              <span>In room now</span>
+              <span>In stanza ora</span>
               <strong>{stats?.active_presence ?? '—'}</strong>
             </div>
             <div className="stat">
-              <span>Visible (opt-in)</span>
+              <span>Visibili (a scelta)</span>
               <strong>{stats?.visible_now ?? '—'}</strong>
             </div>
             <div className="stat">
-              <span>Pending verify</span>
+              <span>In attesa di verifica</span>
               <strong>{stats?.pending_verifications ?? '—'}</strong>
             </div>
             <div className="stat">
-              <span>Verified members</span>
+              <span>Membri verificati</span>
               <strong>{stats?.verified_members ?? '—'}</strong>
             </div>
             <div className="stat">
-              <span>Seals issued</span>
+              <span>Sigilli rilasciati</span>
               <strong>{stats?.seals_issued ?? '—'}</strong>
             </div>
             <div className="stat">
-              <span>Intros</span>
+              <span>Intro</span>
               <strong>{stats?.intros_total ?? '—'}</strong>
             </div>
             <div className="stat">
-              <span>Connections</span>
+              <span>Connessioni</span>
               <strong>{stats?.connections_total ?? '—'}</strong>
             </div>
             <div className="stat">
-              <span>Open reports</span>
+              <span>Segnalazioni aperte</span>
               <strong>{stats?.open_reports ?? '—'}</strong>
             </div>
           </div>
           <div className="panel" style={{ marginTop: 20 }}>
             <p className="muted" style={{ margin: 0 }}>
-              Privacy: presence includes room occupancy; <em>visible</em> is
-              opt-in only. Seals are issued by the venue, never self-asserted.
+              Privacy: la presenza conta chi è in stanza; <em>visibile</em> è
+              solo a scelta. I sigilli li rilascia il venue, mai l’utente.
             </p>
           </div>
         </>

@@ -59,7 +59,7 @@ export async function listVenueModeration(
     }
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Moderation load failed',
+      error: err instanceof Error ? err.message : 'Caricamento moderazione non riuscito',
       blocks: [],
       reports: [],
     };
@@ -89,7 +89,7 @@ export async function resolveReportAction(input: {
         ok: false,
         error:
           error.message.includes('does not exist') || error.code === '42P01'
-            ? 'Reports table not available yet (backend pending)'
+            ? 'La tabella segnalazioni non è ancora disponibile.'
             : error.message,
       };
     }
@@ -99,7 +99,7 @@ export async function resolveReportAction(input: {
     if (err instanceof StaffAuthError) return { ok: false, error: err.message };
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Resolve failed',
+      error: err instanceof Error ? err.message : 'Chiusura segnalazione non riuscita',
     };
   }
 }
@@ -138,7 +138,7 @@ export async function removeBlockAction(input: {
     if (err instanceof StaffAuthError) return { ok: false, error: err.message };
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Remove block failed',
+      error: err instanceof Error ? err.message : 'Rimozione blocco non riuscita',
     };
   }
 }

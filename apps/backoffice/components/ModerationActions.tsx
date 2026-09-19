@@ -33,7 +33,7 @@ export function ResolveReportButtons({
           })
         }
       >
-        Resolve
+        Risolvi
       </button>
       <button
         type="button"
@@ -50,7 +50,7 @@ export function ResolveReportButtons({
           })
         }
       >
-        Dismiss
+        Archivia
       </button>
       {error ? <span className="muted">{error}</span> : null}
     </div>
@@ -83,7 +83,7 @@ export function RemoveBlockButton({
           })
         }
       >
-        Remove
+        Rimuovi
       </button>
       {error ? <span className="muted">{error}</span> : null}
     </>

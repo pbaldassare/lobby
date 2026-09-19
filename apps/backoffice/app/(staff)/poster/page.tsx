@@ -20,7 +20,7 @@ export default async function PosterPage({ searchParams }: Props) {
     try {
       rooms = await listVenueRooms(venue.id);
     } catch (err) {
-      loadError = err instanceof Error ? err.message : 'Failed to load rooms';
+      loadError = err instanceof Error ? err.message : 'Impossibile caricare le stanze.';
     }
   }
 

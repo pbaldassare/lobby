@@ -13,14 +13,15 @@ export function VenuePicker({ venues, selectedId }: Props) {
   if (venues.length === 0) {
     return (
       <p className="muted">
-        No venues assigned. Ask an admin to add you to <code>venue_staff</code>.
+        Nessun venue assegnato. Chiedi a un amministratore di aggiungerti allo
+        staff del locale.
       </p>
     );
   }
 
   return (
     <div className="field" style={{ maxWidth: 320, marginBottom: 20 }}>
-      <label htmlFor="venue">Venue</label>
+      <label htmlFor="venue">Locale</label>
       <select
         id="venue"
         value={selectedId ?? ''}
