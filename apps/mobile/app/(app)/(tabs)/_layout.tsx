@@ -34,13 +34,14 @@ function TabItem({
 }
 
 const TABS: { name: string; icon: IconName; label: string }[] = [
-  { name: 'discover', icon: 'room', label: 'Stanza' },
-  { name: 'matches', icon: 'matches', label: 'Match' },
-  { name: 'showcase', icon: 'showcase', label: 'Progetti' },
-  { name: 'signals', icon: 'signals', label: 'Signal' },
-  { name: 'memory', icon: 'memory', label: 'Memoria' },
-  { name: 'card', icon: 'card', label: 'Card' },
+  { name: 'discover', icon: 'room', label: 'Home' },
+  { name: 'signals', icon: 'signals', label: 'Richieste' },
+  { name: 'memory', icon: 'memory', label: 'Storico' },
+  { name: 'card', icon: 'card', label: 'Profilo' },
 ];
+
+/** Route lasciate nel folder tabs per i deep link, nascoste dalla barra. */
+const HIDDEN_TABS = ['matches', 'showcase'] as const;
 
 type AppTabBarProps = Parameters<NonNullable<React.ComponentProps<typeof Tabs>['tabBar']>>[0];
 
@@ -138,6 +139,9 @@ export default function TabsLayout(): React.JSX.Element {
     >
       {TABS.map(({ name, label }) => (
         <Tabs.Screen key={name} name={name} options={{ title: label }} />
+      ))}
+      {HIDDEN_TABS.map((name) => (
+        <Tabs.Screen key={name} name={name} options={{ href: null }} />
       ))}
     </Tabs>
   );

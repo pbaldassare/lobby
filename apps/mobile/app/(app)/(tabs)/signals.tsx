@@ -41,7 +41,7 @@ export default function SignalsScreen(): React.JSX.Element {
     <Screen overTabBar>
       <ScreenHeader
         icon="signals"
-        title="Signal"
+        title="Richieste"
         subtitle="Ci si connette solo se lo vogliono entrambi. La chat resta chiusa fino ad allora."
       />
 

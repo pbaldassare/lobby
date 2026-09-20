@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 
+import { ProfileProjects } from '@/components/ProfileProjects';
 import { Screen } from '@/components/Screen';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useMemberships } from '@/hooks/useMemberships';
@@ -43,8 +44,8 @@ export default function YourCardScreen(): React.JSX.Element {
     <Screen overTabBar>
       <ScreenHeader
         icon="card"
-        title="La tua card"
-        subtitle="Identità in Lobby. LinkedIn e CV alimentano questo profilo, non lo sostituiscono."
+        title="Profilo"
+        subtitle="Identità in Lobby. LinkedIn, CV e progetti alimentano questa card, non la sostituiscono."
       />
 
       <Card variant="biz" style={styles.block}>
@@ -124,6 +125,8 @@ export default function YourCardScreen(): React.JSX.Element {
       </Card>
 
       <Button icon="scan" label="Mostra il QR" onPress={() => router.push('/(app)/qr')} />
+
+      <ProfileProjects />
 
       <Card style={styles.block}>
         <Text variant="kicker" tone="tertiary">

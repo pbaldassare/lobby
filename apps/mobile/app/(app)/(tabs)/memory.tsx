@@ -40,7 +40,7 @@ export default function MemoryScreen(): React.JSX.Element {
     <Screen overTabBar>
       <ScreenHeader
         icon="memory"
-        title="Memoria"
+        title="Storico"
         subtitle="Solo tu. Snapshot di stanze e persone viste — spariscono dalla stanza, restano qui."
       />
 
