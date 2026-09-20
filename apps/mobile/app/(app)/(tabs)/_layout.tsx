@@ -2,8 +2,10 @@ import { useTheme } from '@lobby/shared/theme';
 import { Icon, Text, type IconName } from '@lobby/shared/ui';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { TAB_BAR_BOTTOM, TAB_BAR_HEIGHT, TAB_BAR_SIDE } from '@/components/tabBarMetrics';
 
 /** Pulsante di tab: icona + etichetta, sempre visibili. */
 function TabItem({
@@ -40,52 +42,102 @@ const TABS: { name: string; icon: IconName; label: string }[] = [
   { name: 'card', icon: 'card', label: 'Card' },
 ];
 
-export default function TabsLayout(): React.JSX.Element {
+type AppTabBarProps = Parameters<NonNullable<React.ComponentProps<typeof Tabs>['tabBar']>>[0];
+
+/**
+ * Tab bar nostra, non quella di React Navigation.
+ *
+ * La barra nativa applica `start: 0; end: 0; bottom: 0` e resta nel flusso:
+ * `borderRadius` si vede solo in alto, i lati restano a tutta larghezza.
+ * Qui la pastiglia è staccata dal bordo e arrotondata su tutti e quattro i lati.
+ */
+function FloatingTabBar({ state, navigation }: AppTabBarProps): React.JSX.Element {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          position: 'absolute',
-          left: 14,
-          right: 14,
-          bottom: Math.max(insets.bottom, 12),
-          height: 62,
-          paddingTop: 6,
-          paddingBottom: 6,
+    <View
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        paddingHorizontal: TAB_BAR_SIDE,
+        paddingBottom: Math.max(insets.bottom, TAB_BAR_BOTTOM),
+        backgroundColor: 'transparent',
+        pointerEvents: 'box-none',
+      }}
+    >
+      <View
+        role="tablist"
+        style={{
+          height: TAB_BAR_HEIGHT,
+          flexDirection: 'row',
+          alignItems: 'center',
           backgroundColor: theme.color.bg.raised,
           borderWidth: 1,
-          borderTopWidth: 1,
           borderColor: theme.color.border.subtle,
           borderRadius: theme.radius.lg,
           overflow: 'hidden',
-          elevation: 0,
-          shadowOpacity: 0,
-        },
-        tabBarItemStyle: { flex: 1, minWidth: 0 },
-      }}
-    >
-      {TABS.map(({ name, icon, label }) => (
-        <Tabs.Screen
-          key={name}
-          name={name}
-          options={{
-            title: label,
-            tabBarIcon: ({ focused }) => (
+        }}
+      >
+        {state.routes.map((route, index) => {
+          const focused = state.index === index;
+          const meta = TABS.find((tab) => tab.name === route.name);
+          if (!meta) return null;
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+            if (!focused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: focused }}
+              accessibilityLabel={meta.label}
+              onPress={onPress}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+              }}
+            >
               <TabItem
-                icon={icon}
-                label={label}
+                icon={meta.icon}
+                label={meta.label}
                 focused={focused}
                 activeColor={theme.color.accent.default}
                 idleColor={theme.color.text.tertiary}
               />
-            ),
-          }}
-        />
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+export default function TabsLayout(): React.JSX.Element {
+  return (
+    <Tabs
+      tabBar={(props) => <FloatingTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+      }}
+    >
+      {TABS.map(({ name, label }) => (
+        <Tabs.Screen key={name} name={name} options={{ title: label }} />
       ))}
     </Tabs>
   );
