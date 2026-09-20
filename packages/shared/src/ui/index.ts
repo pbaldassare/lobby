@@ -32,6 +32,8 @@ export { ScreenHeader } from './ScreenHeader';
 
 export { GlyphMark } from './GlyphMark';
 
+export { Brand } from './Brand';
+
 export { ListEmpty } from './ListEmpty';
 
 export { Segmented } from './Segmented';
