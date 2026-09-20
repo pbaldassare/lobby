@@ -40,7 +40,7 @@ export default function YourCardScreen(): React.JSX.Element {
   };
 
   return (
-    <Screen>
+    <Screen overTabBar>
       <ScreenHeader
         icon="card"
         title="La tua card"

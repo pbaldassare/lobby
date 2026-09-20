@@ -35,7 +35,7 @@ export default function ShowcaseScreen(): React.JSX.Element {
   };
 
   return (
-    <Screen>
+    <Screen overTabBar>
       <ScreenHeader
         icon="showcase"
         title="Progetti"

@@ -52,7 +52,7 @@ export default function DiscoverScreen(): React.JSX.Element {
   const keyExtractor = useCallback((item: RoomPerson) => item.profile.id, []);
 
   return (
-    <Screen scroll={false}>
+    <Screen scroll={false} overTabBar>
       <FlatList
         data={isVisible ? ranked : []}
         renderItem={renderItem}

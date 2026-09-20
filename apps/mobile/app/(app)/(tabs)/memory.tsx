@@ -37,7 +37,7 @@ export default function MemoryScreen(): React.JSX.Element {
   }, [visits]);
 
   return (
-    <Screen>
+    <Screen overTabBar>
       <ScreenHeader
         icon="memory"
         title="Memoria"

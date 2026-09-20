@@ -51,7 +51,7 @@ export default function MatchesScreen(): React.JSX.Element {
   );
 
   return (
-    <Screen scroll={false}>
+    <Screen scroll={false} overTabBar>
       <FlatList
         data={people}
         renderItem={renderItem}

@@ -38,7 +38,7 @@ export default function SignalsScreen(): React.JSX.Element {
   const openIntros = intros.filter((i) => i.status === 'pending');
 
   return (
-    <Screen>
+    <Screen overTabBar>
       <ScreenHeader
         icon="signals"
         title="Signal"

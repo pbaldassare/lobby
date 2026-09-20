@@ -18,10 +18,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export function Screen({
   children,
   scroll = true,
+  overTabBar = false,
   style,
 }: {
   children: React.ReactNode;
   scroll?: boolean;
+  /** Lascia spazio alla tab bar flottante, arrotolata su tutti i lati. */
+  overTabBar?: boolean;
   style?: StyleProp<ViewStyle>;
 }): React.JSX.Element {
   const insets = useSafeAreaInsets();
@@ -31,7 +34,9 @@ export function Screen({
     paddingTop: insets.top + 12,
     paddingLeft: Math.max(insets.left, 18),
     paddingRight: Math.max(insets.right, 18),
-    paddingBottom: insets.bottom + 12,
+    paddingBottom: overTabBar
+      ? 62 + Math.max(insets.bottom, 12) + 12
+      : insets.bottom + 12,
   };
 
   const body = <View style={[styles.inner, style]}>{children}</View>;
