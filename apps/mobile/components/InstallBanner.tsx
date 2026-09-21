@@ -3,7 +3,7 @@ import { Button, Card, Text } from '@lobby/shared/ui';
 import React, { useEffect, useState } from 'react';
 import { Platform, View } from 'react-native';
 
-import { isAndroidWeb, isIosSafari, isSecureWeb, isStandalonePwa } from '@/lib/pwa';
+import { isAndroidWeb, isIosSafari, isStandalonePwa } from '@/lib/pwa';
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -11,10 +11,10 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 /**
- * Come si mette Lobby sul telefono.
- *
- * Chrome/Android: `beforeinstallprompt` se c'è HTTPS; altrimenti il menu
- * del browser. iOS Safari non ha quel prompt: Condividi → Home.
+ * Pulsante Installa sempre visibile su web.
+ * Se Chrome ha già `beforeinstallprompt`, apre il dialog nativo.
+ * Altrimenti mostra i passi (iPhone / Android): Safari e Chrome iOS
+ * non hanno un prompt di sistema.
  */
 export function InstallBanner(): React.JSX.Element | null {
   const styles = useStyles();
@@ -22,7 +22,7 @@ export function InstallBanner(): React.JSX.Element | null {
   const [installed, setInstalled] = useState(isStandalonePwa());
   const [ios, setIos] = useState(false);
   const [android, setAndroid] = useState(false);
-  const [secure, setSecure] = useState(true);
+  const [help, setHelp] = useState(false);
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
@@ -32,7 +32,6 @@ export function InstallBanner(): React.JSX.Element | null {
     }
     setIos(isIosSafari());
     setAndroid(isAndroidWeb());
-    setSecure(isSecureWeb());
 
     const onPrompt = (event: Event) => {
       event.preventDefault();
@@ -52,36 +51,35 @@ export function InstallBanner(): React.JSX.Element | null {
 
   if (Platform.OS !== 'web' || installed) return null;
 
-  const how = ios
-    ? 'Su iPhone: tocca Condividi, poi Aggiungi alla schermata Home. Si apre come un’app, senza barra del browser.'
+  const onInstall = () => {
+    if (installEvent) {
+      void installEvent.prompt().then(() => setInstallEvent(null));
+      return;
+    }
+    setHelp(true);
+  };
+
+  const steps = ios
+    ? 'Tocca Condividi (il quadrato con la freccia in alto) in basso al Safari, poi Aggiungi alla schermata Home. Conferma Aggiungi.'
     : android
-      ? secure
-        ? 'Su Android: tocca Installa, oppure il menu del browser → Installa app / Aggiungi a schermata Home.'
-        : 'Su Android serve un indirizzo HTTPS. Apri Lobby dal link sicuro e poi Installa app nel menu del browser.'
-      : 'Dal telefono: menu del browser → Aggiungi a schermata Home. Su iPhone: Condividi → Aggiungi alla schermata Home.';
+      ? 'Tocca Installa se compare il dialog. Altrimenti il menu ⋮ in alto a destra → Installa app oppure Aggiungi a schermata Home.'
+      : 'Dal telefono: su iPhone Condividi → Aggiungi alla schermata Home. Su Android il menu ⋮ → Installa app.';
 
   return (
     <Card style={styles.card}>
       <View style={styles.copy}>
-        <Text variant="bodyStrong">Metti Lobby sul telefono</Text>
+        <Text variant="bodyStrong">Installa Lobby</Text>
         <Text variant="tiny" tone="secondary">
-          {how} Stessa privacy: invisibile finché non scegli tu.
+          Sul telefono si apre come un’app, senza barra del browser. Resti
+          invisibile finché non lo decidi tu.
         </Text>
       </View>
-      {installEvent ? (
-        <Button
-          label="Installa"
-          onPress={() => {
-            void installEvent.prompt().then(() => setInstallEvent(null));
-          }}
-        />
-      ) : (
-        <Text variant="tiny" tone="tertiary">
-          {ios
-            ? 'Non c’è un pulsante Installa su iPhone: usa Condividi in basso.'
-            : 'Se non vedi Installa, apri il menu del browser (⋮) e scegli Aggiungi a schermata Home.'}
+      <Button label="Installa" onPress={onInstall} />
+      {help ? (
+        <Text variant="small" tone="secondary">
+          {steps}
         </Text>
-      )}
+      ) : null}
     </Card>
   );
 }

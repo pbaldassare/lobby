@@ -92,6 +92,8 @@ export default function WelcomeScreen(): React.JSX.Element {
           </Text>
         </View>
 
+        <InstallBanner />
+
         <View style={styles.form}>
           <Text variant="small" tone="secondary">
             Resti invisibile anche dopo l&apos;accesso. La visibilità si attiva a
@@ -168,8 +170,6 @@ export default function WelcomeScreen(): React.JSX.Element {
             disabled={busy !== null && busy !== 'signup'}
             onPress={() => withEmail('signup')}
           />
-
-          <InstallBanner />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
