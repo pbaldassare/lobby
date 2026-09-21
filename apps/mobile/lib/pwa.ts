@@ -14,8 +14,20 @@ export function isStandalonePwa(): boolean {
 export function isIosSafari(): boolean {
   if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
   const ua = window.navigator.userAgent;
-  const iOS = /iPad|iPhone|iPod/.test(ua) || (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
+  const iOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1);
   const webkit = /WebKit/.test(ua);
   const chrome = /CriOS|FxiOS|EdgiOS/.test(ua);
   return iOS && webkit && !chrome;
+}
+
+export function isAndroidWeb(): boolean {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
+  return /Android/i.test(window.navigator.userAgent);
+}
+
+export function isSecureWeb(): boolean {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
+  return window.isSecureContext;
 }

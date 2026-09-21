@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, View } from 'react-native';
 
+import { InstallBanner } from '@/components/InstallBanner';
 import { PersonRow } from '@/components/PersonRow';
 import { PresenceBar } from '@/components/PresenceBar';
 import { ProfileSheet } from '@/components/ProfileSheet';
@@ -137,6 +138,8 @@ function Header({
 
         <SelfCard profile={profile} sealedVenue={sealedVenue} onPress={onOpenProfile} />
 
+        <InstallBanner />
+
         <View style={styles.enter}>
           <Text variant="titleSm">Entra in una stanza</Text>
           <Text variant="small" tone="secondary">
@@ -192,6 +195,8 @@ function Header({
         variant="ghost"
         onPress={onScan}
       />
+
+      <InstallBanner />
     </View>
   );
 }
