@@ -1,9 +1,14 @@
 import { requireStaffPage } from '@/lib/auth/staff';
 import { RoomCode } from '@/components/RoomCode';
+import { EventPreview } from '@/components/EventPreview';
 import { listVenueRooms } from '@/lib/data/rooms';
+import { getRoomPromo } from '@/lib/data/promos';
 import { pickVenue } from '@/lib/venue-selection';
 import { VenuePicker } from '@/components/VenuePicker';
 import { getMemberWebOrigin } from '@/lib/env';
+import { CityLink } from '@/components/CityLink';
+import { roomWindowLabel } from '@/lib/labels';
+import type { PromoCopy, PromoFacts } from '@/lib/promo/types';
 
 type Props = {
   searchParams: Promise<{ venue?: string; room?: string }>;
@@ -26,6 +31,31 @@ export default async function QrPage({ searchParams }: Props) {
   }
 
   const room = rooms.find((r) => r.id === params.room) ?? rooms[0] ?? null;
+
+  let savedPromo: PromoCopy | null = null;
+  if (venue && room) {
+    try {
+      savedPromo = await getRoomPromo(venue.id, room.id);
+    } catch {
+      savedPromo = null;
+    }
+  }
+
+  const facts: PromoFacts | null =
+    venue && room
+      ? {
+          venueId: venue.id,
+          roomId: room.id,
+          venueName: venue.name,
+          city: venue.city,
+          cityPlaceId: venue.city_place_id ?? null,
+          cityLat: venue.city_lat ?? null,
+          cityLng: venue.city_lng ?? null,
+          roomName: room.name,
+          schedule: roomWindowLabel(room.opens_at, room.closes_at),
+          memberAppUrl: getMemberWebOrigin(),
+        }
+      : null;
 
   return (
     <>
@@ -69,17 +99,29 @@ export default async function QrPage({ searchParams }: Props) {
             <h2>
               {venue.name} · {room.name}
             </h2>
-            <span className="muted">{venue.city}</span>
+            <CityLink
+              city={venue.city}
+              placeId={venue.city_place_id}
+              lat={venue.city_lat}
+              lng={venue.city_lng}
+            />
           </div>
-          <RoomCode
-            venueId={venue.id}
-            roomId={room.id}
-            webOrigin={getMemberWebOrigin()}
-          />
-          <p className="muted" style={{ marginTop: 12 }}>
-            Chi entra resta invisibile finché non decide di apparire, e il
-            permesso scade con la stanza.
-          </p>
+          <div className="ingresso-grid">
+            <div>
+              <RoomCode
+                venueId={venue.id}
+                roomId={room.id}
+                webOrigin={getMemberWebOrigin()}
+              />
+              <p className="muted" style={{ marginTop: 12 }}>
+                Chi entra resta invisibile finché non decide di apparire, e il
+                permesso scade con la stanza.
+              </p>
+            </div>
+            {facts ? (
+              <EventPreview facts={facts} initialCopy={savedPromo} />
+            ) : null}
+          </div>
         </>
       )}
     </>
