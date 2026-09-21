@@ -38,10 +38,10 @@ export default function SignalsScreen(): React.JSX.Element {
   const openIntros = intros.filter((i) => i.status === 'pending');
 
   return (
-    <Screen>
+    <Screen overTabBar>
       <ScreenHeader
         icon="signals"
-        title="Signal"
+        title="Richieste"
         subtitle="Ci si connette solo se lo vogliono entrambi. La chat resta chiusa fino ad allora."
       />
 

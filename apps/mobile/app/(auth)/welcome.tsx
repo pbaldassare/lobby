@@ -1,5 +1,5 @@
 import { makeStyles } from '@lobby/shared/theme';
-import { Button, Field, GlyphMark, Text } from '@lobby/shared/ui';
+import { Brand, Button, Field, Text } from '@lobby/shared/ui';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -82,8 +82,8 @@ export default function WelcomeScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <GlyphMark name="lock" size={56} />
-          <Text variant="titleLg" style={styles.wordmark}>
+          <Brand />
+          <Text variant="titleSm" style={styles.wordmark}>
             Accedi o iscriviti
           </Text>
           <Text variant="body" tone="secondary" style={styles.tagline}>
@@ -91,6 +91,8 @@ export default function WelcomeScreen(): React.JSX.Element {
             quando lo decidi tu.
           </Text>
         </View>
+
+        <InstallBanner />
 
         <View style={styles.form}>
           <Text variant="small" tone="secondary">
@@ -168,8 +170,6 @@ export default function WelcomeScreen(): React.JSX.Element {
             disabled={busy !== null && busy !== 'signup'}
             onPress={() => withEmail('signup')}
           />
-
-          <InstallBanner />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

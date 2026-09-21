@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const LINKS = [
-  { href: '/istanze', label: 'Istanze' },
+  { href: '/istanze', label: 'Stanze' },
   { href: '/qr', label: 'QR' },
   { href: '/registrati', label: 'Registrati' },
   { href: '/risultati', label: 'Risultati' },

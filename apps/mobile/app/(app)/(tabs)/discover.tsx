@@ -1,15 +1,17 @@
 import { makeStyles } from '@lobby/shared/theme';
-import type { RoomPerson } from '@lobby/shared/types';
-import { Button, Card, ListEmpty, ScreenHeader, Segmented, Text } from '@lobby/shared/ui';
+import type { Profile, RoomPerson } from '@lobby/shared/types';
+import { Button, Card, ListEmpty, ScreenHeader, Text } from '@lobby/shared/ui';
 import { router } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, View } from 'react-native';
 
+import { InstallBanner } from '@/components/InstallBanner';
 import { PersonRow } from '@/components/PersonRow';
 import { PresenceBar } from '@/components/PresenceBar';
 import { ProfileSheet } from '@/components/ProfileSheet';
 import { RoomEnterList } from '@/components/RoomEnterList';
 import { Screen } from '@/components/Screen';
+import { SelfCard } from '@/components/SelfCard';
 import {
   useEnterableRooms,
   type EnterableRoom,
@@ -20,9 +22,7 @@ import { DEMO_ROOM_ID } from '@/lib/demo';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePresence } from '@/providers/PresenceProvider';
 
-type EnterMode = 'qr' | 'pass';
-
-export default function DiscoverScreen(): React.JSX.Element {
+export default function HomeScreen(): React.JSX.Element {
   const { profile, isDemo } = useAuth();
   const { room, isVisible, enterRoom, leaveRoom, setVisible, presence } = usePresence();
   const { people, loading } = useRoomPeople();
@@ -52,7 +52,7 @@ export default function DiscoverScreen(): React.JSX.Element {
   const keyExtractor = useCallback((item: RoomPerson) => item.profile.id, []);
 
   return (
-    <Screen scroll={false}>
+    <Screen scroll={false} overTabBar>
       <FlatList
         data={isVisible ? ranked : []}
         renderItem={renderItem}
@@ -61,6 +61,7 @@ export default function DiscoverScreen(): React.JSX.Element {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <Header
+            profile={profile}
             firstName={firstName}
             roomName={roomName}
             inRoom={Boolean(presence)}
@@ -68,6 +69,7 @@ export default function DiscoverScreen(): React.JSX.Element {
             closesAt={room?.closes_at ?? null}
             count={ranked.length}
             sealedVenue={sealed?.venue?.name ?? null}
+            onOpenProfile={() => router.push('/(app)/(tabs)/card')}
             onScan={() => router.push('/(app)/scan')}
             onOther={() => router.push('/(app)/enter')}
             rooms={rooms}
@@ -91,6 +93,7 @@ export default function DiscoverScreen(): React.JSX.Element {
 }
 
 function Header({
+  profile,
   firstName,
   roomName,
   inRoom,
@@ -98,6 +101,7 @@ function Header({
   closesAt,
   count,
   sealedVenue,
+  onOpenProfile,
   onScan,
   onOther,
   rooms,
@@ -105,6 +109,7 @@ function Header({
   onLeave,
   onChangeVisibility,
 }: {
+  profile: Profile | null;
   firstName?: string;
   roomName: string;
   inRoom: boolean;
@@ -112,6 +117,7 @@ function Header({
   closesAt: string | null;
   count: number;
   sealedVenue: string | null;
+  onOpenProfile: () => void;
   onScan: () => void;
   onOther: () => void;
   rooms: EnterableRoom[];
@@ -120,50 +126,37 @@ function Header({
   onChangeVisibility: (visible: boolean) => void;
 }): React.JSX.Element {
   const styles = useScreenStyles();
-  const [enterMode, setEnterMode] = useState<EnterMode>('qr');
 
   if (!inRoom) {
     return (
       <View style={styles.header}>
         <ScreenHeader
           icon="room"
-          title="Stanza"
-          subtitle={`Ciao${firstName ? ` ${firstName}` : ''}. Appari solo qui, e solo se lo decidi tu.`}
+          title={firstName ? `Ciao, ${firstName}` : 'Home'}
+          subtitle="Il tuo profilo, poi una stanza. Appari solo se lo decidi tu."
         />
 
-        <Segmented<EnterMode>
-          value={enterMode}
-          onChange={setEnterMode}
-          options={[
-            { value: 'qr', label: 'QR' },
-            { value: 'pass', label: 'Pass' },
-          ]}
-        />
+        <SelfCard profile={profile} sealedVenue={sealedVenue} onPress={onOpenProfile} />
 
-        {enterMode === 'qr' ? (
-          <>
-            <Button icon="scan" label="Scansiona il QR del locale" onPress={onScan} />
-            <RoomEnterList rooms={rooms} />
-          </>
-        ) : (
-          <Button label="Mail, socio, Wi‑Fi" onPress={onOther} />
-        )}
+        <InstallBanner />
 
-        {onDemo ? (
-          <Button
-            label="Entra nella stanza dimostrativa"
-            variant="ghost"
-            onPress={onDemo}
-          />
-        ) : null}
-
-        <Card variant="ice" style={styles.note}>
-          <Text variant="bodyStrong">La visibilità è un attimo</Text>
+        <View style={styles.enter}>
+          <Text variant="titleSm">Entra in una stanza</Text>
           <Text variant="small" tone="secondary">
-            Sei invisibile finché non entri. Vale solo in questa stanza e si spegne
-            quando esci. Le connessioni richiedono il consenso di entrambi.
+            QR all’ingresso, una stanza già permessa, o mail / socio / Wi‑Fi.
+            Resti invisibile finché non attivi la visibilità.
           </Text>
-        </Card>
+          <Button icon="scan" label="Scansiona il QR del locale" onPress={onScan} />
+          <RoomEnterList rooms={rooms} />
+          <Button label="Mail, socio, Wi‑Fi" variant="ghost" onPress={onOther} />
+          {onDemo ? (
+            <Button
+              label="Entra nella stanza dimostrativa"
+              variant="ghost"
+              onPress={onDemo}
+            />
+          ) : null}
+        </View>
       </View>
     );
   }
@@ -176,6 +169,8 @@ function Header({
         title={isVisible ? 'Chi c’è ora' : 'Sei in stanza'}
         subtitle="Visibile solo qui. Si spegne quando esci."
       />
+
+      <SelfCard profile={profile} sealedVenue={sealedVenue} onPress={onOpenProfile} />
 
       <PresenceBar
         isVisible={isVisible}
@@ -192,11 +187,6 @@ function Header({
             ? `${count} ${count === 1 ? 'persona' : 'persone'} in questa stanza`
             : 'Nessuno ti vede. Attiva la visibilità per apparire e vedere chi c’è.'}
         </Text>
-        <Text variant="tiny" tone="tertiary">
-          {sealedVenue
-            ? `Sigillo · ${sealedVenue}`
-            : 'Nessun sigillo. Lo rilascia il venue, non tu.'}
-        </Text>
       </Card>
 
       <Button
@@ -205,6 +195,8 @@ function Header({
         variant="ghost"
         onPress={onScan}
       />
+
+      <InstallBanner />
     </View>
   );
 }
@@ -217,16 +209,8 @@ function Body({
   inRoom: boolean;
   isVisible: boolean;
   loading: boolean;
-}): React.JSX.Element {
-  if (!inRoom) {
-    return (
-      <ListEmpty
-        icon="scan"
-        title="Scansiona il QR del locale"
-        body="Le stanze si aprono da dentro il venue. Nessuno ti vede finché non lo decidi tu."
-      />
-    );
-  }
+}): React.JSX.Element | null {
+  if (!inRoom) return null;
 
   if (!isVisible) {
     return (
@@ -253,7 +237,7 @@ function Body({
 
 const useScreenStyles = makeStyles(() => ({
   header: { gap: 14, paddingBottom: 8 },
-  note: { gap: 6 },
+  enter: { gap: 12 },
   hero: { gap: 6 },
 }));
 

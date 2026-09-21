@@ -1,4 +1,4 @@
-import type { Profile } from '@lobby/shared/types';
+import { normalizeProfile, type Profile } from '@lobby/shared/types';
 import type { Session, User } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
@@ -39,9 +39,24 @@ type AuthContextValue = {
   refreshProfile: () => Promise<void>;
   updateProfile: (
     patch: Partial<
-      Pick<Profile, 'display_name' | 'headline' | 'spotlight' | 'offer' | 'seek' | 'company'>
+      Pick<
+        Profile,
+        | 'display_name'
+        | 'headline'
+        | 'spotlight'
+        | 'offer'
+        | 'seek'
+        | 'company'
+        | 'occupation'
+        | 'hobbies'
+        | 'linkedin_url'
+        | 'avatar_url'
+      >
     >,
   ) => Promise<{ error: string | null }>;
+  hasLinkedIn: boolean;
+  linkLinkedIn: () => Promise<AuthActionResult>;
+  importLinkedInIdentity: () => Promise<{ error: string | null; profile?: Profile | null }>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -64,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       return;
     }
     const { data } = await getSupabase().from('profiles').select('*').eq('id', userId).maybeSingle();
-    setProfile((data as Profile | null) ?? null);
+    setProfile(normalizeProfile(data as Profile | null));
   }, [isDemo]);
 
   useEffect(() => {
@@ -175,10 +190,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     setProfile(null);
   }, [isDemo, session?.user?.id]);
 
+  const hasLinkedIn = useMemo(() => {
+    const identities = session?.user?.identities ?? [];
+    return identities.some(
+      (i) => i.provider === 'linkedin_oidc' || i.provider === 'linkedin',
+    );
+  }, [session?.user?.identities]);
+
+  const linkLinkedIn = useCallback(async (): Promise<AuthActionResult> => {
+    if (isDemo) return { error: null };
+    const redirectTo =
+      Platform.OS === 'web' && typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback`
+        : Linking.createURL('auth/callback');
+    if (Platform.OS === 'web') {
+      const { error } = await getSupabase().auth.linkIdentity({
+        provider: 'linkedin_oidc',
+        options: { redirectTo, skipBrowserRedirect: false },
+      });
+      return { error: publicAuthError(error?.message) };
+    }
+    const { data, error } = await getSupabase().auth.linkIdentity({
+      provider: 'linkedin_oidc',
+      options: { redirectTo, skipBrowserRedirect: true },
+    });
+    if (error) return { error: publicAuthError(error.message) };
+    if (!data.url) return { error: 'LinkedIn non ha restituito un indirizzo.' };
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    if (result.type !== 'success' || !result.url) {
+      return result.type === 'cancel' || result.type === 'dismiss'
+        ? { error: null, skipped: true }
+        : { error: 'Collegamento interrotto.' };
+    }
+    const completed = await completeNativeOAuthRedirect(result.url);
+    return { error: publicAuthError(completed.error ?? undefined), skipped: completed.skipped };
+  }, [isDemo]);
+
+  const importLinkedInIdentity = useCallback(async () => {
+    if (isDemo) return { error: null, profile };
+    const { data, error } = await getSupabase().rpc('import_linkedin_identity');
+    if (error) return { error: lobbyUserError(error.message) ?? error.message };
+    const next = normalizeProfile((data as Profile | null) ?? null);
+    if (next) setProfile(next);
+    else await refreshProfile();
+    return { error: null, profile: next };
+  }, [isDemo, profile, refreshProfile]);
+
   const updateProfile = useCallback(
     async (
       patch: Partial<
-        Pick<Profile, 'display_name' | 'headline' | 'spotlight' | 'offer' | 'seek' | 'company'>
+        Pick<
+          Profile,
+          | 'display_name'
+          | 'headline'
+          | 'spotlight'
+          | 'offer'
+          | 'seek'
+          | 'company'
+          | 'occupation'
+          | 'hobbies'
+          | 'linkedin_url'
+          | 'avatar_url'
+        >
       >,
     ) => {
       if (isDemo) {
@@ -194,7 +267,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         .select('*')
         .maybeSingle();
       if (error) return { error: error.message };
-      setProfile((data as Profile | null) ?? null);
+      setProfile(normalizeProfile(data as Profile | null));
       return { error: null };
     },
     [isDemo, session?.user?.id],
@@ -216,6 +289,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       signOut,
       refreshProfile,
       updateProfile,
+      hasLinkedIn: isDemo ? true : hasLinkedIn,
+      linkLinkedIn,
+      importLinkedInIdentity,
     };
   }, [
     isDemo,
@@ -229,6 +305,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
     signOut,
     refreshProfile,
     updateProfile,
+    hasLinkedIn,
+    linkLinkedIn,
+    importLinkedInIdentity,
   ]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

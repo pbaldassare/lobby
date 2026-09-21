@@ -3,6 +3,7 @@ import { requireStaffPage } from '@/lib/auth/staff';
 import { listRoomsForVenues } from '@/lib/data/rooms';
 import { CreateInstanceForm } from '@/components/CreateInstanceForm';
 import { CreateRoomForm } from '@/components/CreateRoomForm';
+import { CityLink } from '@/components/CityLink';
 import { roomWindowLabel } from '@/lib/labels';
 import type { Room, Venue } from '@lobby/shared';
 
@@ -28,7 +29,7 @@ export default async function IstanzePage() {
   return (
     <>
       <p className="kicker">Locale e stanza</p>
-      <h1>Istanze</h1>
+      <h1>Stanze</h1>
       <p>
         Un locale, una stanza, un QR all’ingresso. Chi è in lista entra da lì;
         fuori dalla stanza non esiste.
@@ -41,7 +42,7 @@ export default async function IstanzePage() {
       {staff.venues.length === 0 ? (
         <div className="panel">
           <p className="muted" style={{ margin: 0 }}>
-            Nessun locale in carico. Crea la prima istanza qui sopra.
+            Nessun locale in carico. Crea la prima stanza qui sopra.
           </p>
         </div>
       ) : (
@@ -62,7 +63,12 @@ function VenueInstance({ venue, rooms }: { venue: Venue; rooms: Room[] }) {
     <div className="panel">
       <div className="section-header">
         <h2>{venue.name}</h2>
-        <span className="muted">{venue.city}</span>
+        <CityLink
+          city={venue.city}
+          placeId={venue.city_place_id}
+          lat={venue.city_lat}
+          lng={venue.city_lng}
+        />
       </div>
       {rooms.length === 0 ? (
         <p className="muted">Nessuna stanza. Aggiungine una per avere il QR.</p>

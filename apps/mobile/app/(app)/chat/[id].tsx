@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useChatList, useChatThread } from '@/hooks/useChat';
+import { useDocuments } from '@/hooks/useDocuments';
 import { useAuth } from '@/providers/AuthProvider';
 import { initialsFromProfile } from '@/lib/format';
 
@@ -35,6 +36,7 @@ export default function ChatThreadScreen(): React.JSX.Element {
   const { user } = useAuth();
   const { chats } = useChatList();
   const { messages, connected, loading, sendMessage } = useChatThread(id);
+  const { openPeerCv } = useDocuments();
   const [draft, setDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -95,6 +97,24 @@ export default function ChatThreadScreen(): React.JSX.Element {
             {connected ? 'Connessi' : 'In attesa di consenso'}
           </Text>
         </View>
+
+        {connected && other ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Curriculum"
+            hitSlop={8}
+            onPress={() => {
+              void openPeerCv(other.id).then(({ error: err }) => {
+                if (err) setError(err);
+              });
+            }}
+            style={({ pressed }) => [styles.cvBtn, pressed && styles.pressed]}
+          >
+            <Text variant="tiny" tone="accent">
+              CV
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <KeyboardAvoidingView
@@ -188,6 +208,14 @@ const useStyles = makeStyles((t) => ({
    *  aggiungere una seconda icona al set. */
   backIcon: { transform: [{ rotate: '180deg' }] },
   headerText: { flex: 1, minWidth: 0 },
+  cvBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: t.color.accent.subtleBorder,
+    backgroundColor: t.color.accent.subtleBg,
+  },
   pressed: { opacity: 0.6 },
   gate: {
     margin: 18,

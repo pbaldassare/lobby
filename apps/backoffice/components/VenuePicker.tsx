@@ -15,7 +15,7 @@ export function VenuePicker({ venues, selectedId }: Props) {
     return (
       <p className="muted">
         Nessun locale.{' '}
-        <Link href="/istanze">Crea un’istanza</Link> per partire.
+        <Link href="/istanze">Crea una stanza</Link> per partire.
       </p>
     );
   }

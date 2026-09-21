@@ -1,4 +1,12 @@
-import type { Match, Membership, Presence, Profile, RoomPerson, Venue } from '@lobby/shared/types';
+import {
+  normalizeProfile,
+  type Match,
+  type Membership,
+  type Presence,
+  type Profile,
+  type RoomPerson,
+  type Venue,
+} from '@lobby/shared/types';
 import { useCallback, useEffect, useState } from 'react';
 
 import { demoRoomPeople } from '@/lib/demo';
@@ -64,33 +72,33 @@ export function useRoomPeople(): {
         Membership & { venues: Venue | Venue[] | null }
       >;
 
-      setPeople(
-        list
-          .filter((r) => r.profiles)
-          .map((r) => {
-            const profile = r.profiles as Profile;
-            const match = matches.find(
-              (m) =>
-                (m.profile_a_id === user.id && m.profile_b_id === profile.id) ||
-                (m.profile_b_id === user.id && m.profile_a_id === profile.id),
-            );
-            const mem = memberships.find((m) => m.profile_id === profile.id);
-            const venue = mem
-              ? Array.isArray(mem.venues)
-                ? (mem.venues[0] ?? null)
-                : mem.venues
-              : null;
-            return {
-              profile,
-              presence: r,
-              match: match
-                ? { id: match.id, score: match.score, reasons: match.reasons }
-                : null,
-              membership: mem ? { ...mem, venue } : null,
-            };
-          })
-          .sort((a, b) => (b.match?.score ?? 0) - (a.match?.score ?? 0)),
-      );
+      const next: RoomPerson[] = [];
+      for (const r of list) {
+        const profile = normalizeProfile(r.profiles);
+        if (!profile) continue;
+        const { profiles: _profiles, ...presence } = r;
+        const match = matches.find(
+          (m) =>
+            (m.profile_a_id === user.id && m.profile_b_id === profile.id) ||
+            (m.profile_b_id === user.id && m.profile_a_id === profile.id),
+        );
+        const mem = memberships.find((m) => m.profile_id === profile.id);
+        const venue = mem
+          ? Array.isArray(mem.venues)
+            ? (mem.venues[0] ?? null)
+            : mem.venues
+          : null;
+        next.push({
+          profile,
+          presence,
+          match: match
+            ? { id: match.id, score: match.score, reasons: match.reasons }
+            : null,
+          membership: mem ? { ...mem, venue } : null,
+        });
+      }
+      next.sort((a, b) => (b.match?.score ?? 0) - (a.match?.score ?? 0));
+      setPeople(next);
     } catch (err) {
       console.warn('useRoomPeople', err);
       setPeople([]);

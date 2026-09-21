@@ -41,7 +41,7 @@ export default async function RegistratiPage({ searchParams }: Props) {
 
       {!venue ? (
         <div className="panel">
-          <p className="muted">Crea un’istanza per vedere chi è in lista.</p>
+          <p className="muted">Crea una stanza per vedere chi è in lista.</p>
         </div>
       ) : (
         <>

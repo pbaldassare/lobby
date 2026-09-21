@@ -20,6 +20,9 @@ export type Profile = {
   offer: string[];
   seek: string[];
   company: string | null;
+  occupation: string | null;
+  hobbies: string[];
+  linkedin_url: string | null;
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
@@ -29,6 +32,9 @@ export type Venue = {
   id: string;
   name: string;
   city: string;
+  city_place_id?: string | null;
+  city_lat?: number | null;
+  city_lng?: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -140,15 +146,69 @@ export type Intro = {
   responded_at: string | null;
 };
 
+export type ProjectStatus = 'active' | 'paused' | 'shipped';
+
 export type Project = {
   id: string;
   profile_id: string;
   title: string;
   public_pitch: string;
   private_deck_url: string | null;
+  private_deck_file_name: string | null;
   deck_requestable: boolean;
+  role_title: string | null;
+  status: ProjectStatus;
+  sort_order: number;
+  is_visible: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type DocumentKind = 'cv' | 'other';
+
+export type MemberDocument = {
+  id: string;
+  profile_id: string;
+  kind: DocumentKind;
+  file_path: string;
+  file_name: string;
+  mime_type: string;
+  byte_size: number | null;
+  created_at: string;
+};
+
+export type LinkedInLink = {
+  profile_id: string;
+  subject: string;
+  imported_at: string;
+  imported_name: string | null;
+  imported_headline: string | null;
+  imported_picture_url: string | null;
+  source: string;
+  created_at: string;
+};
+
+export type RoomVisit = {
+  id: string;
+  profile_id: string;
+  room_id: string;
+  venue_id: string | null;
+  room_name: string;
+  venue_name: string | null;
+  entered_at: string;
+  left_at: string | null;
+};
+
+export type Encounter = {
+  id: string;
+  visitor_id: string;
+  room_visit_id: string;
+  seen_profile_id: string;
+  snapshot_name: string | null;
+  snapshot_headline: string | null;
+  snapshot_company: string | null;
+  snapshot_occupation: string | null;
+  seen_at: string;
 };
 
 export type Chat = {
@@ -222,6 +282,19 @@ export type IssueSealResponse = {
 
 export function isStaffRole(role: UserRole): boolean {
   return role === 'staff' || role === 'admin';
+}
+
+/** Normalizza un profilo letto da PostgREST dopo colonne nuove o parziali. */
+export function normalizeProfile(row: Profile | null | undefined): Profile | null {
+  if (!row) return null;
+  return {
+    ...row,
+    offer: row.offer ?? [],
+    seek: row.seek ?? [],
+    hobbies: row.hobbies ?? [],
+    occupation: row.occupation ?? null,
+    linkedin_url: row.linkedin_url ?? null,
+  };
 }
 
 /** Person visible in the current room (mobile discover). */

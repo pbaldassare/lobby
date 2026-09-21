@@ -31,7 +31,7 @@ export function LoginForm() {
           required
         />
       </div>
-      <button className="btn btn-gold" type="submit" disabled={pending}>
+      <button className="btn btn-gold btn-block" type="submit" disabled={pending}>
         {pending ? 'Accesso in corso…' : 'Accedi'}
       </button>
     </form>

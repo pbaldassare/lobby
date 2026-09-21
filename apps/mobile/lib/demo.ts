@@ -1,13 +1,16 @@
 import type {
+  Encounter,
   Intro,
   Match,
   MemberAccess,
+  MemberDocument,
   Membership,
   Presence,
   Profile,
   Project,
   Room,
   RoomPerson,
+  RoomVisit,
   Signal,
   Venue,
 } from '@lobby/shared/types';
@@ -20,6 +23,9 @@ export const demoVenue: Venue = {
   id: DEMO_VENUE_ID,
   name: 'Soho House',
   city: 'Milan',
+  city_place_id: null,
+  city_lat: null,
+  city_lng: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
@@ -44,6 +50,9 @@ export const demoProfile: Profile = {
   offer: ['intros to operators', 'product advisory'],
   seek: ['energy partners', 'series A intros'],
   company: 'Hearth',
+  occupation: 'Product lead',
+  hobbies: ['alpinismo', 'vinile'],
+  linkedin_url: 'https://www.linkedin.com/in/alex-rivera',
   avatar_url: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
@@ -85,6 +94,9 @@ const other: Profile = {
   offer: ['capital', 'board seats'],
   seek: ['industrial decarbonization'],
   company: 'Northline',
+  occupation: 'General partner',
+  hobbies: ['nuoto', 'ceramica'],
+  linkedin_url: null,
   avatar_url: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
@@ -100,6 +112,9 @@ const third: Profile = {
   offer: ['integrazioni', 'dati di consumo'],
   seek: ['pilota industriale', 'partner energetici'],
   company: 'Gridwise',
+  occupation: 'Founder',
+  hobbies: ['ciclismo'],
+  linkedin_url: null,
   avatar_url: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
@@ -153,7 +168,12 @@ export const demoProjects: Project[] = [
     title: 'Hearth Exchange',
     public_pitch: 'Marketplace matching factories with district heating buyers.',
     private_deck_url: null,
+    private_deck_file_name: null,
     deck_requestable: true,
+    role_title: 'Founder',
+    status: 'active',
+    sort_order: 0,
+    is_visible: true,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
@@ -213,5 +233,43 @@ export const demoIntros: Array<
     b: other,
     introducer: third,
     direction: 'received' as const,
+  },
+];
+
+export const demoCv: MemberDocument = {
+  id: '00000000-0000-4000-8000-000000000080',
+  profile_id: DEMO_USER_ID,
+  kind: 'cv',
+  file_path: `${DEMO_USER_ID}/cv/alex-rivera.pdf`,
+  file_name: 'alex-rivera.pdf',
+  mime_type: 'application/pdf',
+  byte_size: 128_000,
+  created_at: new Date().toISOString(),
+};
+
+const demoVisit: RoomVisit = {
+  id: '00000000-0000-4000-8000-000000000090',
+  profile_id: DEMO_USER_ID,
+  room_id: DEMO_ROOM_ID,
+  venue_id: DEMO_VENUE_ID,
+  room_name: demoRoom.name,
+  venue_name: demoVenue.name,
+  entered_at: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+  left_at: null,
+};
+
+export const demoRoomVisits: RoomVisit[] = [demoVisit];
+
+export const demoEncounters: Encounter[] = [
+  {
+    id: '00000000-0000-4000-8000-000000000091',
+    visitor_id: DEMO_USER_ID,
+    room_visit_id: demoVisit.id,
+    seen_profile_id: other.id,
+    snapshot_name: other.display_name,
+    snapshot_headline: other.headline,
+    snapshot_company: other.company,
+    snapshot_occupation: other.occupation,
+    seen_at: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
   },
 ];
