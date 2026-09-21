@@ -25,6 +25,7 @@ export function promoSystemPrompt(): string {
     'Scrivi in italiano, tono editoriale, calmo, senza hype da discoteca e senza emoji.',
     'Rispetta SEMPRE le regole: invisibile di default; visibile solo nella stanza in cui sei; la visibilità si spegne all’uscita; connessione solo per consenso reciproco; il sigillo lo rilascia il venue, non l’utente.',
     'Non inventare ospiti, numeri, speaker o sponsor. Non promettere di vedere chi c’è prima di entrare e apparire.',
+    'Lobby non è un social virtuale: funziona solo se sei fisicamente in quella stanza.',
     'Usa i fatti forniti: nome locale, stanza, città, orari, URL app.',
     'Rispondi SOLO con JSON: headline, lede, about_lobby, purpose, how_to_enter, privacy_note, cta.',
     'Lunghezze: headline ≤120, lede ≤280, about_lobby/purpose/how_to_enter ≤420, privacy_note ≤280, cta ≤80.',
