@@ -8,6 +8,7 @@ import {
   StaffAuthError,
 } from '@/lib/auth/staff';
 import { createClient } from '@/lib/supabase/server';
+import { geocodeCity, resolvePlaceId } from '@/lib/maps/places';
 
 export type InstanceActionResult =
   | { ok: true; venueId: string; roomId: string }
@@ -26,10 +27,13 @@ export async function createInstanceAction(
   formData: FormData,
 ): Promise<InstanceActionResult> {
   const venueName = String(formData.get('venue_name') ?? '');
-  const city = String(formData.get('city') ?? '');
+  const cityRaw = String(formData.get('city') ?? '');
   const roomName = String(formData.get('room_name') ?? '');
   const opensAt = optionalIso(String(formData.get('opens_at') ?? ''));
   const closesAt = optionalIso(String(formData.get('closes_at') ?? ''));
+  const placeIdRaw = String(formData.get('city_place_id') ?? '').trim();
+  const latRaw = String(formData.get('city_lat') ?? '').trim();
+  const lngRaw = String(formData.get('city_lng') ?? '').trim();
 
   let venueId: string | undefined;
   let roomId: string | undefined;
@@ -41,6 +45,33 @@ export async function createInstanceAction(
         error: 'Serve un account staff o amministratore.',
       };
     }
+    let city = cityRaw.trim();
+    let placeId = placeIdRaw || null;
+    let lat = latRaw ? Number(latRaw) : null;
+    let lng = lngRaw ? Number(lngRaw) : null;
+    if (placeId && (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng))) {
+      const resolved = await resolvePlaceId(placeId);
+      if (resolved) {
+        city = resolved.city;
+        lat = resolved.lat;
+        lng = resolved.lng;
+        placeId = resolved.placeId;
+      }
+    }
+    if (!placeId || lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
+      const geo = await geocodeCity(city);
+      if (!geo) {
+        return {
+          ok: false,
+          error: 'Scegli una città da Google Maps.',
+        };
+      }
+      city = geo.city;
+      placeId = geo.placeId;
+      lat = geo.lat;
+      lng = geo.lng;
+    }
+
     const supabase = await createClient();
     const { data, error } = await supabase.rpc('create_instance', {
       p_venue_name: venueName,
@@ -48,6 +79,9 @@ export async function createInstanceAction(
       p_room_name: roomName,
       p_opens_at: opensAt,
       p_closes_at: closesAt,
+      p_city_place_id: placeId,
+      p_city_lat: lat,
+      p_city_lng: lng,
     });
     if (error) return { ok: false, error: error.message };
     const row = Array.isArray(data) ? data[0] : data;

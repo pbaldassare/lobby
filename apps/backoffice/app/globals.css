@@ -185,6 +185,56 @@ p { margin: 0 0 0.75em; color: var(--lobby-color-text-secondary); }
 }
 .field input:focus, .field select:focus { border-color: var(--lobby-color-accent-default); }
 
+.city-field { position: relative; }
+.city-suggest {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  position: absolute;
+  z-index: 8;
+  left: 0;
+  right: 0;
+  top: calc(100% - 8px);
+  background: var(--lobby-color-bg-raised);
+  border: 1px solid var(--lobby-color-border-subtle);
+  border-radius: var(--lobby-radius-md);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--lobby-color-text-primary) 8%, transparent);
+  max-height: 240px;
+  overflow: auto;
+}
+.city-suggest button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 10px 12px;
+  border-radius: var(--lobby-radius-sm);
+  cursor: pointer;
+}
+.city-suggest button:hover,
+.city-suggest button:focus-visible {
+  background: var(--lobby-color-accent-subtle-bg);
+}
+.city-suggest span {
+  color: var(--lobby-color-text-tertiary);
+  font-size: 12px;
+}
+.city-picked { display: flex; flex-direction: column; gap: 8px; }
+.city-map {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: var(--lobby-radius-md);
+  border: 1px solid var(--lobby-color-border-subtle);
+}
+.city-link a { font-weight: 600; }
+
 /* -------------------------------------------------------------- tabelle */
 
 .table { width: 100%; border-collapse: collapse; }
@@ -309,20 +359,78 @@ p { margin: 0 0 0.75em; color: var(--lobby-color-text-secondary); }
 }
 .poster .qr img { display: block; width: 220px; height: 220px; }
 
+.ingresso-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 400px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 980px) {
+  .ingresso-grid { grid-template-columns: 1fr; }
+}
+
+.event-preview-card {
+  background: var(--lobby-color-bg-raised);
+  border: 1px solid var(--lobby-color-border-subtle);
+  border-radius: var(--lobby-radius-lg);
+  padding: 28px 26px;
+}
+.event-preview-card .brand-mark { margin-bottom: 12px; }
+.event-preview-card h2 { font-size: 1.7rem; margin-top: 4px; }
+.event-lede {
+  color: var(--lobby-color-text-secondary);
+  font-size: 1.05rem;
+}
+.event-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin: 18px 0;
+}
+.event-facts dt {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lobby-color-text-tertiary);
+}
+.event-facts dd {
+  margin: 2px 0 0;
+  color: var(--lobby-color-text-primary);
+  font-weight: 600;
+}
+.event-block { margin-bottom: 16px; }
+.event-block h3 {
+  font-size: 0.95rem;
+  margin: 0 0 4px;
+  color: var(--lobby-color-accent-default);
+}
+.event-block p { margin: 0; }
+.event-cta {
+  font-family: var(--lobby-font-display), Georgia, serif;
+  font-size: 1.25rem;
+  margin: 18px 0 8px;
+  color: var(--lobby-color-text-primary);
+}
+.event-preview-actions { margin-top: 14px; }
+
 /* Stampare il poster stampava anche la barra laterale, cioè vanificava
    l'unico scopo della pagina. */
 @media print {
   .shell { display: block; }
-  .sidebar, .nav, .row-actions, .btn { display: none !important; }
+  .sidebar, .nav, .row-actions, .btn, .event-preview-actions { display: none !important; }
   .main { padding: 0; max-width: none; }
   html, body { background: #fff; color: #000; }
-  .poster {
+  .ingresso-grid { display: block; }
+  .poster, .event-preview-card {
     border-color: #000;
     background: #fff;
     color: #000;
     max-width: none;
-    margin: 0 auto;
+    margin: 0 auto 24px;
     page-break-inside: avoid;
   }
-  .poster h2, .poster p, .poster .muted { color: #000; }
+  .poster h2, .poster p, .poster .muted,
+  .event-preview-card h2, .event-preview-card h3,
+  .event-preview-card p, .event-preview-card .muted,
+  .event-facts dd { color: #000; }
 }

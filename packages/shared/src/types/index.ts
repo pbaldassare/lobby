@@ -32,6 +32,9 @@ export type Venue = {
   id: string;
   name: string;
   city: string;
+  city_place_id?: string | null;
+  city_lat?: number | null;
+  city_lng?: number | null;
   created_at: string;
   updated_at: string;
 };

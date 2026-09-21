@@ -3,6 +3,7 @@ import { requireStaffPage } from '@/lib/auth/staff';
 import { listRoomsForVenues } from '@/lib/data/rooms';
 import { CreateInstanceForm } from '@/components/CreateInstanceForm';
 import { CreateRoomForm } from '@/components/CreateRoomForm';
+import { CityLink } from '@/components/CityLink';
 import { roomWindowLabel } from '@/lib/labels';
 import type { Room, Venue } from '@lobby/shared';
 
@@ -62,7 +63,12 @@ function VenueInstance({ venue, rooms }: { venue: Venue; rooms: Room[] }) {
     <div className="panel">
       <div className="section-header">
         <h2>{venue.name}</h2>
-        <span className="muted">{venue.city}</span>
+        <CityLink
+          city={venue.city}
+          placeId={venue.city_place_id}
+          lat={venue.city_lat}
+          lng={venue.city_lng}
+        />
       </div>
       {rooms.length === 0 ? (
         <p className="muted">Nessuna stanza. Aggiungine una per avere il QR.</p>

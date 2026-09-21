@@ -23,6 +23,9 @@ export const demoVenue: Venue = {
   id: DEMO_VENUE_ID,
   name: 'Soho House',
   city: 'Milan',
+  city_place_id: null,
+  city_lat: null,
+  city_lng: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
