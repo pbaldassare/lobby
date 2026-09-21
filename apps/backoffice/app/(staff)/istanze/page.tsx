@@ -28,7 +28,7 @@ export default async function IstanzePage() {
   return (
     <>
       <p className="kicker">Locale e stanza</p>
-      <h1>Istanze</h1>
+      <h1>Stanze</h1>
       <p>
         Un locale, una stanza, un QR all’ingresso. Chi è in lista entra da lì;
         fuori dalla stanza non esiste.
@@ -41,7 +41,7 @@ export default async function IstanzePage() {
       {staff.venues.length === 0 ? (
         <div className="panel">
           <p className="muted" style={{ margin: 0 }}>
-            Nessun locale in carico. Crea la prima istanza qui sopra.
+            Nessun locale in carico. Crea la prima stanza qui sopra.
           </p>
         </div>
       ) : (

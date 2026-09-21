@@ -18,7 +18,7 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: 'Lobby back-office',
-  description: 'Console staff — istanze, QR all’ingresso, registrati, risultati',
+  description: 'Console staff — stanze, QR all’ingresso, registrati, risultati',
 };
 
 export default function RootLayout({

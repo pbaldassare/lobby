@@ -50,7 +50,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
 
       {!venue ? (
         <div className="panel">
-          <p className="muted">Crea un’istanza per vedere i risultati.</p>
+          <p className="muted">Crea una stanza per vedere i risultati.</p>
         </div>
       ) : (
         <>

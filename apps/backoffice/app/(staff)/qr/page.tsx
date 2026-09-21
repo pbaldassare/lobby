@@ -59,8 +59,8 @@ export default async function QrPage({ searchParams }: Props) {
         <div className="panel">
           <p className="muted">
             {venue
-              ? 'Questo locale non ha ancora stanze. Creane una in Istanze.'
-              : 'Crea un’istanza per avere il QR all’ingresso.'}
+              ? 'Questo locale non ha ancora stanze. Creane una in Stanze.'
+              : 'Crea una stanza per avere il QR all’ingresso.'}
           </p>
         </div>
       ) : (

@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { requireStaffPage } from '@/lib/auth/staff';
 import { roleLabel } from '@/lib/labels';
+import { BrandMark } from '@/components/BrandMark';
 import { StaffNav } from '@/components/StaffNav';
 import { SignOutButton } from '@/components/SignOutButton';
 
@@ -15,7 +16,7 @@ export default async function StaffLayout({
     <div className="shell">
       <aside className="sidebar">
         <div>
-          <div className="brand">Lobby</div>
+          <BrandMark compact />
           <p className="muted" style={{ marginTop: 8 }}>
             {staff.profile.display_name ?? 'Staff'} ·{' '}
             <span className="badge badge-gold">

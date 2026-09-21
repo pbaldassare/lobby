@@ -52,11 +52,11 @@ export async function createInstanceAction(
     if (error) return { ok: false, error: error.message };
     const row = Array.isArray(data) ? data[0] : data;
     if (!row || typeof row !== 'object') {
-      return { ok: false, error: 'Istanza non creata.' };
+      return { ok: false, error: 'Stanza non creata.' };
     }
     const created = row as { venue_id?: string; room_id?: string };
     if (!created.venue_id || !created.room_id) {
-      return { ok: false, error: 'Istanza non creata.' };
+      return { ok: false, error: 'Stanza non creata.' };
     }
     venueId = created.venue_id;
     roomId = created.room_id;
@@ -69,7 +69,7 @@ export async function createInstanceAction(
   }
 
   if (!venueId || !roomId) {
-    return { ok: false, error: 'Istanza non creata.' };
+    return { ok: false, error: 'Stanza non creata.' };
   }
   revalidatePath('/', 'layout');
   revalidatePath('/istanze');

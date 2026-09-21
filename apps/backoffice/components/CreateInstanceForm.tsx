@@ -16,13 +16,13 @@ export function CreateInstanceForm() {
 
   return (
     <form action={formAction} className="panel">
-      <h2>Nuova istanza</h2>
+      <h2>Nuova stanza</h2>
       <p className="muted">
         Un locale, una stanza, un QR all’ingresso. Chi è in lista entra da lì.
       </p>
       {state && !state.ok ? <div className="error">{state.error}</div> : null}
       {state && state.ok ? (
-        <p className="muted">Istanza creata. Il QR è nella sezione QR.</p>
+        <p className="muted">Stanza creata. Il QR è nella sezione QR.</p>
       ) : null}
       <div className="field">
         <label htmlFor="venue_name">Nome del locale</label>
@@ -50,7 +50,7 @@ export function CreateInstanceForm() {
         name="create_instance"
         disabled={pending}
       >
-        {pending ? 'Creo…' : 'Crea istanza'}
+        {pending ? 'Creo…' : 'Crea stanza'}
       </button>
     </form>
   );
