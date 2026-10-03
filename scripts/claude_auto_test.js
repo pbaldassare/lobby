@@ -87,6 +87,17 @@ async function waitFor(locator, what, timeout = 15000) {
   while (Date.now() < end) {
     const el = await topmost(locator);
     if (el) return el;
+    // Può essere sotto la piega: una persona scorrerebbe.
+    const n = await locator.count();
+    for (let i = 0; i < n; i++) {
+      const candidate = locator.nth(i);
+      if (!(await candidate.isVisible().catch(() => false))) continue;
+      await candidate
+        .evaluate((node) => node.scrollIntoView({ block: 'center' }))
+        .catch(() => undefined);
+      const found = await topmost(locator);
+      if (found) return found;
+    }
     await page.waitForTimeout(200);
   }
   throw new Error(`non trovato in primo piano: ${what}`);
@@ -156,7 +167,21 @@ async function step(id, title, fn, { shot = true } = {}) {
   console.log(`${mark} ${id} — ${title}${rec.notes.length ? ` · ${rec.notes.join(' · ')}` : ''}`);
 }
 
+/**
+ * Senza la modalità dimostrativa l'app parla con il database vero, e questo
+ * script creerebbe un account reale. Meglio fermarsi che scoprirlo dopo.
+ * La dimostrazione si attiva con EXPO_PUBLIC_DEMO=1 in apps/mobile/.env.local.
+ */
+async function requireDemo() {
+  if (await topmost(byText('Entra (dimostrativo)'))) return;
+  console.error(
+    'FERMO: l’app non è in modalità dimostrativa. Imposta EXPO_PUBLIC_DEMO=1 in apps/mobile/.env.local e riavvia il server.',
+  );
+  process.exit(2);
+}
+
 async function fillLogin() {
+  await requireDemo();
   await page.getByPlaceholder('nome@esempio.it').fill(DEMO_EMAIL);
   await page.getByPlaceholder('La tua password').fill(DEMO_PASSWORD);
 }
@@ -178,7 +203,7 @@ async function run() {
   await step('01_benvenuto', 'Benvenuto', async (rec) => {
     // Il primo bundle di Metro può richiedere qualche minuto.
     await page.goto(MOBILE, { waitUntil: 'domcontentloaded', timeout: 300000 });
-    await see('LOBBY', 300000);
+    await see('Accedi o iscriviti', 300000);
     await see('Entra (dimostrativo)');
     rec.notes.push('modalità dimostrativa attiva');
   });
@@ -189,8 +214,7 @@ async function run() {
   });
 
   await step('03_dopo_registrazione', 'Dopo la registrazione', async (rec) => {
-    await tap('Non hai un account? Creane uno');
-    await see('La stanza');
+    await tap('Crea un account con email');
     await see('Sei qui, ma nessuno ti vede');
     rec.notes.push('in demo si entra subito nella stanza dimostrativa, invisibili');
   });
@@ -238,7 +262,7 @@ async function run() {
     await see('Come rompere il ghiaccio');
     await tap('Manda un signal');
     // Anche in dimostrazione il pulsante deve dire che cosa è successo.
-    await see('Signal non inviato. In dimostrazione i signal non partono davvero.');
+    await see('Signal non inviato. Modalità dimostrativa: i signal non partono.');
     rec.notes.push('in demo il signal non parte, e la scheda lo dice');
   });
 
@@ -250,7 +274,7 @@ async function run() {
     }
     if (!(await gone('Manda un signal'))) throw new Error('la scheda non si chiude');
     await tab('/matches');
-    await see('Affinità');
+    await see('Costruite su cosa offri, cosa cerchi e cosa stai facendo. Non è un elenco pubblico.');
     await see('Mia Chen');
     rec.notes.push('scheda persona chiusa correttamente');
   });
@@ -264,7 +288,7 @@ async function run() {
     await tab('/card');
     await see('La tua card');
     await see('Mostra il QR');
-    await see(/Socio verificato/);
+    await see('Sigillo');
   });
 
   await step('12_qr', 'QR da mostrare', async (rec) => {
@@ -277,7 +301,7 @@ async function run() {
   await step('13_modifica_profilo', 'Modifica profilo', async () => {
     await tap('Chiudi');
     await see('La tua card');
-    await tap('Modifica profilo');
+    await tap('Modifica');
     const field = page.getByPlaceholder('Su cosa stai lavorando adesso');
     await field.waitFor();
     await field.fill('Test automatico: profilo modificato da Playwright.');
@@ -310,6 +334,7 @@ async function run() {
     await appBack();
     await tap('Scansiona un QR');
     const found = await Promise.race([
+      see('Entra con il link', 8000).then(() => 'incolla il link (web)'),
       see('Serve la fotocamera', 8000).then(() => 'richiesta permesso'),
       see('Inquadra il QR del locale', 8000).then(() => 'mirino'),
     ]).catch(() => null);
@@ -399,7 +424,7 @@ async function run() {
 
   await step('26_tema_scuro_benvenuto', 'Tema scuro — benvenuto', async (rec) => {
     await page.goto(MOBILE, { waitUntil: 'domcontentloaded', timeout: 120000 });
-    await see('LOBBY', 120000);
+    await see('Accedi o iscriviti', 120000);
     const bg = await page.evaluate(() => {
       let el = document.elementFromPoint(5, 5);
       while (el) {
@@ -409,7 +434,9 @@ async function run() {
       }
       return null;
     });
-    if (bg !== 'rgb(14, 13, 12)') throw new Error(`fondo ${bg}: il tema scuro non è applicato`);
+    // Non un colore preciso (il tema può cambiare): basta che il fondo sia scuro.
+    const [r, g, b] = (bg || '').match(/\d+/g)?.map(Number) ?? [255, 255, 255];
+    if (r + g + b > 150) throw new Error(`fondo ${bg}: il tema scuro non è applicato`);
     rec.notes.push(`sfondo calcolato: ${bg}`);
   });
 

@@ -58,6 +58,7 @@ export function Field({
         placeholderTextColor={theme.color.text.tertiary}
         style={[
           styles.input,
+          rest.multiline && styles.multiline,
           focused && styles.focused,
           Boolean(error) && styles.invalid,
           inputStyle,
@@ -81,15 +82,16 @@ const useStyles = makeStyles((t) => ({
   root: { gap: 5 },
   input: {
     borderWidth: 1,
-    borderColor: t.color.border.strong,
-    backgroundColor: t.color.bg.sunken,
-    borderRadius: t.radius.sm,
-    paddingHorizontal: 14,
+    borderColor: t.color.border.subtle,
+    backgroundColor: t.color.bg.raised,
+    borderRadius: t.radius.pill,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    minHeight: 46,
+    minHeight: 48,
     color: t.color.text.primary,
     ...t.type.body,
   },
+  multiline: { borderRadius: t.radius.lg, minHeight: 88, paddingTop: 12 },
   focused: { borderColor: t.color.accent.default },
   invalid: { borderColor: t.color.status.danger },
 }));

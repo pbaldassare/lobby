@@ -9,6 +9,16 @@ export type AuthActionResult =
   | { ok: true }
   | { ok: false; error: string };
 
+function staffAuthError(message: string): string {
+  if (/invalid login credentials/i.test(message)) {
+    return 'Email o password non corretti.';
+  }
+  if (/email not confirmed/i.test(message)) {
+    return 'Conferma l’email prima di entrare.';
+  }
+  return 'Accesso non riuscito. Riprova.';
+}
+
 export async function signInWithPassword(
   _prev: AuthActionResult | null,
   formData: FormData,
@@ -16,17 +26,17 @@ export async function signInWithPassword(
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
   if (!email || !password) {
-    return { ok: false, error: 'Servono email e password' };
+    return { ok: false, error: 'Inserisci email e password.' };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: staffAuthError(error.message) };
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: 'Sessione non avviata. Riprova.' };
+  if (!user) return { ok: false, error: 'Sessione non avviata.' };
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -39,12 +49,12 @@ export async function signInWithPassword(
     await supabase.auth.signOut();
     return {
       ok: false,
-      error: 'Accesso negato. Il backoffice è riservato allo staff del venue e agli amministratori.',
+      error: 'Accesso negato. Il back-office è riservato a staff e amministratori del venue.',
     };
   }
 
   revalidatePath('/', 'layout');
-  redirect('/dashboard');
+  redirect('/istanze');
 }
 
 export async function signOut(): Promise<void> {

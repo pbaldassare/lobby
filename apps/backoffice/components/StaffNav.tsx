@@ -4,16 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const LINKS = [
-  { href: '/dashboard', label: 'Panoramica' },
-  { href: '/verify', label: 'Verifica e sigilli' },
-  { href: '/moderation', label: 'Moderazione' },
-  { href: '/poster', label: 'Codice della stanza' },
+  { href: '/istanze', label: 'Istanze' },
+  { href: '/qr', label: 'QR' },
+  { href: '/registrati', label: 'Registrati' },
+  { href: '/risultati', label: 'Risultati' },
 ] as const;
 
 export function StaffNav() {
   const pathname = usePathname();
   return (
-    <nav className="nav" aria-label="Backoffice">
+    <nav className="nav" aria-label="Navigazione back-office">
       {LINKS.map((link) => (
         <Link
           key={link.href}

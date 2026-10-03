@@ -40,6 +40,7 @@ export default function SignalsScreen(): React.JSX.Element {
   return (
     <Screen>
       <ScreenHeader
+        icon="signals"
         title="Signal"
         subtitle="Ci si connette solo se lo vogliono entrambi. La chat resta chiusa fino ad allora."
       />

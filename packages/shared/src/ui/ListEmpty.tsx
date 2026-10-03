@@ -2,7 +2,8 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { makeStyles, useTheme } from '../theme';
-import { Icon, type IconName } from './Icon';
+import { GlyphMark } from './GlyphMark';
+import { type IconName } from './Icon';
 import { Text } from './Text';
 
 /**
@@ -33,7 +34,7 @@ export function ListEmpty({
       {loading ? (
         <ActivityIndicator color={theme.color.accent.default} />
       ) : icon ? (
-        <Icon name={icon} size={26} color={theme.color.text.tertiary} />
+        <GlyphMark name={icon} size={56} />
       ) : null}
       <Text variant="bodyStrong" style={styles.center}>
         {title}
@@ -49,6 +50,6 @@ export function ListEmpty({
 }
 
 const useStyles = makeStyles(() => ({
-  root: { alignItems: 'center', gap: 8, paddingVertical: 32, paddingHorizontal: 16 },
+  root: { alignItems: 'center', gap: 10, paddingVertical: 36, paddingHorizontal: 20 },
   center: { textAlign: 'center' },
 }));

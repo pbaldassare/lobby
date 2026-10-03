@@ -38,17 +38,17 @@ export async function issueSealAction(
       .maybeSingle();
 
     if (memErr || !membership) {
-      return { ok: false, error: memErr?.message ?? 'Iscrizione non trovata per questo venue' };
+      return { ok: false, error: memErr?.message ?? 'Membership non trovata per questo venue.' };
     }
 
     if ((membership as Membership).verified_status === 'revoked') {
-      return { ok: false, error: 'Non si può dare il sigillo a un\'iscrizione revocata' };
+      return { ok: false, error: 'Non si può sigillare una membership revocata.' };
     }
 
     const viaEdge = await callIssueSealEdge(input.membership_id);
     if (viaEdge) {
-      revalidatePath('/verify');
-      revalidatePath('/dashboard');
+      revalidatePath('/registrati');
+      revalidatePath('/risultati');
       return viaEdge;
     }
 
@@ -58,8 +58,8 @@ export async function issueSealAction(
     });
 
     if (!rpcErr && rpcMembership) {
-      revalidatePath('/verify');
-      revalidatePath('/dashboard');
+      revalidatePath('/registrati');
+      revalidatePath('/risultati');
       return { ok: true, membership: rpcMembership as Membership };
     }
 
@@ -82,18 +82,18 @@ export async function issueSealAction(
         error:
           rpcErr?.message ??
           updErr?.message ??
-          'Non riesco a rilasciare il sigillo',
+          'Rilascio del sigillo non riuscito',
       };
     }
 
-    revalidatePath('/verify');
-    revalidatePath('/dashboard');
+    revalidatePath('/registrati');
+    revalidatePath('/risultati');
     return { ok: true, membership: updated as Membership };
   } catch (err) {
     if (err instanceof StaffAuthError) return { ok: false, error: err.message };
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Errore imprevisto nel rilascio del sigillo',
+      error: err instanceof Error ? err.message : 'Errore imprevisto sul sigillo',
     };
   }
 }
@@ -118,10 +118,10 @@ export async function rejectMembershipAction(input: {
       .single();
 
     if (error || !updated) {
-      return { ok: false, error: error?.message ?? 'Non riesco a rifiutare l\'iscrizione' };
+      return { ok: false, error: error?.message ?? 'Rifiuto non riuscito' };
     }
-    revalidatePath('/verify');
-    revalidatePath('/dashboard');
+    revalidatePath('/registrati');
+    revalidatePath('/risultati');
     return { ok: true, membership: updated as Membership };
   } catch (err) {
     if (err instanceof StaffAuthError) return { ok: false, error: err.message };
@@ -143,7 +143,7 @@ async function callIssueSealEdge(
     } = await supabase.auth.getSession();
 
     if (!session?.access_token) {
-      return { ok: false, error: 'Sessione mancante: accedi di nuovo' };
+      return { ok: false, error: 'Sessione mancante per il rilascio del sigillo' };
     }
 
     const res = await fetch(url, {
@@ -168,7 +168,7 @@ async function callIssueSealEdge(
         error:
           typeof body === 'object' && body && 'error' in body && typeof body.error === 'string'
             ? body.error
-            : `issue-seal failed (${res.status})`,
+            : `Rilascio sigillo non riuscito (${res.status})`,
       };
     }
 

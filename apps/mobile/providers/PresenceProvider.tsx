@@ -8,21 +8,34 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 
 import { createDemoPresence, DEMO_ROOM_ID, demoMemory, demoRoom } from '@/lib/demo';
+import { lobbyUserError } from '@/lib/errors';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 
 const HEARTBEAT_MS = 30_000;
+
+/** Come dimostri di poter stare in una stanza. Tutti i canali rilasciano
+ *  lo stesso permesso: cambia solo la prova. */
+export type EnterRoomAccess = {
+  code?: string;
+  wifi?: string;
+  claimEmail?: boolean;
+  claimMembership?: boolean;
+};
 
 type PresenceContextValue = {
   room: Room | null;
   presence: Presence | null;
   isVisible: boolean;
   loading: boolean;
-  /** Il codice arriva dal QR: senza, il server non rilascia il permesso
-   *  e la presenza non si può nemmeno scrivere. */
-  enterRoom: (roomId: string, code?: string) => Promise<{ error: string | null }>;
+  enterRoom: (
+    roomId: string,
+    access?: EnterRoomAccess,
+  ) => Promise<{ error: string | null }>;
+  inviteToRoom: (guestId: string) => Promise<{ error: string | null }>;
   leaveRoom: () => Promise<{ error: string | null }>;
   setVisible: (visible: boolean) => Promise<{ error: string | null }>;
 };
@@ -47,7 +60,11 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     clearHeartbeat();
     if (isDemo || !user) return;
     heartbeatRef.current = setInterval(() => {
-      void getSupabase().rpc('heartbeat_presence');
+      void getSupabase()
+        .rpc('heartbeat_presence')
+        .then(({ data }) => {
+          if (data) setPresence(data as Presence);
+        });
     }, HEARTBEAT_MS);
   }, [clearHeartbeat, isDemo, user]);
 
@@ -92,7 +109,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
       if (row?.room_id) {
         const { data: roomRow } = await getSupabase()
           .from('rooms')
-          .select('*')
+          .select('id, venue_id, name, created_at, opens_at, closes_at')
           .eq('id', row.room_id)
           .maybeSingle();
         if (!cancelled) {
@@ -110,8 +127,18 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
 
   useEffect(() => () => clearHeartbeat(), [clearHeartbeat]);
 
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') clearHeartbeat();
+      else if (presence?.is_visible) startHeartbeat();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [presence?.is_visible, clearHeartbeat, startHeartbeat]);
+
   const enterRoom = useCallback(
-    async (roomId: string, code?: string) => {
+    async (roomId: string, access?: EnterRoomAccess) => {
       if (!user) return { error: "Non hai fatto l'accesso" };
       if (isDemo) {
         setDemo({ ...demoRoom, id: roomId || DEMO_ROOM_ID }, createDemoPresence(false));
@@ -121,15 +148,32 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
       // Prima il permesso, poi la presenza. Senza un permesso valido la
       // policy di inserimento rifiuta la riga: entrare non è più una cosa
       // che il client può dichiarare da sé.
-      if (code) {
-        const { error: passError } = await getSupabase().rpc('redeem_room_code', {
+      const client = getSupabase();
+      if (access?.code) {
+        const { error: passError } = await client.rpc('redeem_room_code', {
           p_room_id: roomId,
-          p_code: code,
+          p_code: access.code,
         });
-        if (passError) return { error: passError.message };
+        if (passError) return { error: lobbyUserError(passError.message) };
+      } else if (access?.wifi) {
+        const { error: passError } = await client.rpc('claim_room_by_wifi', {
+          p_room_id: roomId,
+          p_network: access.wifi,
+        });
+        if (passError) return { error: lobbyUserError(passError.message) };
+      } else if (access?.claimEmail) {
+        const { error: passError } = await client.rpc('claim_room_by_email', {
+          p_room_id: roomId,
+        });
+        if (passError) return { error: lobbyUserError(passError.message) };
+      } else if (access?.claimMembership) {
+        const { error: passError } = await client.rpc('claim_room_by_membership', {
+          p_room_id: roomId,
+        });
+        if (passError) return { error: lobbyUserError(passError.message) };
       }
 
-      const { data, error } = await getSupabase()
+      const { data, error } = await client
         .from('presence')
         .upsert(
           {
@@ -147,15 +191,13 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
       if (error) {
         // Il messaggio grezzo del database non dice nulla a chi è sulla porta.
         return {
-          error: /row-level security|violates/i.test(error.message)
-            ? 'Serve un codice valido per entrare in questa stanza.'
-            : error.message,
+          error: lobbyUserError(error.message) ?? error.message,
         };
       }
       setPresence(data as Presence);
-      const { data: roomRow } = await getSupabase()
+      const { data: roomRow } = await client
         .from('rooms')
-        .select('*')
+        .select('id, venue_id, name, created_at, opens_at, closes_at')
         .eq('id', roomId)
         .maybeSingle();
       setRoom((roomRow as Room | null) ?? null);
@@ -165,8 +207,22 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     [user, isDemo, clearHeartbeat, setDemo],
   );
 
+  const inviteToRoom = useCallback(
+    async (guestId: string) => {
+      if (!user) return { error: "Non hai fatto l'accesso" };
+      if (!presence?.room_id) return { error: 'Entra in una stanza prima di invitare.' };
+      if (isDemo) return { error: null };
+      const { error } = await getSupabase().rpc('invite_to_room', {
+        p_room_id: presence.room_id,
+        p_guest_id: guestId,
+      });
+      return { error: lobbyUserError(error?.message) };
+    },
+    [user, isDemo, presence?.room_id],
+  );
+
   const leaveRoom = useCallback(async () => {
-    if (!user) return { error: "Non hai fatto l'accesso" };
+    if (!user) return { error: 'Non hai fatto l’accesso' };
     if (isDemo) {
       setDemo(null, null);
       return { error: null };
@@ -175,13 +231,13 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     const { error } = await getSupabase().from('presence').delete().eq('profile_id', user.id);
     setPresence(null);
     setRoom(null);
-    return { error: error?.message ?? null };
+    return { error: lobbyUserError(error?.message) };
   }, [user, isDemo, clearHeartbeat, setDemo]);
 
   const setVisible = useCallback(
     async (visible: boolean) => {
-      if (!user) return { error: "Non hai fatto l'accesso" };
-      if (!presence) return { error: 'Prima entra in una stanza' };
+      if (!user) return { error: 'Non hai fatto l’accesso' };
+      if (!presence) return { error: 'Entra in una stanza prima.' };
       if (isDemo) {
         setDemo(room, createDemoPresence(visible));
         return { error: null };
@@ -204,7 +260,8 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
           .eq('profile_id', user.id)
           .select('*')
           .maybeSingle();
-        if (updateError) return { error: updateError.message };
+        if (updateError) return { error: lobbyUserError(updateError.message) ?? updateError.message };
+        if (!updated) return { error: 'Serve un permesso valido per apparire in stanza.' };
         setPresence(updated as Presence);
       } else {
         setPresence(data as Presence);
@@ -223,10 +280,11 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
       isVisible: presence?.is_visible ?? false,
       loading,
       enterRoom,
+      inviteToRoom,
       leaveRoom,
       setVisible,
     }),
-    [room, presence, loading, enterRoom, leaveRoom, setVisible],
+    [room, presence, loading, enterRoom, inviteToRoom, leaveRoom, setVisible],
   );
 
   return <PresenceContext.Provider value={value}>{children}</PresenceContext.Provider>;

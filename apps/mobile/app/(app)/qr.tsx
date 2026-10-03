@@ -6,6 +6,7 @@ import { View } from 'react-native';
 
 import { QrCard } from '@/components/QrCard';
 import { useMemberships } from '@/hooks/useMemberships';
+import { memberCardUrl } from '@/lib/join';
 import { useAuth } from '@/providers/AuthProvider';
 
 /**
@@ -33,7 +34,7 @@ export default function QrScreen(): React.JSX.Element {
           </Text>
         ) : null}
 
-        <QrCard value={`lobby://member/${profile?.id ?? 'unknown'}`} size={210} />
+        <QrCard value={memberCardUrl(profile?.id ?? 'unknown')} size={210} />
 
         {sealed?.venue ? (
           <VerifiedBadge

@@ -10,12 +10,21 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 
+import { signInWithNativeApple } from '@/lib/appleAuth';
 import { demoMemory, demoProfile } from '@/lib/demo';
 import { isEnvConfigured } from '@/lib/env';
+import { lobbyUserError } from '@/lib/errors';
+import { type AuthActionResult, type SocialProvider } from '@/lib/oauth';
+import { completeNativeOAuthRedirect } from '@/lib/oauthSession';
 import { getSupabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
+
+function publicAuthError(message: string | undefined): string | null {
+  return lobbyUserError(message);
+}
 
 type AuthContextValue = {
   session: Session | null;
@@ -23,9 +32,9 @@ type AuthContextValue = {
   profile: Profile | null;
   loading: boolean;
   isDemo: boolean;
-  signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUpWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
-  signInWithOAuth: (provider: 'google' | 'linkedin_oidc') => Promise<{ error: string | null }>;
+  signInWithEmail: (email: string, password: string) => Promise<AuthActionResult>;
+  signUpWithEmail: (email: string, password: string) => Promise<AuthActionResult>;
+  signInWithOAuth: (provider: SocialProvider) => Promise<AuthActionResult>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateProfile: (
@@ -98,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         return { error: null };
       }
       const { error } = await getSupabase().auth.signInWithPassword({ email, password });
-      return { error: error?.message ?? null };
+      return { error: publicAuthError(error?.message) };
     },
     [isDemo],
   );
@@ -111,36 +120,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         return { error: null };
       }
       const { error } = await getSupabase().auth.signUp({ email, password });
-      return { error: error?.message ?? null };
+      return { error: publicAuthError(error?.message) };
     },
     [isDemo],
   );
 
   const signInWithOAuth = useCallback(
-    async (provider: 'google' | 'linkedin_oidc') => {
+    async (provider: SocialProvider) => {
       if (isDemo) {
         setDemoSignedIn(true);
         setProfile(demoProfile);
         return { error: null };
       }
-      const redirectTo = Linking.createURL('auth/callback');
+      if (provider === 'apple') {
+        const native = await signInWithNativeApple();
+        if (native === 'ok') return { error: null };
+        if (native === 'canceled') return { error: null, skipped: true };
+        if (native !== 'unavailable') return { error: publicAuthError(native.error) };
+      }
+      const redirectTo =
+        Platform.OS === 'web' && typeof window !== 'undefined'
+          ? `${window.location.origin}/auth/callback`
+          : Linking.createURL('auth/callback');
+      if (Platform.OS === 'web') {
+        const { error } = await getSupabase().auth.signInWithOAuth({
+          provider,
+          options: { redirectTo, skipBrowserRedirect: false },
+        });
+        return { error: publicAuthError(error?.message) };
+      }
       const { data, error } = await getSupabase().auth.signInWithOAuth({
         provider,
         options: { redirectTo, skipBrowserRedirect: true },
       });
-      if (error) return { error: error.message };
-      if (!data.url) return { error: 'Il provider non ha risposto. Riprova.' };
+      if (error) return { error: publicAuthError(error.message) };
+      if (!data.url) return { error: 'Il provider non ha restituito un indirizzo di accesso.' };
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
       if (result.type !== 'success' || !result.url) {
-        return { error: result.type === 'cancel' ? null : 'Accesso annullato' };
+        return result.type === 'cancel' || result.type === 'dismiss'
+          ? { error: null, skipped: true }
+          : { error: 'Accesso interrotto.' };
       }
-      const url = Linking.parse(result.url);
-      const code = typeof url.queryParams?.code === 'string' ? url.queryParams.code : null;
-      if (code) {
-        const { error: exchangeError } = await getSupabase().auth.exchangeCodeForSession(code);
-        return { error: exchangeError?.message ?? null };
-      }
-      return { error: null };
+      const completed = await completeNativeOAuthRedirect(result.url);
+      return { error: publicAuthError(completed.error ?? undefined), skipped: completed.skipped };
     },
     [isDemo],
   );
@@ -171,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         return { error: null };
       }
       const userId = session?.user?.id;
-      if (!userId) return { error: "Non hai fatto l'accesso" };
+      if (!userId) return { error: 'Not signed in' };
       const { data, error } = await getSupabase()
         .from('profiles')
         .update(patch)

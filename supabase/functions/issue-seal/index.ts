@@ -37,6 +37,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const userClient = createClient(supabaseUrl, anonKey, {
+      db: { schema: "lobby" },
       global: { headers: { Authorization: authHeader } },
       auth: { persistSession: false, autoRefreshToken: false },
     });
@@ -56,6 +57,7 @@ Deno.serve(async (req: Request) => {
 
     // Privileged path: service_role only (never shipped to clients)
     const admin = createClient(supabaseUrl, serviceKey, {
+      db: { schema: "lobby" },
       auth: { persistSession: false, autoRefreshToken: false },
     });
 

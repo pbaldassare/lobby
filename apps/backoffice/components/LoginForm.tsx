@@ -32,7 +32,7 @@ export function LoginForm() {
         />
       </div>
       <button className="btn btn-gold" type="submit" disabled={pending}>
-        {pending ? 'Accesso…' : 'Accedi'}
+        {pending ? 'Accesso in corso…' : 'Accedi'}
       </button>
     </form>
   );

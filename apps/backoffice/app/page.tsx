@@ -3,5 +3,5 @@ import { getStaffContext } from '@/lib/auth/staff';
 
 export default async function HomePage() {
   const staff = await getStaffContext();
-  redirect(staff ? '/dashboard' : '/login');
+  redirect(staff ? '/istanze' : '/login');
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import type { Venue } from '@lobby/shared';
 
@@ -13,15 +14,15 @@ export function VenuePicker({ venues, selectedId }: Props) {
   if (venues.length === 0) {
     return (
       <p className="muted">
-        Nessun venue assegnato. Chiedi a un amministratore di aggiungerti a{' '}
-        <code>venue_staff</code>.
+        Nessun locale.{' '}
+        <Link href="/istanze">Crea un’istanza</Link> per partire.
       </p>
     );
   }
 
   return (
     <div className="field" style={{ maxWidth: 320, marginBottom: 20 }}>
-      <label htmlFor="venue">Venue</label>
+      <label htmlFor="venue">Locale</label>
       <select
         id="venue"
         value={selectedId ?? ''}

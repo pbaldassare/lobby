@@ -71,8 +71,9 @@ export default function MatchesScreen(): React.JSX.Element {
         ListHeaderComponent={
           <View style={styles.header}>
             <ScreenHeader
-              title="Affinità"
-              subtitle="Costruite su cosa offri, cosa cerchi e cosa stai facendo — con il motivo scritto. Non è un elenco pubblico."
+              icon="matches"
+              title="Match"
+              subtitle="Costruite su cosa offri, cosa cerchi e cosa stai facendo. Non è un elenco pubblico."
             />
           </View>
         }
@@ -82,8 +83,8 @@ export default function MatchesScreen(): React.JSX.Element {
           ) : (
             <ListEmpty
               icon="matches"
-              title="Ancora nessuna affinità"
-              body="Renditi visibile in una stanza e tieni aggiornato cosa offri e cosa cerchi."
+              title="Ancora nessun match"
+              body="Renditi visibile in una stanza e tieni aggiornato cosa offri e cosa cerchi. La connessione resta solo per consenso reciproco."
             />
           )
         }

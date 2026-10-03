@@ -8,22 +8,34 @@ import { getMobileEnv } from './env';
 
 const memoryStore = new Map<string, string>();
 
-const ExpoSecureStoreAdapter = {
+function webStorage(): Storage | null {
+  try {
+    if (typeof globalThis.localStorage === 'undefined') return null;
+    return globalThis.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+const AuthStorageAdapter = {
   getItem: async (key: string): Promise<string | null> => {
     if (Platform.OS === 'web') {
-      return memoryStore.get(key) ?? null;
+      return webStorage()?.getItem(key) ?? memoryStore.get(key) ?? null;
     }
     return SecureStore.getItemAsync(key);
   },
   setItem: async (key: string, value: string): Promise<void> => {
     if (Platform.OS === 'web') {
-      memoryStore.set(key, value);
+      const storage = webStorage();
+      if (storage) storage.setItem(key, value);
+      else memoryStore.set(key, value);
       return;
     }
     await SecureStore.setItemAsync(key, value);
   },
   removeItem: async (key: string): Promise<void> => {
     if (Platform.OS === 'web') {
+      webStorage()?.removeItem(key);
       memoryStore.delete(key);
       return;
     }
@@ -38,11 +50,17 @@ export function getSupabase(): SupabaseClient {
 
   const { supabaseUrl, supabaseAnonKey } = getMobileEnv();
   client = createLobbySupabaseClient({
-    url: supabaseUrl || 'https://placeholder.supabase.co',
-    anonKey: supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder',
-    authStorage: ExpoSecureStoreAdapter,
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
+    authStorage: AuthStorageAdapter,
+    detectSessionInUrl: Platform.OS === 'web',
   });
   return client;
+}
+
+/** On web, construct the client immediately so PKCE can read `?code=` before the router strips it. */
+if (Platform.OS === 'web') {
+  getSupabase();
 }
 
 /** Prefer Edge Functions for privileged ops. Never service_role on device. */

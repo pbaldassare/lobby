@@ -12,3 +12,12 @@ export function createAdminClient() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
+
+/** Null when SERVICE_ROLE is not configured (local/dev). Never throw at import. */
+export function tryCreateAdminClient() {
+  try {
+    return createAdminClient();
+  } catch {
+    return null;
+  }
+}

@@ -17,8 +17,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: 'Lobby Backoffice',
-  description: 'Console per lo staff del venue — sigilli, presenze, moderazione',
+  title: 'Lobby back-office',
+  description: 'Console staff — istanze, QR all’ingresso, registrati, risultati',
 };
 
 export default function RootLayout({

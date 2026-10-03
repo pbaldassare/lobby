@@ -29,7 +29,7 @@ export function IssueSealButton({ membershipId, venueId }: Props) {
           });
         }}
       >
-        {pending ? 'Rilascio…' : 'Verifica e rilascia il sigillo'}
+        {pending ? 'Rilascio…' : 'Verifica e rilascia sigillo'}
       </button>
       <button
         type="button"

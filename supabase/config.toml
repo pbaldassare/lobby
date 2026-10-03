@@ -1,12 +1,13 @@
 # Lobby — Supabase local/CLI config
-# Remote project: kxgaqnksylntokyrpaxp (https://kxgaqnksylntokyrpaxp.supabase.co)
+# Remote: mjzjracjadlybvdttgto (https://mjzjracjadlybvdttgto.supabase.co)
+# Shared with Mediplan (`public`) and Rank AI (`rankai`). Lobby lives in `lobby`.
 
-project_id = "kxgaqnksylntokyrpaxp"
+project_id = "mjzjracjadlybvdttgto"
 
 [api]
 enabled = true
 port = 54321
-schemas = ["public", "graphql_public"]
+schemas = ["public", "graphql_public", "lobby"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
@@ -21,7 +22,11 @@ port = 54323
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["http://localhost:8081", "exp://127.0.0.1:8081"]
+additional_redirect_urls = [
+  "http://localhost:8081",
+  "exp://127.0.0.1:8081",
+  "lobby://**",
+]
 enable_signup = true
 
 [auth.email]

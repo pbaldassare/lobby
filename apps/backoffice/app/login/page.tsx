@@ -8,12 +8,14 @@ export default async function LoginPage({ searchParams }: Props) {
   const params = await searchParams;
   const errorMessage =
     params.error === 'forbidden'
-      ? 'Accesso negato. Nel backoffice entrano solo lo staff del venue e gli amministratori.'
+      ? 'Accesso negato. Solo staff e amministratori del venue possono entrare.'
       : params.error === 'config'
-        ? 'Manca NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY.'
-        : params.error
-          ? params.error
-          : null;
+        ? 'Manca la configurazione Supabase del back-office.'
+        : params.error === 'auth_callback'
+          ? 'Accesso non completato. Riprova.'
+          : params.error
+            ? params.error
+            : null;
 
   return (
     <div className="login-wrap">
@@ -21,11 +23,11 @@ export default async function LoginPage({ searchParams }: Props) {
         <div className="brand" style={{ marginBottom: 8 }}>
           Lobby
         </div>
-        <p className="kicker">Backoffice del venue</p>
+        <p className="kicker">Back-office del venue</p>
         <h1>Accesso staff</h1>
         <p>
-          I soci non entrano qui. Accedi con un account staff o
-          amministratore del tuo venue.
+          I membri non possono entrare in questa console. Accedi con un account
+          staff o amministratore del tuo venue.
         </p>
         {errorMessage ? <div className="error">{errorMessage}</div> : null}
         <LoginForm />

@@ -5,12 +5,18 @@
   "scripts": {
     "dev": "next dev --port 3000",
     "build": "next build",
+    "cf:build": "opennextjs-cloudflare build && node ../../scripts/cf-pages-stage.mjs",
     "start": "next start --port 3000",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "npm run cf:build && wrangler pages deploy .pages-dist --project-name lobby",
+    "upload": "npm run cf:build && wrangler pages deploy .pages-dist --project-name lobby",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@lobby/shared": "*",
+    "@opennextjs/cloudflare": "^1.20.6",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.53.0",
     "next": "^16.2.12",
@@ -24,6 +30,7 @@
     "@types/react": "~19.2.2",
     "@types/react-dom": "~19.2.2",
     "eslint-config-next": "^16.3.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "wrangler": "^4.131.1"
   }
 }

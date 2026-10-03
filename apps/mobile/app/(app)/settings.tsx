@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
+import { InstallBanner } from '@/components/InstallBanner';
 import { useAuth } from '@/providers/AuthProvider';
 
 /**
@@ -42,6 +43,8 @@ export default function SettingsScreen(): React.JSX.Element {
           richiedono il consenso di entrambi.
         </Text>
       </View>
+
+      <InstallBanner />
 
       <Button
         label="Esci"

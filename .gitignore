@@ -54,8 +54,16 @@ apps/backoffice/out/
 .cache/
 *.tsbuildinfo
 
-# Vercel
-.vercel/
+# Cloudflare / OpenNext / Wrangler
+.open-next/
+.pages-dist/
+.wrangler-prebundle/
+.wrangler-prebundle.jsonc
+.wrangler/
+.dev.vars
+apps/backoffice/.open-next/
+apps/backoffice/.pages-dist/
+apps/backoffice/.wrangler/
 
 # Testing / coverage
 coverage/

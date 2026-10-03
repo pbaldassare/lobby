@@ -30,6 +30,8 @@ export type { IconName } from './Icon';
 
 export { ScreenHeader } from './ScreenHeader';
 
+export { GlyphMark } from './GlyphMark';
+
 export { ListEmpty } from './ListEmpty';
 
 export { Segmented } from './Segmented';

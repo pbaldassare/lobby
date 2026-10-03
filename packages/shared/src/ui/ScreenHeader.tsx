@@ -2,21 +2,21 @@ import React from 'react';
 import { View } from 'react-native';
 
 import { makeStyles } from '../theme';
+import { GlyphMark } from './GlyphMark';
+import { type IconName } from './Icon';
 import { Text } from './Text';
 
 /**
- * Intestazione di schermata: sopratitolo, titolo, sottotitolo, azione a destra.
- *
- * Lo stesso blocco (`header` / `kicker` / `title` / `sub`) era copiaincollato
- * in sei schermate. Per ora lo usa solo la Room; le altre lo adottano quando
- * vengono ridisegnate.
+ * Intestazione di schermata: icona in cerchio, titolo, sottotitolo, azione.
  */
 export function ScreenHeader({
+  icon,
   kicker,
   title,
   subtitle,
   action,
 }: {
+  icon?: IconName;
   kicker?: string;
   title: string;
   subtitle?: string;
@@ -26,6 +26,7 @@ export function ScreenHeader({
 
   return (
     <View style={styles.root}>
+      {icon ? <GlyphMark name={icon} size={42} /> : null}
       <View style={styles.copy}>
         {kicker ? (
           <Text variant="kicker" tone="accent" numberOfLines={1}>
@@ -45,7 +46,7 @@ export function ScreenHeader({
 }
 
 const useStyles = makeStyles(() => ({
-  root: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  copy: { flex: 1, gap: 4 },
+  root: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  copy: { flex: 1, gap: 4, minWidth: 0 },
   action: { paddingTop: 2 },
 }));
