@@ -13,7 +13,7 @@ import React, {
 import { Platform } from 'react-native';
 
 import { signInWithNativeApple } from '@/lib/appleAuth';
-import { demoProfile } from '@/lib/demo';
+import { demoMemory, demoProfile } from '@/lib/demo';
 import { isEnvConfigured } from '@/lib/env';
 import { lobbyUserError } from '@/lib/errors';
 import { type AuthActionResult, type SocialProvider } from '@/lib/oauth';
@@ -49,9 +49,16 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const isDemo = !isEnvConfigured();
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(isDemo ? demoMemory.profile : null);
   const [loading, setLoading] = useState(!isDemo);
-  const [demoSignedIn, setDemoSignedIn] = useState(false);
+  const [demoSignedIn, setDemoSignedIn] = useState(isDemo && demoMemory.signedIn);
+
+  // Vedi `demoMemory`: lo stato dimostrativo deve reggere un rimontaggio.
+  useEffect(() => {
+    if (!isDemo) return;
+    demoMemory.signedIn = demoSignedIn;
+    demoMemory.profile = demoSignedIn ? profile : null;
+  }, [isDemo, demoSignedIn, profile]);
 
   const refreshProfile = useCallback(async () => {
     if (isDemo) {

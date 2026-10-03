@@ -56,5 +56,7 @@ export function Screen({
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   scroll: { flexGrow: 1, paddingBottom: 24 },
-  inner: { flex: 1, gap: 16 },
+  /** Oltre i 560pt le righe diventano illeggibili: su tablet e desktop il
+   *  contenuto resta una colonna al centro. */
+  inner: { flex: 1, gap: 16, width: '100%', maxWidth: 560, alignSelf: 'center' },
 });

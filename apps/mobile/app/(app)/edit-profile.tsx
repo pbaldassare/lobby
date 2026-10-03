@@ -102,7 +102,7 @@ export default function EditProfileScreen(): React.JSX.Element {
 
 const useStyles = makeStyles((t) => ({
   root: { flex: 1, backgroundColor: t.color.bg.canvas },
-  scroll: { padding: 18, gap: 14 },
+  scroll: { padding: 18, gap: 14, width: '100%', maxWidth: 596, alignSelf: 'center' },
   multiline: { minHeight: 92, textAlignVertical: 'top' },
   actions: { gap: 8, marginTop: 6 },
 }));

@@ -9,8 +9,8 @@ import {
   Text,
   VerifiedBadge,
 } from '@lobby/shared/ui';
-import React, { useMemo, useState } from 'react';
-import { Alert, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View } from 'react-native';
 
 import { useBlocks } from '@/hooks/useBlocks';
 import { useSignals } from '@/hooks/useSignals';
@@ -29,6 +29,12 @@ export function ProfileSheet({
   const { sendSignal } = useSignals();
   const { blockProfile, blockCompany } = useBlocks();
   const [busy, setBusy] = useState(false);
+  /** Esito in pagina e non in un `Alert`: sul web `Alert.alert` non mostra
+   *  nulla, e il pulsante sembrava non fare niente. */
+  const [outcome, setOutcome] = useState<{ sent: boolean; text: string } | null>(null);
+  const personId = person?.profile.id;
+
+  useEffect(() => setOutcome(null), [personId, visible]);
 
   const opener = useMemo(
     () => (person ? suggestedOpener(person.match?.reasons ?? [], person.profile.seek) : ''),
@@ -117,24 +123,35 @@ export function ProfileSheet({
 
       <View style={styles.actions}>
         <Button
-          label="Manda un signal"
+          label={outcome?.sent ? 'Signal inviato' : 'Manda un signal'}
           loading={busy}
+          disabled={outcome?.sent}
           onPress={() => {
             setBusy(true);
+            setOutcome(null);
             void sendSignal(profile.id, opener).then(({ error }) => {
               setBusy(false);
-              if (error) {
-                Alert.alert('Signal non inviato', error);
-                return;
-              }
-              Alert.alert(
-                'Signal inviato',
-                'La chat si apre solo se accetta: serve il consenso di entrambi.',
+              setOutcome(
+                error
+                  ? { sent: false, text: `Signal non inviato. ${error}` }
+                  : {
+                      sent: true,
+                      text: 'La chat si apre solo se accetta: serve il consenso di entrambi.',
+                    },
               );
-              onClose();
             });
           }}
         />
+        {outcome ? (
+          <Text
+            variant="small"
+            tone={outcome.sent ? 'secondary' : 'danger'}
+            accessibilityLiveRegion="polite"
+            style={styles.outcome}
+          >
+            {outcome.text}
+          </Text>
+        ) : null}
         <Button
           label="Nascondimi a questa persona"
           variant="ghost"
@@ -183,5 +200,6 @@ const useStyles = makeStyles(() => ({
   section: { marginTop: 18, gap: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
   actions: { marginTop: 24, gap: 8 },
+  outcome: { textAlign: 'center' },
   privacy: { marginTop: 8 },
 }));

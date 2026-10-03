@@ -19,7 +19,7 @@ export function scoreToPercent(score: number): number {
 
 export function suggestedOpener(reasons: string[], seek: string[]): string {
   const reason = reasons[0];
-  if (reason) return `Curious about ${reason.toLowerCase()} — free for a quick hello?`;
-  if (seek[0]) return `Saw you're looking for ${seek[0]} — I may be able to help.`;
-  return 'Good to meet you in the room — open to a quick intro?';
+  if (reason) return `Ho visto cosa ci accomuna — ${reason}. Hai due minuti per un saluto?`;
+  if (seek[0]) return `Ho visto che cerchi ${seek[0]}: forse posso darti una mano.`;
+  return 'Piacere di incrociarti qui. Ti va di presentarci?';
 }
