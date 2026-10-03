@@ -26,7 +26,7 @@ export default async function StaffLayout({
         </div>
       </aside>
       <main className="main">
-        <Suspense fallback={<p className="muted">Loading…</p>}>
+        <Suspense fallback={<p className="muted">Carico…</p>}>
           {children}
         </Suspense>
       </main>

@@ -38,11 +38,11 @@ export async function issueSealAction(
       .maybeSingle();
 
     if (memErr || !membership) {
-      return { ok: false, error: memErr?.message ?? 'Membership not found for venue' };
+      return { ok: false, error: memErr?.message ?? 'Iscrizione non trovata per questo venue' };
     }
 
     if ((membership as Membership).verified_status === 'revoked') {
-      return { ok: false, error: 'Cannot seal a revoked membership' };
+      return { ok: false, error: 'Non si può dare il sigillo a un\'iscrizione revocata' };
     }
 
     const viaEdge = await callIssueSealEdge(input.membership_id);
@@ -82,7 +82,7 @@ export async function issueSealAction(
         error:
           rpcErr?.message ??
           updErr?.message ??
-          'Failed to issue seal',
+          'Non riesco a rilasciare il sigillo',
       };
     }
 
@@ -93,7 +93,7 @@ export async function issueSealAction(
     if (err instanceof StaffAuthError) return { ok: false, error: err.message };
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Unexpected seal error',
+      error: err instanceof Error ? err.message : 'Errore imprevisto nel rilascio del sigillo',
     };
   }
 }
@@ -118,7 +118,7 @@ export async function rejectMembershipAction(input: {
       .single();
 
     if (error || !updated) {
-      return { ok: false, error: error?.message ?? 'Reject failed' };
+      return { ok: false, error: error?.message ?? 'Non riesco a rifiutare l\'iscrizione' };
     }
     revalidatePath('/verify');
     revalidatePath('/dashboard');
@@ -127,7 +127,7 @@ export async function rejectMembershipAction(input: {
     if (err instanceof StaffAuthError) return { ok: false, error: err.message };
     return {
       ok: false,
-      error: err instanceof Error ? err.message : 'Unexpected error',
+      error: err instanceof Error ? err.message : 'Errore imprevisto',
     };
   }
 }
@@ -143,7 +143,7 @@ async function callIssueSealEdge(
     } = await supabase.auth.getSession();
 
     if (!session?.access_token) {
-      return { ok: false, error: 'Missing session for issue-seal' };
+      return { ok: false, error: 'Sessione mancante: accedi di nuovo' };
     }
 
     const res = await fetch(url, {

@@ -5,10 +5,10 @@
 | | |
 |---|---|
 | **Progetto** | Lobby — app soci (Expo / React Native Web) + backoffice staff (Next.js) |
-| **Data di esecuzione** | 3 ottobre 2026, 14:36 UTC (seconda esecuzione, dopo le correzioni) |
+| **Data di esecuzione** | 3 ottobre 2026, 14:47 UTC (ultima esecuzione, dopo le correzioni) |
 | **Strumento** | Playwright 1.63 · Chromium · viewport 1280×800 (screenshot a 2560×1600) |
 | **Script** | `scripts/claude_auto_test.js` — si rilancia con `node scripts/claude_auto_test.js` |
-| **Account di prova** | `demo_claude_1791038164925@test.com` (password generata a caso, mai stampata) |
+| **Account di prova** | `demo_claude_1791038864293@test.com` (password generata a caso, mai stampata) |
 | **Ambienti** | App soci `http://localhost:8082` · Backoffice `http://localhost:3005` |
 | **Schermate analizzate** | 30 (27 dell'app soci, 3 del backoffice) |
 | **Esito complessivo** | ✅ **Funzionante** — 30 ✅ · 0 ⚠️ · 0 ❌ (prima delle correzioni: 26 ✅ · 3 ⚠️ · 1 ❌) |
@@ -261,8 +261,8 @@ graph TD
 ![Backoffice login](./screenshots/28_backoffice_login.png)
 
 - **Scopo:** accesso riservato allo staff del luogo.
-- **Componenti:** titolo in Playfair Display, campi email e password, "Sign in"; 72 variabili `--lobby-*` del tema iniettate.
-- **Esito:** ✅ Funzionante — interfaccia interamente in inglese, mentre l'app soci è in italiano.
+- **Componenti:** titolo in Playfair Display, campi email e password, "Accedi"; 72 variabili `--lobby-*` del tema iniettate.
+- **Esito:** ✅ Funzionante — **corretto**: il backoffice ora è in italiano come l'app soci.
 
 #### 29 · Backoffice — validazione del modulo
 ![Backoffice validazione](./screenshots/29_backoffice_validazione.png)
@@ -282,7 +282,7 @@ graph TD
 
 ## 4. Note tecniche e raccomandazioni
 
-### Log della console (seconda esecuzione)
+### Log della console (ultima esecuzione)
 
 | Tipo | Volte | Messaggio | Valutazione |
 |---|---|---|---|
@@ -305,13 +305,15 @@ Nessun avviso, nessuna eccezione JavaScript non gestita, nessuna richiesta di re
 | 9 | Lingue mescolate nell'app soci | Dati dimostrativi, frasi d'apertura e alcuni errori in inglese. | Tradotti in italiano. |
 | 10 | Segnaposto della password ambiguo | Pallini al posto di un testo. | "La tua password". |
 | 11 | Rientro in stanza poco visibile | Riga grigia da 11 px. | Pulsante; fuori dalla dimostrazione porta alla scansione. |
+| 12 | Motivi dell'affinità in inglese dal server ("A offers what B seeks") | Stringhe scritte dalla funzione SQL `compute_matches_for_room`. | Nuova migrazione `20261003144612_lobby_match_reasons_italian`, applicata al database: cambia solo le due frasi, permessi invariati. |
+| 13 | Backoffice in inglese | Testi mai tradotti. | Pagine, pulsanti, menu e messaggi d'errore in italiano; gli stati delle segnalazioni tradotti solo in etichetta. |
+| 14 | Barra delle schede a tutta larghezza su desktop | Nessuna larghezza massima. | Centrata sotto la colonna del contenuto. |
 
 ### Cosa resta aperto
 
 - **Il rimontaggio dell'app esiste ancora.** La correzione 1 rende la dimostrazione resistente, non elimina la causa, che sta nella gestione della cronologia di expo-router / React Navigation sul web. Con l'autenticazione reale la sessione si rilegge dallo storage, quindi l'effetto atteso è un ricaricamento della schermata senza uscita dall'account — **non verificato**, perché il test gira in dimostrazione. Lo stato locale delle schermate (per esempio la sezione scelta in Signal) si perde comunque.
-- **Motivi dell'affinità in inglese dal server.** In dimostrazione sono tradotti; con il database vero li scrive una funzione SQL già applicata al progetto condiviso. Serve una nuova migrazione, da fare a parte.
-- **Backoffice in inglese.** Non toccato: va deciso se lo staff lo vuole in italiano.
-- **Intestazioni native a tutta larghezza su desktop.** Il contenuto è centrato, la barra del titolo e quella delle schede no.
+- **Pagine del backoffice dopo il login.** Sono state tradotte ma non aperte dal test, che per scelta non invia credenziali a quel login: la traduzione è verificata da typecheck e lint, non a schermo.
+- **Intestazioni native a tutta larghezza su desktop.** Contenuto e schede sono centrati, la barra del titolo delle schermate secondarie no.
 
 ### Prestazioni
 
@@ -326,6 +328,6 @@ Nessun rallentamento osservato: ogni schermata si è resa entro i tempi di attes
 ### File prodotti
 
 - `scripts/claude_auto_test.js` — lo script
-- `report/screenshots/` — 30 immagini (seconda esecuzione)
+- `report/screenshots/` — 30 immagini (ultima esecuzione)
 - `report/results.json` — esiti e log in forma leggibile da macchina
 - `report/CLAUDE_TEST_REPORT.md` — questo documento

@@ -1,10 +1,10 @@
 {
-  "executedAt": "2026-10-03T14:36:04.925Z",
+  "executedAt": "2026-10-03T14:47:44.293Z",
   "viewport": {
     "width": 1280,
     "height": 800
   },
-  "demoEmail": "demo_claude_1791038164925@test.com",
+  "demoEmail": "demo_claude_1791038864293@test.com",
   "totals": {
     "steps": 30,
     "ok": 30,
@@ -29,7 +29,7 @@
       "title": "Registrazione — modulo compilato",
       "status": "ok",
       "notes": [
-        "account demo: demo_claude_1791038164925@test.com"
+        "account demo: demo_claude_1791038864293@test.com"
       ],
       "url": "http://localhost:8082/welcome",
       "file": "02_registrazione_compilata.png",

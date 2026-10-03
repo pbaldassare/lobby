@@ -16,7 +16,7 @@ export async function signInWithPassword(
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
   if (!email || !password) {
-    return { ok: false, error: 'Email and password are required' };
+    return { ok: false, error: 'Servono email e password' };
   }
 
   const supabase = await createClient();
@@ -26,7 +26,7 @@ export async function signInWithPassword(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: 'Session not established' };
+  if (!user) return { ok: false, error: 'Sessione non avviata. Riprova.' };
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -39,7 +39,7 @@ export async function signInWithPassword(
     await supabase.auth.signOut();
     return {
       ok: false,
-      error: 'Access denied. Backoffice is for venue staff and admins only.',
+      error: 'Accesso negato. Il backoffice è riservato allo staff del venue e agli amministratori.',
     };
   }
 

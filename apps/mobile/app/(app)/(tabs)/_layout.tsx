@@ -57,6 +57,10 @@ export default function TabsLayout(): React.JSX.Element {
           borderTopWidth: 1,
           height: 66,
           paddingTop: 8,
+          // Su schermi larghi le schede restano sotto la colonna del contenuto.
+          width: '100%',
+          maxWidth: 596,
+          alignSelf: 'center',
         },
       }}
     >

@@ -21,39 +21,39 @@ export default async function VerifyPage({ searchParams }: Props) {
       verified = await listVenueMemberships(venue.id, 'verified');
     } catch (err) {
       loadError =
-        err instanceof Error ? err.message : 'Failed to load memberships';
+        err instanceof Error ? err.message : 'Non riesco a caricare le iscrizioni';
     }
   }
 
   return (
     <>
-      <p className="kicker">Membership</p>
-      <h1>Verify & issue seal</h1>
+      <p className="kicker">Iscrizioni</p>
+      <h1>Verifica e rilascia il sigillo</h1>
       <p>
-        Privileged operation. The venue issues the seal via Edge Function{' '}
-        <code>issue-seal</code> (server-side).
+        Operazione riservata. Il sigillo lo rilascia il venue, lato server,
+        tramite la funzione <code>issue-seal</code>.
       </p>
       <VenuePicker venues={staff.venues} selectedId={venue?.id ?? null} />
       {loadError ? <div className="error">{loadError}</div> : null}
 
       {!venue ? (
         <div className="panel">
-          <p className="muted">Select a venue to review pending members.</p>
+          <p className="muted">Scegli un venue per vedere chi è in attesa.</p>
         </div>
       ) : (
         <>
           <div className="panel">
-            <h2>Pending verification</h2>
+            <h2>In attesa di verifica</h2>
             {pending.length === 0 ? (
-              <p className="muted">No pending memberships.</p>
+              <p className="muted">Nessuna iscrizione in attesa.</p>
             ) : (
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Member</th>
-                    <th>Company</th>
-                    <th>Since</th>
-                    <th>Actions</th>
+                    <th>Socio</th>
+                    <th>Azienda</th>
+                    <th>Dal</th>
+                    <th>Azioni</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -82,16 +82,16 @@ export default async function VerifyPage({ searchParams }: Props) {
             )}
           </div>
           <div className="panel">
-            <h2>Verified · sealed</h2>
+            <h2>Verificati · con sigillo</h2>
             {verified.length === 0 ? (
-              <p className="muted">No sealed members yet.</p>
+              <p className="muted">Ancora nessun socio con sigillo.</p>
             ) : (
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Member</th>
-                    <th>Status</th>
-                    <th>Seal issued</th>
+                    <th>Socio</th>
+                    <th>Stato</th>
+                    <th>Sigillo rilasciato</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -102,12 +102,12 @@ export default async function VerifyPage({ searchParams }: Props) {
                       </td>
                       <td>
                         <span className="badge badge-green">
-                          {m.verified_status}
+                          {m.verified_status === 'verified' ? 'verificato' : m.verified_status}
                         </span>
                       </td>
                       <td className="muted">
                         {m.seal_issued_at
-                          ? new Date(m.seal_issued_at).toLocaleString()
+                          ? new Date(m.seal_issued_at).toLocaleString('it-IT')
                           : '—'}
                       </td>
                     </tr>

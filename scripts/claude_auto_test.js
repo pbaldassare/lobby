@@ -436,9 +436,9 @@ async function run() {
 
   await step('28_backoffice_login', 'Backoffice — accesso staff', async (rec) => {
     await page.goto(`${BACKOFFICE}/login`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-    await page.getByRole('heading', { name: 'Staff sign in' }).waitFor({ timeout: 60000 });
+    await page.getByRole('heading', { name: 'Accesso staff' }).waitFor({ timeout: 60000 });
     const font = await page
-      .getByRole('heading', { name: 'Staff sign in' })
+      .getByRole('heading', { name: 'Accesso staff' })
       .evaluate((h) => getComputedStyle(h).fontFamily);
     rec.notes.push(`font del titolo: ${font.split(',')[0]}`);
     const vars = await page.evaluate(
@@ -449,7 +449,7 @@ async function run() {
 
   await step('29_backoffice_validazione', 'Backoffice — validazione del modulo', async (rec) => {
     const url = page.url();
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByRole('button', { name: 'Accedi' }).click();
     await page.waitForTimeout(400);
     const empty = await page.evaluate(() => ({
       email: document.querySelector('#email').validity.valueMissing,

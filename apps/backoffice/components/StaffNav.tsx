@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const LINKS = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/verify', label: 'Verify & seal' },
-  { href: '/moderation', label: 'Moderation' },
-  { href: '/poster', label: 'QR poster' },
+  { href: '/dashboard', label: 'Panoramica' },
+  { href: '/verify', label: 'Verifica e sigilli' },
+  { href: '/moderation', label: 'Moderazione' },
+  { href: '/poster', label: 'Codice della stanza' },
 ] as const;
 
 export function StaffNav() {

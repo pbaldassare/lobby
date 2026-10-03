@@ -13,7 +13,8 @@ export function VenuePicker({ venues, selectedId }: Props) {
   if (venues.length === 0) {
     return (
       <p className="muted">
-        No venues assigned. Ask an admin to add you to <code>venue_staff</code>.
+        Nessun venue assegnato. Chiedi a un amministratore di aggiungerti a{' '}
+        <code>venue_staff</code>.
       </p>
     );
   }
