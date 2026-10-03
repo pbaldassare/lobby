@@ -42,7 +42,7 @@ export function useBlocks(): {
   const blockProfile = useCallback(
     async (profileId: string) => {
       if (isDemo) return { error: null };
-      if (!user) return { error: 'Not signed in' };
+      if (!user) return { error: "Non hai fatto l'accesso" };
       const { error } = await getSupabase().from('blocks').insert({
         blocker_id: user.id,
         blocked_profile_id: profileId,
@@ -57,7 +57,7 @@ export function useBlocks(): {
   const blockCompany = useCallback(
     async (company: string) => {
       if (isDemo) return { error: null };
-      if (!user) return { error: 'Not signed in' };
+      if (!user) return { error: "Non hai fatto l'accesso" };
       const { error } = await getSupabase().from('blocks').insert({
         blocker_id: user.id,
         blocked_profile_id: null,
@@ -72,7 +72,7 @@ export function useBlocks(): {
   const unblock = useCallback(
     async (blockId: string) => {
       if (isDemo) return { error: null };
-      if (!user) return { error: 'Not signed in' };
+      if (!user) return { error: "Non hai fatto l'accesso" };
       const { error } = await getSupabase()
         .from('blocks')
         .delete()

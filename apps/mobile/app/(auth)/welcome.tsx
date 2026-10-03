@@ -94,7 +94,7 @@ export default function WelcomeScreen(): React.JSX.Element {
             label="Password"
             secureTextEntry
             autoComplete="current-password"
-            placeholder="••••••••"
+            placeholder="La tua password"
             value={password}
             onChangeText={setPassword}
             error={error}

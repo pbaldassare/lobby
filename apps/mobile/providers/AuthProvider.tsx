@@ -11,7 +11,7 @@ import React, {
   useState,
 } from 'react';
 
-import { demoProfile } from '@/lib/demo';
+import { demoMemory, demoProfile } from '@/lib/demo';
 import { isEnvConfigured } from '@/lib/env';
 import { getSupabase } from '@/lib/supabase';
 
@@ -40,9 +40,16 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const isDemo = !isEnvConfigured();
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(isDemo ? demoMemory.profile : null);
   const [loading, setLoading] = useState(!isDemo);
-  const [demoSignedIn, setDemoSignedIn] = useState(false);
+  const [demoSignedIn, setDemoSignedIn] = useState(isDemo && demoMemory.signedIn);
+
+  // Vedi `demoMemory`: lo stato dimostrativo deve reggere un rimontaggio.
+  useEffect(() => {
+    if (!isDemo) return;
+    demoMemory.signedIn = demoSignedIn;
+    demoMemory.profile = demoSignedIn ? profile : null;
+  }, [isDemo, demoSignedIn, profile]);
 
   const refreshProfile = useCallback(async () => {
     if (isDemo) {
@@ -122,10 +129,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         options: { redirectTo, skipBrowserRedirect: true },
       });
       if (error) return { error: error.message };
-      if (!data.url) return { error: 'No OAuth URL returned' };
+      if (!data.url) return { error: 'Il provider non ha risposto. Riprova.' };
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
       if (result.type !== 'success' || !result.url) {
-        return { error: result.type === 'cancel' ? null : 'OAuth cancelled' };
+        return { error: result.type === 'cancel' ? null : 'Accesso annullato' };
       }
       const url = Linking.parse(result.url);
       const code = typeof url.queryParams?.code === 'string' ? url.queryParams.code : null;
@@ -164,7 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
         return { error: null };
       }
       const userId = session?.user?.id;
-      if (!userId) return { error: 'Not signed in' };
+      if (!userId) return { error: "Non hai fatto l'accesso" };
       const { data, error } = await getSupabase()
         .from('profiles')
         .update(patch)

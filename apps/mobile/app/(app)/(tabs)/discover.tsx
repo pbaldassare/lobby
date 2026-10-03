@@ -1,8 +1,9 @@
 import { makeStyles } from '@lobby/shared/theme';
 import type { RoomPerson } from '@lobby/shared/types';
-import { ListEmpty, ScreenHeader, Text } from '@lobby/shared/ui';
+import { Button, ListEmpty, ScreenHeader } from '@lobby/shared/ui';
+import { router } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { PersonRow } from '@/components/PersonRow';
 import { PresenceBar } from '@/components/PresenceBar';
@@ -14,7 +15,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { usePresence } from '@/providers/PresenceProvider';
 
 export default function DiscoverScreen(): React.JSX.Element {
-  const { profile } = useAuth();
+  const { profile, isDemo } = useAuth();
   const { room, isVisible, enterRoom, leaveRoom, setVisible, presence } = usePresence();
   const { people, loading } = useRoomPeople();
   const [selected, setSelected] = useState<RoomPerson | null>(null);
@@ -57,7 +58,9 @@ export default function DiscoverScreen(): React.JSX.Element {
             isVisible={isVisible}
             closesAt={room?.closes_at ?? null}
             count={ranked.length}
-            onEnter={() => void enterRoom(DEMO_ROOM_ID)}
+            enterLabel={isDemo ? 'Entra nella stanza dimostrativa' : 'Scansiona il codice della stanza'}
+            // Fuori dalla dimostrazione si entra solo con il codice del luogo.
+            onEnter={() => (isDemo ? void enterRoom(DEMO_ROOM_ID) : router.push('/(app)/scan'))}
             onLeave={() => void leaveRoom()}
             onChangeVisibility={(v) => void setVisible(v)}
           />
@@ -83,6 +86,7 @@ function Header({
   isVisible,
   closesAt,
   count,
+  enterLabel,
   onEnter,
   onLeave,
   onChangeVisibility,
@@ -93,6 +97,7 @@ function Header({
   isVisible: boolean;
   closesAt: string | null;
   count: number;
+  enterLabel: string;
   onEnter: () => void;
   onLeave: () => void;
   onChangeVisibility: (visible: boolean) => void;
@@ -120,16 +125,7 @@ function Header({
           onLeave={onLeave}
         />
       ) : (
-        <Pressable
-          accessibilityRole="button"
-          hitSlop={8}
-          onPress={onEnter}
-          style={({ pressed }) => [styles.demo, pressed && styles.pressed]}
-        >
-          <Text variant="tiny" tone="tertiary">
-            Entra nella stanza dimostrativa
-          </Text>
-        </Pressable>
+        <Button label={enterLabel} variant="ghost" onPress={onEnter} />
       )}
     </View>
   );
@@ -179,8 +175,6 @@ function Body({
 
 const useStyles = makeStyles(() => ({
   header: { gap: 14, paddingBottom: 4 },
-  demo: { alignSelf: 'flex-start', paddingVertical: 6 },
-  pressed: { opacity: 0.6 },
 }));
 
 const styles = { list: { paddingBottom: 24 } } as const;

@@ -81,26 +81,27 @@ export function PresenceBar({
       <Pressable
         accessibilityRole="switch"
         accessibilityLabel="Visibilità nella stanza"
-        accessibilityState={{ checked: isVisible, busy }}
+        aria-checked={isVisible}
+        aria-busy={busy}
         disabled={busy}
-        hitSlop={10}
         onPress={() => {
           setBusy(true);
           void Promise.resolve(onChange(!isVisible)).finally(() => setBusy(false));
         }}
-        style={[styles.track, isVisible && styles.trackOn]}
+        style={styles.hit}
       >
-        {busy ? (
-          <ActivityIndicator size="small" color={theme.color.accent.on} />
-        ) : (
-          <View style={[styles.knob, isVisible && styles.knobOn]} />
-        )}
+        <View style={[styles.track, isVisible && styles.trackOn]}>
+          {busy ? (
+            <ActivityIndicator size="small" color={theme.color.accent.on} />
+          ) : (
+            <View style={[styles.knob, isVisible && styles.knobOn]} />
+          )}
+        </View>
       </Pressable>
 
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Esci dalla stanza"
-        hitSlop={10}
         onPress={() => void onLeave()}
         style={({ pressed }) => [styles.leave, pressed && styles.pressed]}
       >
@@ -117,9 +118,8 @@ const useStyles = makeStyles((t) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 8,
     paddingLeft: 14,
-    paddingRight: 8,
+    paddingRight: 4,
     borderRadius: t.radius.pill,
     borderWidth: 1,
     borderColor: t.color.border.strong,
@@ -133,6 +133,9 @@ const useStyles = makeStyles((t) => ({
     borderWidth: 1,
     borderColor: t.color.text.tertiary,
   },
+  /** L'area toccabile è 44pt anche se il disegno è più piccolo: `hitSlop`
+   *  sul web non allarga nulla. */
+  hit: { minHeight: 44, justifyContent: 'center' },
   track: {
     width: 44,
     height: 26,
@@ -151,6 +154,12 @@ const useStyles = makeStyles((t) => ({
     backgroundColor: t.color.text.tertiary,
   },
   knobOn: { alignSelf: 'flex-end', backgroundColor: t.color.bg.canvas },
-  leave: { paddingHorizontal: 8, paddingVertical: 6 },
+  leave: {
+    minWidth: 44,
+    minHeight: 44,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   pressed: { opacity: 0.6 },
 }));

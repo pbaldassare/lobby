@@ -38,7 +38,7 @@ export function Segmented<T extends string>({
           <Pressable
             key={o.value}
             accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
+            aria-selected={active}
             onPress={() => onChange(o.value)}
             style={[styles.item, active && styles.itemActive]}
           >

@@ -92,7 +92,7 @@ function Row({
 
 const useStyles = makeStyles((t) => ({
   root: { flex: 1, backgroundColor: t.color.bg.canvas },
-  scroll: { padding: 18, gap: 22 },
+  scroll: { padding: 18, gap: 22, width: '100%', maxWidth: 596, alignSelf: 'center' },
   group: {
     borderRadius: t.radius.md,
     borderWidth: 1,

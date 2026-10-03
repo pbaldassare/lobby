@@ -107,7 +107,12 @@ export function useIntros(): {
 
   const respond = useCallback(
     async (introId: string, status: 'accepted' | 'declined') => {
-      if (isDemo) return { error: null };
+      if (isDemo) {
+        // Senza database la risposta vive solo qui, ma deve vedersi: un
+        // pulsante che non cambia nulla sembra rotto.
+        setRows((prev) => prev.map((r) => (r.id === introId ? { ...r, status } : r)));
+        return { error: null };
+      }
       const { error } = await getSupabase()
         .from('intros')
         .update({ status, responded_at: new Date().toISOString() })

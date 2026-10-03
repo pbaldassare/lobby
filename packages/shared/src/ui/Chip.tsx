@@ -44,7 +44,7 @@ export function Chip({
     return (
       <Pressable
         accessibilityRole="button"
-        accessibilityState={{ selected: resolved === 'on' }}
+        aria-pressed={resolved === 'on'}
         onPress={onPress}
         hitSlop={6}
         style={({ pressed }) => [styles.base, styles[resolved], pressed && styles.pressed, style]}

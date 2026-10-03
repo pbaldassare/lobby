@@ -19,7 +19,7 @@ export const DEMO_VENUE_ID = '00000000-0000-4000-8000-000000000020';
 export const demoVenue: Venue = {
   id: DEMO_VENUE_ID,
   name: 'Soho House',
-  city: 'Milan',
+  city: 'Milano',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
@@ -39,10 +39,10 @@ export const demoProfile: Profile = {
   id: DEMO_USER_ID,
   role: 'member',
   display_name: 'Alex Rivera',
-  headline: 'Product · climate tech',
-  spotlight: 'Building a marketplace for industrial waste heat.',
-  offer: ['intros to operators', 'product advisory'],
-  seek: ['energy partners', 'series A intros'],
+  headline: 'Prodotto · climate tech',
+  spotlight: 'Sto costruendo un mercato per il calore di scarto industriale.',
+  offer: ['presentazioni a operatori', 'consulenza di prodotto'],
+  seek: ['partner energetici', 'contatti per il round A'],
   company: 'Hearth',
   avatar_url: null,
   created_at: new Date().toISOString(),
@@ -62,6 +62,22 @@ export const demoMembership: Membership & { venue: Venue } = {
   venue: demoVenue,
 };
 
+/**
+ * Stato della dimostrazione che deve sopravvivere a un rimontaggio dell'app.
+ *
+ * Sul web expo-router può rimontare l'intero albero quando la cronologia del
+ * browser e quella di navigazione divergono (indietro, cambio scheda, apri,
+ * indietro). I provider perdono lo stato: con Supabase la sessione si
+ * rilegge dallo storage, in dimostrazione viveva solo in `useState` e ci si
+ * ritrovava alla porta. Qui resta finché la pagina non viene ricaricata.
+ */
+export const demoMemory: {
+  signedIn: boolean;
+  profile: Profile | null;
+  /** Null finché la presenza non è mai stata toccata in questa sessione. */
+  presence: { room: Room | null; presence: Presence | null } | null;
+} = { signedIn: false, profile: null, presence: null };
+
 export function createDemoPresence(isVisible: boolean): Presence {
   return {
     id: '00000000-0000-4000-8000-000000000040',
@@ -80,10 +96,10 @@ const other: Profile = {
   id: '00000000-0000-4000-8000-000000000002',
   role: 'member',
   display_name: 'Mia Chen',
-  headline: 'GP · climate fund',
-  spotlight: 'Deploying growth capital into hard-tech.',
-  offer: ['capital', 'board seats'],
-  seek: ['industrial decarbonization'],
+  headline: 'GP · fondo per il clima',
+  spotlight: 'Investo capitale di crescita in tecnologie industriali.',
+  offer: ['capitale', 'posti in consiglio'],
+  seek: ['decarbonizzazione industriale'],
   company: 'Northline',
   avatar_url: null,
   created_at: new Date().toISOString(),
@@ -95,7 +111,7 @@ const third: Profile = {
   id: '00000000-0000-4000-8000-000000000003',
   role: 'member',
   display_name: 'Tomás Ruiz',
-  headline: 'Founder · grid software',
+  headline: 'Fondatore · software per le reti',
   spotlight: 'Software di bilanciamento per reti industriali.',
   offer: ['integrazioni', 'dati di consumo'],
   seek: ['pilota industriale', 'partner energetici'],
@@ -120,7 +136,7 @@ export const demoRoomPeople: RoomPerson[] = [
     match: {
       id: '00000000-0000-4000-8000-000000000050',
       score: 0.87,
-      reasons: ['You seek energy partners · Mia invests in industrial climate'],
+      reasons: ['Cerchi partner energetici · Mia investe in clima industriale'],
     },
     membership: {
       ...demoMembership,
@@ -137,8 +153,8 @@ export const demoMatches: Array<Match & { other: Profile }> = [
     profile_b_id: other.id,
     score: 0.87,
     reasons: [
-      'Offer/seek overlap on industrial climate',
-      'Both building in Milan this quarter',
+      'Quello che offri e quello che cerca si incontrano sul clima industriale',
+      'Entrambi al lavoro a Milano in questo trimestre',
     ],
     room_id: DEMO_ROOM_ID,
     computed_at: new Date().toISOString(),
@@ -151,7 +167,7 @@ export const demoProjects: Project[] = [
     id: '00000000-0000-4000-8000-000000000060',
     profile_id: DEMO_USER_ID,
     title: 'Hearth Exchange',
-    public_pitch: 'Marketplace matching factories with district heating buyers.',
+    public_pitch: 'Un mercato che mette in contatto le fabbriche con chi compra calore per il teleriscaldamento.',
     private_deck_url: null,
     deck_requestable: true,
     created_at: new Date().toISOString(),
@@ -166,7 +182,7 @@ export const demoAccess: MemberAccess[] = [
     id: '00000000-0000-4000-8000-000000000070',
     membership_id: demoMembership.id,
     access_key: 'rooftop',
-    label: 'Rooftop terrace — members',
+    label: 'Terrazza sul tetto — soci',
     granted_at: new Date().toISOString(),
     expires_at: null,
     created_at: new Date().toISOString(),
@@ -175,7 +191,7 @@ export const demoAccess: MemberAccess[] = [
     id: '00000000-0000-4000-8000-000000000071',
     membership_id: demoMembership.id,
     access_key: 'guest-pass',
-    label: '2 guest passes / month',
+    label: '2 inviti per ospiti al mese',
     granted_at: new Date().toISOString(),
     expires_at: null,
     created_at: new Date().toISOString(),

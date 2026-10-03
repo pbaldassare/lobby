@@ -145,7 +145,7 @@ export default function ChatThreadScreen(): React.JSX.Element {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Invia"
-            accessibilityState={{ disabled: !connected || !draft.trim() }}
+            aria-disabled={!connected || !draft.trim()}
             disabled={!connected || !draft.trim() || sending}
             hitSlop={8}
             onPress={send}
@@ -198,7 +198,7 @@ const useStyles = makeStyles((t) => ({
     backgroundColor: t.color.accent.subtleBg,
     gap: 6,
   },
-  list: { padding: 18, gap: 8 },
+  list: { padding: 18, gap: 8, width: '100%', maxWidth: 596, alignSelf: 'center' },
   emptyWrap: { transform: [{ scaleY: -1 }] },
   bubble: {
     maxWidth: '80%',

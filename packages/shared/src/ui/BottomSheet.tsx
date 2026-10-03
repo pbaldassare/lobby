@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,6 +23,8 @@ export type BottomSheetProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+/** Sul web il driver nativo non esiste e React Native lo segnala a ogni apertura. */
+const NATIVE_DRIVER = Platform.OS !== 'web';
 const IN = 300;
 const OUT = 200;
 
@@ -54,8 +57,8 @@ export function BottomSheet({
     if (visible) {
       setMounted(true);
       Animated.parallel([
-        Animated.timing(opacity, { toValue: 1, duration: IN, useNativeDriver: true }),
-        Animated.timing(translateY, { toValue: 0, duration: IN, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: IN, useNativeDriver: NATIVE_DRIVER }),
+        Animated.timing(translateY, { toValue: 0, duration: IN, useNativeDriver: NATIVE_DRIVER }),
       ]).start();
       return;
     }
@@ -63,8 +66,8 @@ export function BottomSheet({
     if (!mounted) return;
 
     Animated.parallel([
-      Animated.timing(opacity, { toValue: 0, duration: OUT, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 40, duration: OUT, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 0, duration: OUT, useNativeDriver: NATIVE_DRIVER }),
+      Animated.timing(translateY, { toValue: 40, duration: OUT, useNativeDriver: NATIVE_DRIVER }),
     ]).start(({ finished }) => {
       if (finished) setMounted(false);
     });
@@ -128,6 +131,10 @@ const useStyles = makeStyles((t) => ({
     paddingHorizontal: 18,
     paddingTop: 18,
     paddingBottom: 28,
+    // Su schermi larghi resta una colonna al centro, come le schermate.
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
   },
   grab: {
     alignSelf: 'center',

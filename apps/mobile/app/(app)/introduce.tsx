@@ -88,7 +88,8 @@ export default function IntroduceScreen(): React.JSX.Element {
               <Pressable
                 key={p.id}
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: on, disabled: full }}
+                aria-checked={on}
+                aria-disabled={full}
                 disabled={full}
                 onPress={() => toggle(p.id)}
                 style={({ pressed }) => [
@@ -136,7 +137,7 @@ export default function IntroduceScreen(): React.JSX.Element {
 
 const useStyles = makeStyles((t) => ({
   root: { flex: 1, backgroundColor: t.color.bg.canvas },
-  scroll: { padding: 18, gap: 14 },
+  scroll: { padding: 18, gap: 14, width: '100%', maxWidth: 596, alignSelf: 'center' },
   list: { gap: 8 },
   row: {
     flexDirection: 'row',

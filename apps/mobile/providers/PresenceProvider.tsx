@@ -9,7 +9,7 @@ import React, {
   useState,
 } from 'react';
 
-import { createDemoPresence, DEMO_ROOM_ID, demoRoom } from '@/lib/demo';
+import { createDemoPresence, DEMO_ROOM_ID, demoMemory, demoRoom } from '@/lib/demo';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 
@@ -51,17 +51,30 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     }, HEARTBEAT_MS);
   }, [clearHeartbeat, isDemo, user]);
 
+  /** In dimostrazione stanza e presenza cambiano sempre insieme, e vanno
+   *  ricordate fuori dal componente: vedi `demoMemory`. */
+  const setDemo = useCallback((nextRoom: Room | null, nextPresence: Presence | null) => {
+    demoMemory.presence = { room: nextRoom, presence: nextPresence };
+    setRoom(nextRoom);
+    setPresence(nextPresence);
+  }, []);
+
   useEffect(() => {
     if (!user) {
+      if (isDemo) demoMemory.presence = null;
       setPresence(null);
       setRoom(null);
       clearHeartbeat();
       return;
     }
     if (isDemo) {
+      if (demoMemory.presence) {
+        setRoom(demoMemory.presence.room);
+        setPresence(demoMemory.presence.presence);
+        return;
+      }
       // After login: in room but invisible by default
-      setRoom(demoRoom);
-      setPresence(createDemoPresence(false));
+      setDemo(demoRoom, createDemoPresence(false));
       return;
     }
 
@@ -93,7 +106,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     return () => {
       cancelled = true;
     };
-  }, [user, isDemo, clearHeartbeat, startHeartbeat]);
+  }, [user, isDemo, clearHeartbeat, startHeartbeat, setDemo]);
 
   useEffect(() => () => clearHeartbeat(), [clearHeartbeat]);
 
@@ -101,8 +114,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     async (roomId: string, code?: string) => {
       if (!user) return { error: "Non hai fatto l'accesso" };
       if (isDemo) {
-        setRoom({ ...demoRoom, id: roomId || DEMO_ROOM_ID });
-        setPresence(createDemoPresence(false));
+        setDemo({ ...demoRoom, id: roomId || DEMO_ROOM_ID }, createDemoPresence(false));
         return { error: null };
       }
 
@@ -150,14 +162,13 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
       clearHeartbeat();
       return { error: null };
     },
-    [user, isDemo, clearHeartbeat],
+    [user, isDemo, clearHeartbeat, setDemo],
   );
 
   const leaveRoom = useCallback(async () => {
-    if (!user) return { error: 'Not signed in' };
+    if (!user) return { error: "Non hai fatto l'accesso" };
     if (isDemo) {
-      setPresence(null);
-      setRoom(null);
+      setDemo(null, null);
       return { error: null };
     }
     clearHeartbeat();
@@ -165,14 +176,14 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
     setPresence(null);
     setRoom(null);
     return { error: error?.message ?? null };
-  }, [user, isDemo, clearHeartbeat]);
+  }, [user, isDemo, clearHeartbeat, setDemo]);
 
   const setVisible = useCallback(
     async (visible: boolean) => {
-      if (!user) return { error: 'Not signed in' };
-      if (!presence) return { error: 'Enter a room first' };
+      if (!user) return { error: "Non hai fatto l'accesso" };
+      if (!presence) return { error: 'Prima entra in una stanza' };
       if (isDemo) {
-        setPresence(createDemoPresence(visible));
+        setDemo(room, createDemoPresence(visible));
         return { error: null };
       }
       const visibleUntil = visible
@@ -202,7 +213,7 @@ export function PresenceProvider({ children }: { children: React.ReactNode }): R
       else clearHeartbeat();
       return { error: null };
     },
-    [user, presence, isDemo, startHeartbeat, clearHeartbeat],
+    [user, presence, room, isDemo, startHeartbeat, clearHeartbeat, setDemo],
   );
 
   const value = useMemo(

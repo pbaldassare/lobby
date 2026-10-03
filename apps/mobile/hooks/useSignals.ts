@@ -73,7 +73,7 @@ export function useSignals(): {
 
   const sendSignal = useCallback(
     async (toProfileId: string, message?: string) => {
-      if (isDemo) return { error: 'Demo mode — wire Supabase env to send signals' };
+      if (isDemo) return { error: 'In dimostrazione i signal non partono davvero.' };
       const { error } = await invokeEdgeFunction<
         { to_profile_id: string; message?: string | null },
         { signal: Signal }
@@ -93,7 +93,7 @@ export function useSignals(): {
       status: Extract<SignalStatus, 'connected' | 'declined'>,
     ) => {
       if (isDemo) return { error: null };
-      if (!user) return { error: 'Not signed in' };
+      if (!user) return { error: "Non hai fatto l'accesso" };
       const { error } = await getSupabase()
         .from('signals')
         .update({
