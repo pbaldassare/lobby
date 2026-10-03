@@ -1,0 +1,344 @@
+{
+  "executedAt": "2026-10-03T14:36:04.925Z",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "demoEmail": "demo_claude_1791038164925@test.com",
+  "totals": {
+    "steps": 30,
+    "ok": 30,
+    "warn": 0,
+    "error": 0,
+    "screenshots": 30
+  },
+  "results": [
+    {
+      "id": "01_benvenuto",
+      "title": "Benvenuto",
+      "status": "ok",
+      "notes": [
+        "modalità dimostrativa attiva"
+      ],
+      "url": "http://localhost:8082/welcome",
+      "file": "01_benvenuto.png",
+      "console": []
+    },
+    {
+      "id": "02_registrazione_compilata",
+      "title": "Registrazione — modulo compilato",
+      "status": "ok",
+      "notes": [
+        "account demo: demo_claude_1791038164925@test.com"
+      ],
+      "url": "http://localhost:8082/welcome",
+      "file": "02_registrazione_compilata.png",
+      "console": []
+    },
+    {
+      "id": "03_dopo_registrazione",
+      "title": "Dopo la registrazione",
+      "status": "ok",
+      "notes": [
+        "in demo si entra subito nella stanza dimostrativa, invisibili"
+      ],
+      "url": "http://localhost:8082/discover",
+      "file": "03_dopo_registrazione.png",
+      "console": []
+    },
+    {
+      "id": "04_uscita",
+      "title": "Impostazioni e uscita",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/settings",
+      "file": "04_uscita.png",
+      "console": []
+    },
+    {
+      "id": "05_accesso",
+      "title": "Accesso con le credenziali create",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/discover",
+      "file": "05_accesso.png",
+      "console": []
+    },
+    {
+      "id": "06_stanza_invisibile",
+      "title": "Stanza — dentro, invisibile",
+      "status": "ok",
+      "notes": [
+        "interruttore all'ingresso: aria-checked=false"
+      ],
+      "url": "http://localhost:8082/discover",
+      "file": "06_stanza_invisibile.png",
+      "console": []
+    },
+    {
+      "id": "07_stanza_visibile",
+      "title": "Stanza — visibile",
+      "status": "ok",
+      "notes": [
+        "interruttore acceso: aria-checked=true",
+        "conto alla rovescia: · 2h 59m"
+      ],
+      "url": "http://localhost:8082/discover",
+      "file": "07_stanza_visibile.png",
+      "console": []
+    },
+    {
+      "id": "08_scheda_persona",
+      "title": "Scheda della persona",
+      "status": "ok",
+      "notes": [
+        "in demo il signal non parte, e la scheda lo dice"
+      ],
+      "url": "http://localhost:8082/discover",
+      "file": "08_scheda_persona.png",
+      "console": []
+    },
+    {
+      "id": "09_affinita",
+      "title": "Affinità",
+      "status": "ok",
+      "notes": [
+        "scheda persona chiusa correttamente"
+      ],
+      "url": "http://localhost:8082/matches",
+      "file": "09_affinita.png",
+      "console": []
+    },
+    {
+      "id": "10_progetti",
+      "title": "Progetti",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/showcase",
+      "file": "10_progetti.png",
+      "console": []
+    },
+    {
+      "id": "11_card",
+      "title": "La tua card",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/card",
+      "file": "11_card.png",
+      "console": []
+    },
+    {
+      "id": "12_qr",
+      "title": "QR da mostrare",
+      "status": "ok",
+      "notes": [
+        "elementi svg in pagina: 18"
+      ],
+      "url": "http://localhost:8082/qr",
+      "file": "12_qr.png",
+      "console": []
+    },
+    {
+      "id": "13_modifica_profilo",
+      "title": "Modifica profilo",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/edit-profile",
+      "file": "13_modifica_profilo.png",
+      "console": []
+    },
+    {
+      "id": "14_profilo_salvato",
+      "title": "Profilo salvato",
+      "status": "ok",
+      "notes": [
+        "la modifica compare sulla card"
+      ],
+      "url": "http://localhost:8082/card",
+      "file": "14_profilo_salvato.png",
+      "console": []
+    },
+    {
+      "id": "15_impostazioni",
+      "title": "Impostazioni",
+      "status": "ok",
+      "notes": [
+        "etichetta accessibile della freccia indietro: \"Indietro\""
+      ],
+      "url": "http://localhost:8082/settings",
+      "file": "15_impostazioni.png",
+      "console": []
+    },
+    {
+      "id": "16_accessi_riservati",
+      "title": "Accessi riservati",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/member-access",
+      "file": "16_accessi_riservati.png",
+      "console": []
+    },
+    {
+      "id": "17_scansione",
+      "title": "Scansione QR",
+      "status": "ok",
+      "notes": [
+        "stato mostrato: richiesta permesso"
+      ],
+      "url": "http://localhost:8082/scan",
+      "file": "17_scansione.png",
+      "console": []
+    },
+    {
+      "id": "18_signal_in_arrivo",
+      "title": "Signal — in arrivo",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/signals",
+      "file": "18_signal_in_arrivo.png",
+      "console": []
+    },
+    {
+      "id": "19_signal_inviati",
+      "title": "Signal — inviati",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/signals",
+      "file": "19_signal_inviati.png",
+      "console": []
+    },
+    {
+      "id": "20_signal_chat",
+      "title": "Signal — chat",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/signals",
+      "file": "20_signal_chat.png",
+      "console": []
+    },
+    {
+      "id": "21_presentazioni",
+      "title": "Signal — presentazioni",
+      "status": "ok",
+      "notes": [
+        "la presentazione accettata esce da quelle in attesa"
+      ],
+      "url": "http://localhost:8082/signals",
+      "file": "21_presentazioni.png",
+      "console": []
+    },
+    {
+      "id": "22_presenta",
+      "title": "Presenta due persone",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/introduce",
+      "file": "22_presenta.png",
+      "console": []
+    },
+    {
+      "id": "23_uscita_stanza",
+      "title": "Stanza — fuori",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/discover",
+      "file": "23_uscita_stanza.png",
+      "console": []
+    },
+    {
+      "id": "24_indietro_del_browser",
+      "title": "Tasto indietro del browser",
+      "status": "ok",
+      "notes": [
+        "atteso /signals, ottenuto /signals"
+      ],
+      "url": "http://localhost:8082/signals",
+      "file": "24_indietro_del_browser.png",
+      "console": []
+    },
+    {
+      "id": "25_pagina_inesistente",
+      "title": "Pagina inesistente",
+      "status": "ok",
+      "notes": [
+        "il server risponde 404, l'app mostra la sua schermata"
+      ],
+      "url": "http://localhost:8082/pagina-che-non-esiste",
+      "file": "25_pagina_inesistente.png",
+      "console": [
+        {
+          "app": "app",
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ],
+      "expected": {}
+    },
+    {
+      "id": "26_tema_scuro_benvenuto",
+      "title": "Tema scuro — benvenuto",
+      "status": "ok",
+      "notes": [
+        "sfondo calcolato: rgb(14, 13, 12)"
+      ],
+      "url": "http://localhost:8082/welcome",
+      "file": "26_tema_scuro_benvenuto.png",
+      "console": []
+    },
+    {
+      "id": "27_tema_scuro_stanza",
+      "title": "Tema scuro — stanza",
+      "status": "ok",
+      "notes": [],
+      "url": "http://localhost:8082/discover",
+      "file": "27_tema_scuro_stanza.png",
+      "console": []
+    },
+    {
+      "id": "28_backoffice_login",
+      "title": "Backoffice — accesso staff",
+      "status": "ok",
+      "notes": [
+        "font del titolo: \"Playfair Display\"",
+        "custom property --lobby-* iniettate: 72"
+      ],
+      "url": "http://localhost:3005/login",
+      "file": "28_backoffice_login.png",
+      "console": []
+    },
+    {
+      "id": "29_backoffice_validazione",
+      "title": "Backoffice — validazione del modulo",
+      "status": "ok",
+      "notes": [
+        "invio a vuoto bloccato (email mancante=true, password mancante=true)",
+        "email malformata rifiutata dal browser: true",
+        "nessuna credenziale inviata: il login parla con un database di produzione condiviso"
+      ],
+      "url": "http://localhost:3005/login",
+      "file": "29_backoffice_validazione.png",
+      "console": []
+    },
+    {
+      "id": "30_backoffice_rotte_protette",
+      "title": "Backoffice — rotte protette",
+      "status": "ok",
+      "notes": [
+        "/dashboard → /login",
+        "/verify → /login",
+        "/moderation → /login",
+        "/poster → /login"
+      ],
+      "url": "http://localhost:3005/login?next=%2Fposter",
+      "file": "30_backoffice_rotte_protette.png",
+      "console": []
+    }
+  ],
+  "console": [
+    {
+      "app": "app",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ]
+}
